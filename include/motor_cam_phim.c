@@ -13,10 +13,10 @@ void xunggiay(){
 	WATCHDOG;
 	flip_pulse^=1;
 	over_cur_led = flip_pulse;
-	if(Relay1 && !--relay1_delay_tat){
-		Relay1 = 0;
-		relay1_delay_tat = 5;
-	} 
+	// if(Relay1 && !--relay1_delay_tat){
+	// 	Relay1 = 0;
+	// 	relay1_delay_tat = 5;
+	// } 
 	
 	if(connect) connect--;
 	if(total_try_time_out) total_try_time_out--;

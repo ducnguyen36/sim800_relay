@@ -13,27 +13,27 @@ void xu_ly_tin_nhan(){
             case 'b':
                 if(lenh_sms[4]=='0'){
                     Relay1 = 1;
-                    baocaosms("\rdang reset thang may");
+                    baocaosms("\rTat nguon");
                 }else if(lenh_sms[4]=='1'){
                     Relay2 = 1;
-                    baocaosms("\rlen tang 1 hoac 4");
+                    baocaosms("\rcua len");
                 }else if(lenh_sms[4]=='2'){
                     Relay3 = 1;
-                    baocaosms("\rlen tang 2");
+                    baocaosms("\rcua xuong");
                 }else if(lenh_sms[4]=='3'){
                     Relay4 = 1;
-                    baocaosms("\rlen tang 3");
+                    baocaosms("\rcua dung");
                 }
                 break;
-            // case 'T':
-            // case 't':
-            //     Relay1 = 0;
-            //     baocaosms("\rTat Thiet Bi");
-            //     break;
-            // case 'K':
-            // case 'k':
-            //     baocaosms("\rKiem Tra");
-            //     break;
+            case 'T':
+            case 't':
+                Relay1 = 0;
+                baocaosms("\rMo nguon");
+                break;
+            case 'K':
+            case 'k':
+                baocaosms("\rKiem Tra");
+                break;
             case 'R':
             case 'r':
                 baocaosms("\rreset gsm sau10s");

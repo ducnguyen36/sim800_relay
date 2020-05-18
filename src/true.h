@@ -42,6 +42,11 @@
 #define     motor2    P25
 #define     motor4    P24
 
+#define     RelayS1    P27
+#define     RelayS2    P26
+#define     RelayS3    P25
+#define     RelayS4    P24
+
 
 #define	cam_sign_out	cam_out1
 #define	zero_sign_out	cam_out2

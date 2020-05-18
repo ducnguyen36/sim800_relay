@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.1.4";
+u8 __code ver[] = " CUACUON 0.1.4";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -124,8 +124,8 @@ void main() {
 					baocaosms("\rLuu danh ba thanh cong");
 				}else{
 					if(!phone_so_sanh_that_bai){
-						Relay1 = 1;
-						baocaosms("\rTAT BAT = CUOC GOI");
+						Relay2 = 1;
+						baocaosms("\rcua len");
 					} 
 				}
 			}	
