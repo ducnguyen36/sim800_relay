@@ -1,9 +1,10 @@
+
 #include "true.h"
 #include "main.h"
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.1.4";
+u8 __code ver[] = " THANGMAY 0.2.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -29,17 +30,14 @@ void main() {
 	
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
-	relay1_delay_tat = 6;
-	relay2_delay_tat = 2;
-	relay3_delay_tat = 2;
-	relay4_delay_tat = 2;
+	relays4_delay_tat = 6;
 	phim_mode_doi = phim_back_doi = phim_cong_doi = 2;
 	mode = 0;
 
 	/*validate eeprom*/
-	u8 __xdata i;
+	// u8 __xdata i;
 	IAP_docxoasector1();
-	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
+	if(((eeprom_buf[PIN_EEPROM]  <'0' && eeprom_buf[PIN_EEPROM]  > 9) || eeprom_buf[PIN_EEPROM]  >'9')
 	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
 	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
 	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
@@ -91,7 +89,7 @@ void main() {
 			xoadanhba(0);
 			IAP_docxoasector1();
 			eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
-			IAP_ghisector1();			
+			IAP_ghisector1();
 		}
 		if(gsm_reset){
 			gsm_reset = 0;
@@ -100,8 +98,15 @@ void main() {
 		}
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
-			i = 0;
-			while(i++<3) gsm_sendandcheck("AT+CPBW=,\"0829224041\",129,\"master\"\r", 15, 1,"  SENDING CPBW  ");	
+			gsm_serial_cmd = CUS2;
+			gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA SDT  ");
+			LCD_guilenh(0x80);
+			LCD_guichuoi("SDT:");
+			LCD_guilenh(0x84);
+			phone[10] = 0; 
+			LCD_guichuoi(phone);
+			while(!phim_cong_nhan) WATCHDOG;
+			phim_cong_nhan = 0;
 		}
 		if(lcd_update_chop){
 			lcd_update_chop = 0;	
@@ -124,12 +129,13 @@ void main() {
 					baocaosms("\rLuu danh ba thanh cong");
 				}else{
 					if(!phone_so_sanh_that_bai){
-						Relay1 = 1;
+						RelayS4 = 1;
 						baocaosms("\rTAT BAT = CUOC GOI");
 					} 
 				}
 			}	
-			LCD_guilenh(0x84); 
+			LCD_guilenh(0x84);
+			phone[10] = 0; 
 			LCD_guichuoi(phone);
 		}
 		WATCHDOG;

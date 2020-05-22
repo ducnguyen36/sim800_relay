@@ -4,46 +4,74 @@ void xu_ly_tin_nhan(){
     // u8 giodelta,phutdelta, kim_index;
     u8 i = 0;
     while(lenh_sms[i++])WATCHDOG;
-    while(i<160)lenh_sms[i++] = 0;
+    while(i++<160)lenh_sms[i] = 0;
     i=0;
     if((lenh_sms[0]=='?'||lenh_sms[1]=='?') && !phone_so_sanh_that_bai)gui_huong_dan();
     else{ 
         switch(lenh_sms[0]){
-            case 'B':
-            case 'b':
-                if(lenh_sms[4]=='0'){
-                    Relay1 = 1;
-                    baocaosms("\rdang reset thang may");
-                }else if(lenh_sms[4]=='1'){
-                    Relay2 = 1;
-                    baocaosms("\rlen tang 1 hoac 4");
-                }else if(lenh_sms[4]=='2'){
-                    Relay3 = 1;
-                    baocaosms("\rlen tang 2");
-                }else if(lenh_sms[4]=='3'){
-                    Relay4 = 1;
-                    baocaosms("\rlen tang 3");
-                }
-                break;
-            // case 'T':
-            // case 't':
-            //     Relay1 = 0;
-            //     baocaosms("\rTat Thiet Bi");
-            //     break;
-            // case 'K':
-            // case 'k':
-            //     baocaosms("\rKiem Tra");
-            //     break;
-            case 'R':
             case 'r':
+            case 'R':
+                if(!phone_master)break;
+                RelayS4 = 1;
+                baocaosms("\rdang reset thang may");
+                break;
+            case 'G':
+            case 'g':
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            
+                i = 0;
+                do{
+                    if(lenh_sms[i]=='g' || lenh_sms[i]=='G' || lenh_sms[i]=='0'){
+                        Relay1 = 1;
+                        delay_ms(100);
+                        Relay1 = 0;
+                    }else if(lenh_sms[i]=='1'){
+                        Relay2 = 1;
+                        delay_ms(100);
+                        Relay2 = 0;
+                    }else if(lenh_sms[i]=='2'){
+                        Relay3 = 1;
+                        delay_ms(100);
+                        Relay3 = 0;
+                    }else if(lenh_sms[i]=='3'){
+                        Relay4 = 1;
+                        delay_ms(100);
+                        Relay4 = 0;
+                    }else if(lenh_sms[i]=='4'){
+                        RelayS1 = 1;
+                        delay_ms(100);
+                        RelayS1 = 0;
+                    }
+                    i+=2;
+                    delay_ms(900);
+                }while(lenh_sms[i]);
+                baocaothangmay();
+                break;
+            
+            case 'S':
+            case 's':
                 baocaosms("\rreset gsm sau10s");
                 gsm_pw = 0; 
                 break;
             case 'P':
             case 'p':
                 if(!phone_master) break;
-                if(lenh_sms[4]>='0' && lenh_sms[4]<='9' && lenh_sms[5]>='0' && lenh_sms[5]<='9'
-                && lenh_sms[6]>='0' && lenh_sms[6]<='9' && lenh_sms[7]>='0' && lenh_sms[7]<='9'){
+                if(eep_pin[0]<10 && (lenh_sms[4]=='B' || lenh_sms[4]=='b' || lenh_sms[5]=='N' || lenh_sms[5]=='n')){
+                    IAP_docxoasector1();
+                    eeprom_buf[PIN_EEPROM] += 48;
+                    IAP_ghisector1();
+                    baocaosms("\rBat ma pin thanh cong");
+                }else if(eep_pin[0]>47 && eep_pin[0]<58 && (lenh_sms[4]=='T' || lenh_sms[4]=='t' || lenh_sms[5]=='f' || lenh_sms[5]=='F')){
+                    IAP_docxoasector1();
+                    eeprom_buf[PIN_EEPROM] -= 48;
+                    IAP_ghisector1();
+                    baocaosms("\rTat ma pin thanh cong");
+                }else if(eep_pin[0] >47 && eep_pin[0] <58 && (lenh_sms[4]>='0' && lenh_sms[4]<='9' && lenh_sms[5]>='0' && lenh_sms[5]<='9'
+                && lenh_sms[6]>='0' && lenh_sms[6]<='9' && lenh_sms[7]>='0' && lenh_sms[7]<='9')){
                     IAP_xoasector(SECTOR1);
                     IAP_ghibyte(PIN_EEPROM  ,lenh_sms[4]);
                     IAP_ghibyte(PIN_EEPROM+1,lenh_sms[5]);

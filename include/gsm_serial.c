@@ -164,6 +164,41 @@ void baocaosms(u8  *noidung){
 
 }
 
+void baocaothangmay(){
+    u8 tang[MAX_TANG+1];
+    u8 i = 0;
+    do{
+        tang[i/2] = lenh_sms[i];
+        i+=2;
+    }while(i<=MAX_TANG*2);
+    gsm_sendandcheck("AT\r", 15, 1,ver);
+    kiemtrataikhoan();
+   
+    if(!send_sms()) return;
+    
+    send_gsm_cmd("\rTK Chinh=");
+    send_gsm_cmd(lenh_sms);
+    if(!lenh_sms[4]) send_gsm_cmd("\rTai khoan con duoi 10000");
+    lenh_sms[1] = lenh_sms[2] = lenh_sms[3] = lenh_sms[4] = 0;
+    
+    if(tang[1]){
+        send_gsm_cmd("\rThang may di chuyen tu tang ");
+        send_gsm_byte(tang[0]);
+        send_gsm_cmd(", toi tang ");
+        send_gsm_byte(tang[1]);
+        i = 2;
+        while(tang[i] && i<=MAX_TANG){
+            send_gsm_cmd(", ");
+            send_gsm_byte(tang[i]);
+            i++;
+        }
+    }else{
+        send_gsm_cmd("\rThang may di chuyen toi tang ");
+        send_gsm_byte(tang[0]);
+    }
+    
+    gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+}
 
 
 void gui_huong_dan(){
@@ -283,7 +318,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                                 if(co_cuoc_goi_toi){
                                     delay_cuoc_goi_ke_tiep = 2;
                                     so_lan_goi_dien++;
-                                } 
+                                }  
                                 gsm_serial_cmd = CMD;
                             }
                         }
@@ -316,7 +351,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                                     khi gap ; hoac xuong dong hoac het 160 ky tu tin nhan
                                     thi chuyen qua xu ly lenh thong bao gui lenh thanh cong*/
                 if(pin_chinh_xac){
-                     
+                    
                     if(SBUF!=';' && SBUF!='\r' && sms_index<160){
                        
                         lenh_sms[sms_index++] = SBUF;    
@@ -325,14 +360,15 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                         lenh_sms[sms_index] = 0;
                         sms_index = 0;
                         pin_chinh_xac = 0;
+                        connect_time_out = 1;
                         gsm_serial_cmd = NORMAL;
                         sms_dang_xu_ly = 1;
                     }
                 }
                 else {/*SMS buoc 6: tim xem co ma pin trung khop khong neu khong co truoc khi gap ky tu xuong dong thi quay ve NORMAL*/
-                    pin_chinh_xac = gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] &&
-                                    gsm_receive_buf[(gsm_receive_pointer+11)%13] == eep_pin[2] && gsm_receive_buf[(gsm_receive_pointer+10)%13] == eep_pin[1] &&
-                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] == eep_pin[0];
+                    pin_chinh_xac =(eep_pin[0]<10 && gsm_receive_buf[gsm_receive_pointer]=='\r') || (gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] && 
+                                    gsm_receive_buf[(gsm_receive_pointer+11)%13] == eep_pin[2] && gsm_receive_buf[(gsm_receive_pointer+10)%13] == eep_pin[1] && 
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] == eep_pin[0]);
                     if(SBUF=='\r'){sms_index = 1; gsm_serial_cmd = NORMAL;}
                 }
                 break;
@@ -356,6 +392,20 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 }else if(gsm_receive_buf[gsm_receive_pointer]=='=' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='h' &&
                                     gsm_receive_buf[(gsm_receive_pointer+11)%13] =='n' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='i' &&
                                     gsm_receive_buf[(gsm_receive_pointer+9)%13] =='h' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='c')
+                                    have_cusd = 1;
+                break;
+            case CUS2:
+                if(have_cusd){
+                        if(SBUF !='N'  && sms_index<9) phone[1+sms_index++] = SBUF;
+                        else{
+                            have_quote = have_cusd = 0;
+                            phone[sms_index+1] = 0;
+                            sms_index = 0;
+                            gsm_serial_cmd = NORMAL;
+                            gui_lenh_thanh_cong = 1;
+                        }
+                    
+                }else if(gsm_receive_buf[gsm_receive_pointer]==':' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==')')
                                     have_cusd = 1;
                 break;
             case CPBR:

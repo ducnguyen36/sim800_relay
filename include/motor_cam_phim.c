@@ -13,11 +13,11 @@ void xunggiay(){
 	WATCHDOG;
 	flip_pulse^=1;
 	over_cur_led = flip_pulse;
-	if(Relay1 && !--relay1_delay_tat){
-		Relay1 = 0;
-		relay1_delay_tat = 5;
-	} 
-	
+	if(RelayS4)relays4_delay_tat--;
+	if(!relays4_delay_tat){
+		RelayS4 = 0;
+		relays4_delay_tat = 6;
+	}
 	if(connect) connect--;
 	if(total_try_time_out) total_try_time_out--;
 	if(mode && mode_wait) mode_wait--;
@@ -72,22 +72,31 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		phim_cong_nhan = phim_cong_nhan || (!phim_cong_giu && phim_cong_xuong);
 		phim_cong_cu = key_in3;
 
+		// if(Relay1 && !--relays1_delay_tat){
+		// 	Relay1 = 0;
+		// 	relays2_delay_tat = 20;
+		// }
+		// if(Relay2 && !--relay2_delay_tat){
+		// 	Relay2 = 0;
+		// 	relay2_delay_tat = 20;
+		// } 
+		// if(Relay3 && !--relay3_delay_tat){
+		// 	Relay3 = 0;
+		// 	relay3_delay_tat = 20;
+		// } 
+		// if(Relay4 && !--relay4_delay_tat){
+		// 	Relay4 = 0;
+		// 	relay4_delay_tat = 20;
+		// }
+		// if(RelayS1 && !--relays1_delay_tat){
+		// 	RelayS1 = 0;
+		// 	relays1_delay_tat = 20;
+		// }
 		if(!--cnt){
 			lcd_update_chop = 1;
 			cnt=10;
 			chop=!chop;
-			if(Relay2 && !--relay2_delay_tat){
-				Relay2 = 0;
-				relay2_delay_tat = 2;
-			} 
-			if(Relay3 && !--relay3_delay_tat){
-				Relay3 = 0;
-				relay3_delay_tat = 2;
-			} 
-			if(Relay4 && !--relay4_delay_tat){
-				Relay4 = 0;
-				relay4_delay_tat = 2;
-			} 
+			
 		}
 
 		if(!--counter_xung_giay){

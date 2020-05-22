@@ -8,7 +8,7 @@
 #define		gsm_TI			TI
 #define		gsm_SBUF		SBUF
 
-#define		gsm_BAUD		57600
+#define		gsm_BAUD		38400
 
 void gsm_init();
 void send_gsm_byte(u8 dulieu);
@@ -29,6 +29,7 @@ extern u8 __xdata    gsm_serial_cmd;
 #define     CUSD        7
 #define     CPBR        8
 #define     CMGS        9
+#define     CUS2        10
 
 #define     CHOXULY     1
 #define     DANGXULY    2

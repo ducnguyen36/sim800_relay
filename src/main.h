@@ -5,6 +5,7 @@
 
 //GSM
 #define PHONE_LENGTH 10
+#define MAX_TANG 4
 
 u8  __xdata  phone[11] ;
 __bit phone_update;
@@ -22,6 +23,10 @@ u8 __xdata relay1_delay_tat;
 u8 __xdata relay2_delay_tat;
 u8 __xdata relay3_delay_tat;
 u8 __xdata relay4_delay_tat;
+u8 __xdata relays1_delay_tat;
+u8 __xdata relays2_delay_tat;
+u8 __xdata relays3_delay_tat;
+u8 __xdata relays4_delay_tat;
 
 
 u8 __data so_lan_goi_dien;
