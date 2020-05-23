@@ -4,7 +4,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.2.3";
+u8 __code ver[] = " THANGMAY 0.2.4";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -73,20 +73,20 @@ void main() {
 
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
-			baocaosms("\rLoi bien tan");
+			if(kiemtraphonemaster())baocaosms("\rLoi bien tan");
 		}
 		if(bao_loi_bien_tan && !loi_bien_tan){
 			bao_loi_bien_tan = 0;
-			baocaosms("\rHet loi bien tan");
+			if(kiemtraphonemaster())baocaosms("\rHet loi bien tan");
 		}
 
 		if(!bao_loi_stop && che_do_stop){
 			bao_loi_stop = 1;
-			baocaosms("\rThang may vao che do STOP");
+			if(kiemtraphonemaster())baocaosms("\rThang may vao che do STOP");
 		}
 		if(bao_loi_stop && !che_do_stop){
 			bao_loi_stop = 0;
-			baocaosms("\rThang may thoat khoi che do STOP");
+			if(kiemtraphonemaster())baocaosms("\rThang may thoat khoi che do STOP");
 		}
 
 		if(co_tin_nhan_moi){
