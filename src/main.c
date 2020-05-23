@@ -70,7 +70,7 @@ void main() {
 
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
-			baocaosms("\rLoi bien tan reset thang may");
+			baocaosms("\rLoi bien tan");
 		}
 		if(bao_loi_bien_tan && !loi_bien_tan){
 			bao_loi_bien_tan = 0;
