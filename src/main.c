@@ -4,7 +4,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.2.1";
+u8 __code ver[] = " THANGMAY 0.2.2";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -29,6 +29,8 @@ void main() {
 	/****************/
 	bao_loi_bien_tan = loi_bien_tan = 0;
 	bao_loi_stop = che_do_stop = 0;
+	delay_tinhieuD_cao = delay_tinhieuD_thap = 80;
+	delay_tinhieuA_cao = delay_tinhieuA_thap = 80;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
 	relays4_delay_tat = 6;
