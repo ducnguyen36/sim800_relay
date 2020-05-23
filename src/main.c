@@ -71,6 +71,7 @@ void main() {
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
 			baocaosms("\rLoi bien tan");
+			//RelayS4 = 1;
 		}
 		if(bao_loi_bien_tan && !loi_bien_tan){
 			bao_loi_bien_tan = 0;
