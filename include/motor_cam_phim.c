@@ -76,18 +76,7 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 			lcd_update_chop = 1;
 			cnt=10;
 			chop=!chop;
-			if(Relay2 && !--relay2_delay_tat){
-				Relay2 = 0;
-				relay2_delay_tat = 2;
-			} 
-			if(Relay3 && !--relay3_delay_tat){
-				Relay3 = 0;
-				relay3_delay_tat = 2;
-			} 
-			if(Relay4 && !--relay4_delay_tat){
-				Relay4 = 0;
-				relay4_delay_tat = 2;
-			} 
+		
 		}
 
 		if(!--counter_xung_giay){
