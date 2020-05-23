@@ -88,11 +88,11 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 			if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
 		}
 
-		if(!loi_bien_tan && !delay_tinhieuD_cao && !delay_tinhieuA_cao)loi_bien_tan = 1;
+		if(!loi_bien_tan && !delay_tinhieuD_thap && !delay_tinhieuA_thap)loi_bien_tan = 1;
 
-		if(!che_do_stop && !delay_tinhieuD_cao && !delay_tinhieuA_thap) che_do_stop = 1;
+		if(!che_do_stop && !delay_tinhieuD_thap && !delay_tinhieuA_cao) che_do_stop = 1;
 
-		if(!delay_tinhieuD_thap)loi_bien_tan = che_do_stop = 0;
+		if(!delay_tinhieuD_cao)loi_bien_tan = che_do_stop = 0;
 		
 
 		

@@ -4,7 +4,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.2.2";
+u8 __code ver[] = " THANGMAY 0.2.3";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

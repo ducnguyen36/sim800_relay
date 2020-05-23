@@ -50,7 +50,8 @@ void kiemtradanhba(){
     while(i<161){
         if(lenh_sms[i]>84){
             send_gsm_byte(lenh_sms[i]-37);
-            i = 161;
+            lenh_sms[i] = 0;
+            return;
         }else if(lenh_sms[i]>74){
             send_gsm_byte(lenh_sms[i]-27);
             send_gsm_cmd("\r");
