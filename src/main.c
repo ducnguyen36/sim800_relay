@@ -27,7 +27,8 @@ void main() {
 	CLK_DIV = 0;
 	EA = 1; //bat tat ca interupt
 	/****************/
-	
+	bao_loi_bien_tan = loi_bien_tan = 0;
+	bao_loi_stop = che_do_stop = 0;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
 	relays4_delay_tat = 6;
