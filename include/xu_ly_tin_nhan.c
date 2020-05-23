@@ -22,7 +22,6 @@ void xu_ly_tin_nhan(){
             case '2':
             case '3':
             case '4':
-            
                 i = 0;
                 do{
                     if(lenh_sms[i]=='g' || lenh_sms[i]=='G' || lenh_sms[i]=='0'){

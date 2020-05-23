@@ -27,6 +27,10 @@ u8 __xdata relays1_delay_tat;
 u8 __xdata relays2_delay_tat;
 u8 __xdata relays3_delay_tat;
 u8 __xdata relays4_delay_tat;
+u8 __xdata delay_tinhieuD_cao;
+u8 __xdata delay_tinhieuD_thap;
+u8 __xdata delay_tinhieuA_cao;
+u8 __xdata delay_tinhieuA_thap;
 
 
 u8 __data so_lan_goi_dien;
@@ -95,4 +99,9 @@ u8 __xdata   gsm_serial_cmd;
 
 u8 __xdata   gsm_receive_pointer;
 u8 __xdata  gsm_receive_buf[15];
+
+//LOI va BAO LOI
+
+__bit loi_bien_tan;
+__bit bao_loi_bien_tan;
 

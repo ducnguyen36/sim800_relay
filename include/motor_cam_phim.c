@@ -60,18 +60,37 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		phim_mode_nhan = phim_mode_nhan || (!phim_mode_giu && phim_mode_xuong);
 		phim_mode_cu = phim_mode_vao;
 		
-		if(phim_back_xuong && key_in2) phim_back_doi = 2;
-		phim_back_giu = phim_back_xuong && !key_in2;
-		phim_back_xuong = !phim_back_cu && !key_in2;
+		if(phim_back_xuong && phim_back_vao) phim_back_doi = 2;
+		phim_back_giu = phim_back_xuong && !phim_back_vao;
+		phim_back_xuong = !phim_back_cu && !phim_back_vao;
 		phim_back_nhan = phim_back_nhan || (!phim_back_giu && phim_back_xuong);
-		phim_back_cu = key_in2;
+		phim_back_cu = phim_back_vao;
 
-		if(phim_cong_xuong && key_in3) phim_cong_doi = 2;
-		phim_cong_giu = phim_cong_xuong && !key_in3;
-		phim_cong_xuong = !phim_cong_cu && !key_in3;
+		if(phim_cong_xuong && phim_cong_vao) phim_cong_doi = 2;
+		phim_cong_giu = phim_cong_xuong && !phim_cong_vao;
+		phim_cong_xuong = !phim_cong_cu && !phim_cong_vao;
 		phim_cong_nhan = phim_cong_nhan || (!phim_cong_giu && phim_cong_xuong);
-		phim_cong_cu = key_in3;
+		phim_cong_cu = phim_cong_vao;
 
+		if(tinhieuD){
+			delay_tinhieuD_thap = 80;
+			if(delay_tinhieuD_cao)delay_tinhieuD_cao--;
+		}else{
+			delay_tinhieuD_cao = 80;
+			if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
+		}
+
+		if(tinhieuA){
+			delay_tinhieuA_thap = 80;
+			if(delay_tinhieuA_cao)delay_tinhieuA_cao--;
+		}else{
+			delay_tinhieuA_cao = 80;
+			if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
+		}
+
+		if(!loi_bien_tan && !delay_tinhieuD_cao && !delay_tinhieuA_cao)loi_bien_tan = 1;
+
+		if(loi_bien_tan && !delay_tinhieuD_thap && !delay_tinhieuA_thap)loi_bien_tan = 0;
 		// if(Relay1 && !--relays1_delay_tat){
 		// 	Relay1 = 0;
 		// 	relays2_delay_tat = 20;

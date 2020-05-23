@@ -4,7 +4,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " THANGMAY 0.2.0";
+u8 __code ver[] = " THANGMAY 0.2.1";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -67,6 +67,16 @@ void main() {
 
 	while(1){
 		if(!mode_wait && mode) mode = 0;
+
+		if(!bao_loi_bien_tan && loi_bien_tan){
+			bao_loi_bien_tan = 1;
+			baocaosms("\rLoi bien tan reset thang may");
+		}
+		if(bao_loi_bien_tan && !loi_bien_tan){
+			bao_loi_bien_tan = 0;
+			baocaosms("\rHet loi bien tan");
+		}
+
 		if(co_tin_nhan_moi){
 			co_tin_nhan_moi = 0;
 			gsm_sendandcheck("AT\r", 15, 1,ver);

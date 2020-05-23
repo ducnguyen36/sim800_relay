@@ -12,12 +12,12 @@
 
 /*********** Keys ***************/
 #define		phim_mode_vao		P35
-#define		key_in2		P33
-#define		key_in3		P34
+#define		phim_back_vao		P33
+#define		phim_cong_vao		P34
 
 /************ CAMS ******************/
-#define		cam_che2	    P37
-#define		cam_che     	P36
+#define		tinhieuA	    P37
+#define		tinhieuD     	P36
 
 /*********** DALAS ***************/
 #define		clock_in	P32
