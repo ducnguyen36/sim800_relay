@@ -71,11 +71,19 @@ void main() {
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
 			baocaosms("\rLoi bien tan");
-			//RelayS4 = 1;
 		}
 		if(bao_loi_bien_tan && !loi_bien_tan){
 			bao_loi_bien_tan = 0;
 			baocaosms("\rHet loi bien tan");
+		}
+
+		if(!bao_loi_stop && che_do_stop){
+			bao_loi_stop = 1;
+			baocaosms("\rThang may vao che do STOP");
+		}
+		if(bao_loi_stop && !che_do_stop){
+			bao_loi_stop = 0;
+			baocaosms("\rThang may thoat khoi che do STOP");
 		}
 
 		if(co_tin_nhan_moi){

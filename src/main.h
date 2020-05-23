@@ -104,4 +104,6 @@ u8 __xdata  gsm_receive_buf[15];
 
 __bit loi_bien_tan;
 __bit bao_loi_bien_tan;
+__bit che_do_stop;
+__bit bao_loi_stop;
 
