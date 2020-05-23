@@ -14,7 +14,7 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
             if(!connect){
                 if(!retry--) break;
                 connect_time_out = connect = delay;
-                if(*(cmd+3) || (*cmd =='\r')) send_gsm_cmd("A/\r"); 
+                if(*(cmd+2) == '+' || (*cmd =='\r')) send_gsm_cmd("A/\r"); 
                 else send_gsm_cmd(cmd);
             } 
     }
@@ -146,8 +146,8 @@ void baocaosms(u8  *noidung){
     else lenh_sms[0]=0;
    
     if(!send_sms()) return;
-    send_gsm_cmd(" RELAY=");
-    send_gsm_cmd(Relay1?"ON":"OFF");
+    // send_gsm_cmd(" RELAY=");
+    // send_gsm_cmd(Relay1?"ON":"OFF");
 
 
   
