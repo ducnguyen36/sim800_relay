@@ -16,27 +16,6 @@ void xu_ly_tin_nhan(){
                 Relay2 = 0;
                 baocaosms("\rDung cua cuon");
                 break;
-            // case 'B':
-            // case 'b':
-            //     if(lenh_sms[4]=='0'){
-            //         Relay1 = 1;
-            //         baocaosms("\rTat nguon");
-            //     }else if(lenh_sms[4]=='1'){
-            //         Relay2 = 1;
-            //         baocaosms("\rcua len");
-            //     }else if(lenh_sms[4]=='2'){
-            //         Relay3 = 1;
-            //         baocaosms("\rcua xuong");
-            //     }else if(lenh_sms[4]=='3'){
-            //         Relay4 = 1;
-            //         baocaosms("\rcua dung");
-            //     }
-            //     break;
-            // case 'T':
-            // case 't':
-            //     Relay1 = 0;
-            //     baocaosms("\rMo nguon");
-            //     break;
             case 'K':
             case 'k':
                 Relay2 = 1;

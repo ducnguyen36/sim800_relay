@@ -67,6 +67,7 @@ __bit gsm_themdanhba(u8 *phone,u8 type){
         send_gsm_cmd("AT+CPBW=,\"");
         send_gsm_cmd(phone);
         send_gsm_cmd("\",129,\"");
+        send_gsm_cmd(phone);
         send_gsm_byte(type);
         gsm_sendandcheck("\"\r",15,1,"   SENDING CPBW   ");
         return 1;     
