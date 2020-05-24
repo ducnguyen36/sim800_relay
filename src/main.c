@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.1.6";
+u8 __code ver[] = " CUACUON 0.1.8T";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -72,7 +72,7 @@ void main() {
 		if(co_tin_nhan_moi){
 			co_tin_nhan_moi = 0;
 			gsm_sendandcheck("AT\r", 15, 1,ver);
-			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
+			send_gsm_cmd("AT+CMGL=\"REC UNREAD\"\r");
 		}
 		if(sms_dang_xu_ly){
 			xu_ly_tin_nhan();

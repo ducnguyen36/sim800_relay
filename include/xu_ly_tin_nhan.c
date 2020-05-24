@@ -81,6 +81,10 @@ void xu_ly_tin_nhan(){
                     Relay1 = 1;
                     delay_ms(100);
                     Relay1 = 0;
+                    send_gsm_cmd("AT+CPBF=\"");
+                    phone[10] = 0;
+                    send_gsm_cmd(phone);
+                    gsm_sendandcheck("m\"\r",15,2," SAVE HISTORY ");
                     baocaosms("\rMo cua cuon");
                 }
                

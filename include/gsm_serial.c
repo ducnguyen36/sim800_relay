@@ -369,7 +369,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                         gsm_serial_cmd = NORMAL;
                     }
                 }else if(SBUF>47){
-                    if(!have_quote)danh_ba_cuoi = danh_ba_cuoi*10 + SBUF - '0'; 
+                    if(!have_quote)danh_ba_cuoi = danh_ba_cuoi*10 + SBUF - '0'; v
                     lenh_sms[sms_index++] = SBUF;
                 }
                 break;
