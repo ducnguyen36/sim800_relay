@@ -67,7 +67,8 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
-
+	kiemtraphonemaster();
+	baocaosms("\rKhoi dong");
 	while(1){
 		if(!mode_wait && mode) mode = 0;
 

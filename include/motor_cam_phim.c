@@ -81,10 +81,10 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		}
 
 		if(tinhieuA){
-			delay_tinhieuA_thap = 80;
+			delay_tinhieuA_thap = 40;
 			if(delay_tinhieuA_cao)delay_tinhieuA_cao--;
 		}else{
-			delay_tinhieuA_cao = 80;
+			delay_tinhieuA_cao = 40;
 			if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
 		}
 

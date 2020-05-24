@@ -67,12 +67,13 @@ __bit kiemtraphonemaster(){
     u8 i,j;
     sms_index = 10;
     lenh_sms[159] = 0;
+    gsm_sendandcheck("AT+CPBR=1,250\r", 15, 1,"  SENDING CPBR  ");
     if(lenh_sms[159]){
         if(lenh_sms[10]>64)i = 11;
         else if(lenh_sms[11]>64) i = 12;
         else i = 13;
         for(j = 1;j<10;j++) phone[j] = lenh_sms[i+j];
-        phone[9] -= 27;
+        phone[9] -= (lenh_sms[159]==1?37:27);
         phone[10] = 0;
         return 1; 
     }
