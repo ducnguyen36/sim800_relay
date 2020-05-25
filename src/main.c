@@ -58,6 +58,7 @@ void main() {
 
 	gsm_thietlapgoidien();
 	gsm_thietlapnhantin();
+	gsm_thietlapthoigianthuc();
 
 	mode_wait = 60;
 
@@ -68,6 +69,7 @@ void main() {
 	phone[10] = 0;
 
 	while(1){
+		if(phut_out)gsm_thietlapthoigianthuc();
 		if(!mode_wait && mode) mode = 0;
 		if(co_tin_nhan_moi){
 			co_tin_nhan_moi = 0;

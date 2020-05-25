@@ -30,6 +30,7 @@ void xunggiay(){
 		second=0;
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
 		if(++minute>59){
+			phut_out = 1;
 			minute=0;
 			if(++hour>23){
 				hour=0;

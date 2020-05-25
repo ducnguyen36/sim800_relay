@@ -174,7 +174,6 @@ void gui_huong_dan(){
     gsm_sendandcheck("\032",50,1," GUI HUONG DAN  ");
 }
 
-
 void gsm_thietlapgoidien(){
    
     if(gsm_sendandcheck("AT\r", 15, 1,ver)){
@@ -184,6 +183,35 @@ void gsm_thietlapgoidien(){
 	}
 }
 
+void gsm_thietlapthoigianthuc(){
+    if(gsm_sendandcheck("AT\r", 15, 1,ver)){
+        if(gsm_sendandcheck("AT+CLTS=1\r", 15, 1,"  SENDING CLTS  ")){
+            if(gsm_sendandcheck("AT+CFUN=0\r", 15, 1,"  SENDING CFUN0  ")){
+                gsm_serial_cmd = CFUN1;
+                if(gsm_sendandcheck("AT+CFUN=1\r", 15, 2,"  SENDING CFUN1  ")){
+                    if(have_time == CFUN){
+
+                        
+
+
+                        u8 phay=0,i=0;
+                        while((date_str[i++]!=',' || ++phay<3) && i<11)WATCHDOG;
+                        if(phay>2){
+                            if(date_str[i+1]==',') hour = (date_str[i++]-'0');
+                            else hour = (date_str[i++]-'0')*10 + (date_str[i++]-'0');
+                            if(date_str[++i+1]==',') minute = (date_str[i++]-'0');
+                            else minute = (date_str[i++]-'0')*10 + (date_str[i++]-'0');
+                            if(date_str[++i+1]==',') second = (date_str[i++]-'0');
+                            else second = (date_str[i++]-'0')*10 + (date_str[i++]-'0');
+                            hour = (hour+7>23) ? hour-17 : hour+7;
+                        }
+                    }
+                }
+                gsm_serial_cmd = NORMAL;
+            }
+        }
+    }
+}
 
 __bit gsm_thietlapnhantin(){
     if(!gsm_sendandcheck("AT\r", 15, 1,ver)) return 0;

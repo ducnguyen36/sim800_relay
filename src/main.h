@@ -53,7 +53,7 @@ u8  __xdata  ngay_reset_con_lai;
 
 //XUNG GIAY
 // __bit		giay_out;
-// __bit		phut_out;
+__bit		phut_out;
 __bit		flip_pulse;
 
 
@@ -91,3 +91,5 @@ u8 __xdata   gsm_serial_cmd;
 u8 __xdata   gsm_receive_pointer;
 u8 __xdata  gsm_receive_buf[15];
 
+//HISTORY INDEX
+u8 __xdata  chi_muc_lich_su = 4;

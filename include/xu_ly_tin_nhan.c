@@ -78,13 +78,22 @@ void xu_ly_tin_nhan(){
                         
                     }else baocaosms("\rSo dt khong hop le");
                 }else if(lenh_sms[1] == 'e' || lenh_sms[1] == 'E'){
+                    u8 temp = 0;
                     Relay1 = 1;
                     delay_ms(100);
                     Relay1 = 0;
                     send_gsm_cmd("AT+CPBF=\"");
                     phone[10] = 0;
                     send_gsm_cmd(phone);
-                    gsm_sendandcheck("m\"\r",15,2," SAVE HISTORY ");
+                    lenh_sms[159] = 9;
+                    sms_index = 0;
+                    gsm_sendandcheck(phone_master?"m\"\r":"p\"\r",15,2," SAVING HISTORY ");
+                    i = 0;
+                    while(lenh_sms[i]<58)temp = temp*10 + lenh_sms[i++];
+                    IAP_docxoasector1();
+                    eeprom_buf[chi_muc_lich_su] = temp;
+                    chi_muc_lich_su +=4;
+                    IAP_ghisector1();
                     baocaosms("\rMo cua cuon");
                 }
                
