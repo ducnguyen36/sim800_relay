@@ -19,6 +19,7 @@ void xu_ly_tin_nhan(){
             case 'K':
             case 'k':
                 Relay2 = 1;
+                luu_lich_su(phone,3);
                 baocaosms("\rKhoa cua cuon");
                 break;
             case 'R':
@@ -61,6 +62,7 @@ void xu_ly_tin_nhan(){
                     Relay3 = 1;
                     delay_ms(100);
                     Relay3 = 0;
+                    luu_lich_su(phone,2);
                     baocaosms("\rXuong cua cuon");
                 }
                 
@@ -81,6 +83,7 @@ void xu_ly_tin_nhan(){
                     Relay1 = 1;
                     delay_ms(100);
                     Relay1 = 0;
+                    luu_lich_su(phone,1);
                     baocaosms("\rMo cua cuon");
                 }
                

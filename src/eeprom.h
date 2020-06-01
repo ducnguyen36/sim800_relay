@@ -3,15 +3,21 @@
 #define		SECTOR1    		    0x0000
 #define     MOVC_START_ADDRESS  0xF000
 
-#define        PIN_EEPROM          SECTOR1 
+#define        PIN_EEPROM                   SECTOR1 
+#define        INDEX_HISTORY_EEPROM         PIN_EEPROM+4 
+#define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1 
 
 
-#define     SECTOR1_LENGTH      PIN_EEPROM+4
+#define     SECTOR1_LENGTH      HISTORY_EEPROM+400
 
-#define pinEEprom                      PIN_EEPROM+MOVC_START_ADDRESS
+#define pinEEprom                           PIN_EEPROM+MOVC_START_ADDRESS
+#define index_historyEEprom                 INDEX_HISTORY_EEPROM+MOVC_START_ADDRESS
+#define historyEEprom                       HISTORY_EEPROM+MOVC_START_ADDRESS
 
 
-__code __at        pinEEprom           u8 eep_pin[4];
+__code __at        pinEEprom                    u8 eep_pin[4];
+__code __at        index_historyEEprom          u8 eep_index_history;
+__code __at        historyEEprom                u8 eep_history[400];
 
 
 extern u8  __xdata eeprom_buf[SECTOR1_LENGTH];

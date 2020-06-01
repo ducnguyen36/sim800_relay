@@ -52,7 +52,7 @@ void IAP_xoasector(u16 sector){
 
 void IAP_docxoasector1(){
     //4 mt 4 rs 2 charge 48 lon 48 lof 1 ll 48 mp3 48 song 1ml 1ismp3
-    u8 __data i=SECTOR1_LENGTH;
+    u16 __data i=SECTOR1_LENGTH;
     WATCHDOG;
     while(i) eeprom_buf[--i] = 0xff;
     
@@ -62,7 +62,7 @@ void IAP_docxoasector1(){
 }
 
 void IAP_ghisector1(){
-    u8 __data i=0;
+    u16 __data i=0;
     while(i<SECTOR1_LENGTH){
         IAP_CONTR = ENABLE_IAP;
         IAP_CMD = CMD_PROGRAM;

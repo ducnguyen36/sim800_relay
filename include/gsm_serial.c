@@ -162,6 +162,19 @@ void baocaodanhba(){
     }
 }
 
+void baocaolichsu(){
+    u8 i,j;
+
+    i=((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
+    j = (i+9)%100;
+    while(i!=j){
+        
+        i=(i+1)%100;
+    }
+    
+    
+}
+
 void baocaosms(u8  *noidung){
                 
     gsm_sendandcheck("AT\r", 15, 1,ver);

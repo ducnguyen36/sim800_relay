@@ -7,11 +7,29 @@ u8 __code ver[] = " CUACUON 0.1.9";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
-#include "xu_ly_tin_nhan.c"
 
-void luu_lich_su(u8 *phone,u8 type){
+void luu_lich_su(u8 *phone,u8 cmd){
+	u8 temp=0,i=0;
 	send_gsm_cmd("AT+CPBF=\"");
+	phone[10] = 0;
+	send_gsm_cmd(phone);
+	lenh_sms[159] = 9;
+	sms_index = 0;
+	gsm_sendandcheck(phone_master?"m\"\r":"p\"\r",15,2," SAVING HISTORY ");
+	while(lenh_sms[i]<58)temp = temp*10 + lenh_sms[i++];
+	IAP_docxoasector1();
+	i = eeprom_buf[INDEX_HISTORY_EEPROM]%100;
+	eeprom_buf[i*4+5] = temp;
+	temp = (cmd<<2) & ((year-20)<3?year-20:3);
+	eeprom_buf[i*4+6] = (temp<<4) & month;
+	eeprom_buf[i*4+7] = (day<<3) & hour>>2;
+	eeprom_buf[i*4+8] = ((hour&3)<<6) & minute;
+	if(eeprom_buf[INDEX_HISTORY_EEPROM]==99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
+	else eeprom_buf[INDEX_HISTORY_EEPROM]++;
+	IAP_ghisector1();
 }
+
+#include "xu_ly_tin_nhan.c"
 
 void main() {
 	
@@ -42,8 +60,9 @@ void main() {
 	nosim=0;
 
 	/*validate eeprom*/
-	u8 __xdata i;
+	// u8 __xdata i;
 	IAP_docxoasector1();
+	if(eeprom_buf[INDEX_HISTORY_EEPROM]>99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
 	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
 	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
@@ -150,6 +169,9 @@ void main() {
 					if(!phone_so_sanh_that_bai){
 						Relay1 = 1;
 						delay_ms(100);
+						Relay1 = 0;
+						phone[10] = 0;
+						luu_lich_su(phone,0);
 						baocaosms("\rMo cua len");
 					} 
 				}
