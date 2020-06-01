@@ -106,11 +106,16 @@ void main() {
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
 			kiemtrataikhoan();
-			LCD_guilenh(0x84);
+			LCD_guilenh(0x80);
 			LCD_guichuoi(lenh_sms);
 			while(!phim_cong_nhan)WATCHDOG;
+			phim_cong_nhan = 0;
 			kiemtrasodienthoai();
+			LCD_guilenh(0x84);
+			phone[10] = 0;
+			LCD_guichuoi(phone);
 			while(!phim_cong_nhan)WATCHDOG;
+			phim_cong_nhan=0;
 		}
 		if(lcd_update_chop){
 			lcd_update_chop = 0;	

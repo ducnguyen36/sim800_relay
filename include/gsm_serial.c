@@ -10,8 +10,8 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
             LCD_guilenh(0x80);
             LCD_guichuoi(display);
             LCD_guigio(0xc0,"  TMA  ",hour,minute,second,flip_pulse);
-            
-            if(!connect){
+            if(!connect || error){
+                error = 0;
                 if(!retry--) break;
                 connect_time_out = connect = delay;
                 if(*(cmd+2) == '+' && *(cmd+7)!='?' && *(cmd+8)!='?') send_gsm_cmd("A/\r"); 
@@ -37,20 +37,20 @@ __bit send_sms(){
 
 __bit kiemtrasodienthoai(){
     // lenh_sms[0] = 0;
-    // have_cusd = 0;
-    // gsm_serial_cmd = CUSD;
+    have_cusd = 0;
+    gsm_serial_cmd = SDT;
     switch(nha_mang){
         case VIETTEL:
-            gsm_sendandcheck("AT+CUSD=1,\"*888#\",\r",3,30,"  KIEM TRA TK   ");
+            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
             break;
         case VINAPHONE:
-            gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA TK   ");
+            gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA SDT   ");
             break;
         case MOBIFONE:
-            gsm_sendandcheck("AT+CUSD=1,\"*0#\",\r",3,30,"  KIEM TRA TK   ");
+            gsm_sendandcheck("AT+CUSD=1,\"*0#\",\r",3,30,"  KIEM TRA SDT   ");
             break;
         case VIETNAM:
-            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA TK   ");
+            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
             break;
     }
     // gsm_serial_cmd = NORMAL;
@@ -299,9 +299,9 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
 
                 if(SBUF=='>'){
                     send_gsm_cmd("\032");
-                }else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
-                    connect = 0;
-                else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
+                // }else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
+                //     error = 1;
+                }else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='I' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='R')){
                                         
                     send_gsm_cmd("ATH\r");
@@ -460,6 +460,29 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                                     gsm_receive_buf[(gsm_receive_pointer+11)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='K' &&
                                     gsm_receive_buf[(gsm_receive_pointer+9)%13] =='T'))
                                     {have_cusd = 1;}
+                break;
+            case SDT:
+                if(have_cusd){
+                        if((((nha_mang == VINAPHONE || nha_mang == VIETNAM) && SBUF !='\n') || (nha_mang == MOBIFONE && SBUF !='"') || (nha_mang == VIETTEL && SBUF !='.'))  && sms_index<10) 
+                            if(sms_index<9) phone[1+sms_index++] = SBUF;
+                            else sms_index++;
+                        else{
+                            have_quote = have_cusd = 0;                            
+                            if(sms_index<10){
+                                gui_lenh_thanh_cong = 1;
+                                phone[sms_index+1] = 0;
+                            }
+                            else connect =0;
+                            sms_index = 0;
+                        }
+                    
+                }else if((nha_mang == VINAPHONE && gsm_receive_buf[gsm_receive_pointer]==':' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==')') ||
+                         (nha_mang == VIETNAM   && gsm_receive_buf[gsm_receive_pointer]=='0' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==' ') ||
+                         ((nha_mang == MOBIFONE || nha_mang == VIETTEL)  && gsm_receive_buf[gsm_receive_pointer]=='4' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='8'))
+                                    have_cusd = 1;
+                else if((SBUF=='5' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='1' && gsm_receive_buf[(gsm_receive_pointer+11)%13] ==' ' && gsm_receive_buf[(gsm_receive_pointer+10)%13] ==',') ||
+                        (SBUF=='R'  && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='R' && gsm_receive_buf[(gsm_receive_pointer+11)%13] =='E'))
+                                    error = 1;
                 break;
             case CPBR:
                 if(SBUF == '"'){

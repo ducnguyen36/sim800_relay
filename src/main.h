@@ -86,6 +86,7 @@ u8 __xdata mode_wait;
 __bit   gui_lenh_thanh_cong;
 __bit   have_not;
 __bit   nosim;
+__bit   error;
 u8 __xdata   nha_mang;
 
 u8 __xdata   connect;
