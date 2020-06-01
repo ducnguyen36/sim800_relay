@@ -202,12 +202,15 @@ void gui_huong_dan(){
 
 void gsm_thietlapsim800(){
     if(gsm_sendandcheck("AT\r", 15, 1,ver)){
+
+        
         clear_sms_buffer(0);
         sms_index = 0;
         gsm_serial_cmd = CSPN;
         if(gsm_sendandcheck("AT+CSPN?\r",15,1," TEN MANG ")){
             nha_mang = lenh_sms[4];
         }
+        
     }
 }
 
@@ -252,6 +255,15 @@ __bit gsm_thietlapnhantin(){
     if(gsm_sendandcheck("AT+CMGF=1\r", 15, 1,"  SENDING CMGF  ")){
         if(gsm_sendandcheck("AT+CNMI=1,1,0,0,1\r", 15, 1,"  SENDING CNMI  ")){
             if(gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r", 15, 1,"  THIET LAP TN  ")){
+                gsm_serial_cmd = CSQ;
+                clear_sms_buffer(0);
+                sms_index  = 0;
+                if(gsm_sendandcheck("AT+CSQ\r",15,1," SONG ")){
+                    u8 i = 0;
+                    signal = 0;
+                    while(lenh_sms[i]!=',')signal = lenh_sms[i++]-48 + signal*10; 
+                    
+                }
                 return 1;
             }
         }
@@ -275,6 +287,11 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
         }
 
         switch(gsm_serial_cmd){
+            case CSQ:
+                lenh_sms[sms_index++] = SBUF;
+                if(SBUF==' ' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':')sms_index = 0;
+                if(SBUF==',')sms_index = gsm_serial_cmd = NORMAL;
+                break;
             case COPS:
                 if(SBUF=='T' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='S' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='D')
                     gui_lenh_thanh_cong = 1;

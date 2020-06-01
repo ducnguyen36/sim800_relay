@@ -88,6 +88,7 @@ __bit   have_not;
 __bit   nosim;
 __bit   error;
 u8 __xdata   nha_mang;
+u8 __xdata   signal;
 
 u8 __xdata   connect;
 u8 __xdata   connect_time_out;

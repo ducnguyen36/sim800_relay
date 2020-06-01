@@ -124,7 +124,10 @@ void main() {
 			else if(mode==2) LCD_guichuoi("PHU:");
 			else if(mode==3) LCD_guichuoi("TAM:");
 			else LCD_guichuoi(Relay1? "ON :":"OFF:");
-			LCD_guilenh(0x8f);
+			LCD_guilenh(0x8e);
+			LCD_guidulieu(signal/10+'0');
+			LCD_guidulieu(signal%10+'0');
+			LCD_guilenh(0xcf);
 			LCD_guidulieu(nha_mang);
 			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			LCD_guingay(0xc0,year,month,day);
