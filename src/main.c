@@ -11,10 +11,11 @@ u8 __code ver[] = " CUACUON 0.1.9";
 void luu_lich_su(u8 *phone,u8 cmd){
 	u8 temp=0,i=0;
 	send_gsm_cmd("AT+CPBF=\"");
+	send_gsm_byte(phone_master?'m':'u');
 	send_gsm_cmd(phone);
 	lenh_sms[159] = 9;
 	sms_index = 0;
-	gsm_sendandcheck(phone_master?"m\"\r":"p\"\r",15,2," SAVING HISTORY ");
+	gsm_sendandcheck("\"\r",15,2," SAVING HISTORY ");
 	while(lenh_sms[i]<58)temp = temp*10 + lenh_sms[i++];
 	IAP_docxoasector1();
 	i = eeprom_buf[INDEX_HISTORY_EEPROM]%100;

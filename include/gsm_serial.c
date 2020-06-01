@@ -90,8 +90,8 @@ __bit gsm_themdanhba(u8 *phone,u8 type){
         send_gsm_cmd("AT+CPBW=,\"");
         send_gsm_cmd(phone);
         send_gsm_cmd("\",129,\"");
-        send_gsm_cmd(phone);
         send_gsm_byte(type);
+        send_gsm_cmd(phone);
         gsm_sendandcheck("\"\r",15,1,"   SENDING CPBW   ");
         return 1;     
 }
@@ -474,7 +474,8 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     }
                     else if(sms_index==PHONE_LENGTH+3 && gsm_receive_buf[gsm_receive_pointer]!='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"'
                             && gsm_receive_buf[(gsm_receive_pointer+11)%13] ==',' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"') {/*SMS buoc 5: neu tat ca chu so dt deu trung chuyen qua tim lenh */
-                        if(gsm_SBUF=='m') phone_master = 1;
+                        if(SBUF=='m') phone_master = 1;
+                        // nha_mang = SBUF;
                         sms_index = 0;
                         
                     }//neu co mot chu so khong trung thi reset sms_index phone_header va chuyen ve tim CMGL hoac OK
