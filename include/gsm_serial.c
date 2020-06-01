@@ -5,7 +5,7 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
     total_try_time_out = retry*delay + 10;
     gui_lenh_thanh_cong = 0;
     send_gsm_cmd(cmd);
-    while(!gui_lenh_thanh_cong && total_try_time_out){ 
+    while(!gui_lenh_thanh_cong && total_try_time_out && !nosim){ 
             WATCHDOG;
             LCD_guilenh(0x80);
             LCD_guichuoi(display);
@@ -14,7 +14,7 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
             if(!connect){
                 if(!retry--) break;
                 connect_time_out = connect = delay;
-                if(*(cmd+3) || (*cmd =='\r')) send_gsm_cmd("A/\r"); 
+                if(*(cmd+2) == '+' && *(cmd+7)!='?' && *(cmd+8)!='?') send_gsm_cmd("A/\r"); 
                 else send_gsm_cmd(cmd);
             } 
     }
@@ -33,6 +33,29 @@ __bit send_sms(){
     gsm_serial_cmd = CMGS;
     return gsm_sendandcheck("\"\r",5,61,"   SENDING   ");
    
+}
+
+__bit kiemtrasodienthoai(){
+    // lenh_sms[0] = 0;
+    // have_cusd = 0;
+    // gsm_serial_cmd = CUSD;
+    switch(nha_mang){
+        case VIETTEL:
+            gsm_sendandcheck("AT+CUSD=1,\"*888#\",\r",3,30,"  KIEM TRA TK   ");
+            break;
+        case VINAPHONE:
+            gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA TK   ");
+            break;
+        case MOBIFONE:
+            gsm_sendandcheck("AT+CUSD=1,\"*0#\",\r",3,30,"  KIEM TRA TK   ");
+            break;
+        case VIETNAM:
+            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA TK   ");
+            break;
+    }
+    // gsm_serial_cmd = NORMAL;
+    // return lenh_sms[0];
+    return 1;
 }
 
 __bit kiemtrataikhoan(){
@@ -165,7 +188,10 @@ void baocaosms(u8  *noidung){
 
 }
 
-
+void clear_sms_buffer(u8 index_dau){
+    sms_index = 0;
+    while(index_dau<161)lenh_sms[index_dau++] = 0;
+}
 
 void gui_huong_dan(){
     lenh_sms[0]=0;
@@ -174,22 +200,58 @@ void gui_huong_dan(){
     gsm_sendandcheck("\032",50,1," GUI HUONG DAN  ");
 }
 
-
-void gsm_thietlapgoidien(){
-   
+void gsm_thietlapsim800(){
     if(gsm_sendandcheck("AT\r", 15, 1,ver)){
-		if(gsm_sendandcheck("AT+IPR=0\r", 15, 1,"  SENDING IPR   ")){
-		    gsm_sendandcheck("AT+CLIP=1\r", 15, 1,"  SENDING CLIP  ");		
-		}
-	}
+        clear_sms_buffer(0);
+        sms_index = 0;
+        gsm_serial_cmd = CSPN;
+        if(gsm_sendandcheck("AT+CSPN?\r",15,1," TEN MANG ")){
+            nha_mang = lenh_sms[4];
+        }
+    }
+}
+
+void gsm_thietlapngaygiothuc(){
+    if(gsm_sendandcheck("AT+CLTS=1\r",15,1," BAT LAY GIO ")){
+        if(gsm_sendandcheck("AT+COPS=2\r",15,1," NGAT MANG ")){
+            gsm_serial_cmd = COPS;
+            if(gsm_sendandcheck("AT+COPS=0\r",10,60," LAY MANG ")){
+                clear_sms_buffer(0);
+                sms_index = 0;
+                gsm_serial_cmd = CLK;
+                if(gsm_sendandcheck("AT+CCLK?\r",15,1," LAY GIO GPS ")){
+                    year   = (lenh_sms[3] -48)*10 + lenh_sms[4]  - 48;
+                    month  = (lenh_sms[6] -48)*10 + lenh_sms[7]  - 48;
+                    day    = (lenh_sms[9] -48)*10 + lenh_sms[10] - 48;
+                    hour   = (lenh_sms[12]-48)*10 + lenh_sms[13] - 48;
+                    minute = (lenh_sms[15]-48)*10 + lenh_sms[16] - 48;
+                    second = (lenh_sms[18]-48)*10 + lenh_sms[19] - 48;
+                }
+            }
+        }
+    }
+}
+
+__bit gsm_thietlapgoidien(){
+   
+    if(gsm_sendandcheck("AT+CLIP=1\r", 15, 1,"  SENDING CLIP  ")){
+        clear_sms_buffer(0);
+        sms_index = 0;
+        gsm_serial_cmd = CALR;
+        if(gsm_sendandcheck("AT+CCALR?\r",15,1," THIET LAP GOI ")){
+            return 1;
+        }
+    }
+    return 0;
+	
 }
 
 
 __bit gsm_thietlapnhantin(){
-    if(!gsm_sendandcheck("AT\r", 15, 1,ver)) return 0;
-    if(gsm_sendandcheck("AT+CMGF=1\r", 15, 2,"  SENDING CMGF  ")){
+    
+    if(gsm_sendandcheck("AT+CMGF=1\r", 15, 1,"  SENDING CMGF  ")){
         if(gsm_sendandcheck("AT+CNMI=1,1,0,0,1\r", 15, 1,"  SENDING CNMI  ")){
-            if(gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r", 15, 1,"  SENDING CMGDA  ")){
+            if(gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r", 15, 1,"  THIET LAP TN  ")){
                 return 1;
             }
         }
@@ -204,13 +266,42 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
 	 	connect = connect_time_out;
         gsm_receive_buf[gsm_receive_pointer] = SBUF;
         
-        
+        if((gsm_receive_buf[gsm_receive_pointer]=='N' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='I' &&
+        gsm_receive_buf[(gsm_receive_pointer+11)%13] ==' ' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='T' &&
+        gsm_receive_buf[(gsm_receive_pointer+9)%13] =='O' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='N')){
+                                
+            nosim = 1;
+
+        }
 
         switch(gsm_serial_cmd){
+            case COPS:
+                if(SBUF=='T' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='S' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='D')
+                    gui_lenh_thanh_cong = 1;
+                else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
+                    connect = 0;
+                break;
+            case CSPN:
+                lenh_sms[sms_index++] = SBUF;
+                if(SBUF=='"' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] ==' ')sms_index = 0;
+                if(SBUF==',' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"')sms_index = gsm_serial_cmd = 0;
+                break;
+            case CALR:
+                if(SBUF=='1')gui_lenh_thanh_cong = 1;
+                // else if(SBUF=='0') connect = 0;
+                break;
+            case CLK:
+                lenh_sms[sms_index++] = SBUF;
+                if(SBUF=='K' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='L' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='C')sms_index = 0;
+                if(SBUF=='\r' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"')sms_index = gsm_serial_cmd = 0;
+                break;
             case NORMAL:
+
                 if(SBUF=='>'){
                     send_gsm_cmd("\032");
-                }else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
+                }else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
+                    connect = 0;
+                else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='I' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='R')){
                                         
                     send_gsm_cmd("ATH\r");
@@ -248,7 +339,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     gsm_serial_cmd = PHONE;
 
                 }else if(gsm_receive_buf[gsm_receive_pointer]=='K' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O'){
-                    
+                    if(gsm_serial_cmd==CLK) sms_index = 0;
                     gui_lenh_thanh_cong = !have_not;
                     have_not = 0;
                     if(kiem_tra_danh_ba){
@@ -345,19 +436,30 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 break;
             case CUSD:
                 if(have_cusd){
-                        if(SBUF !=' '  && sms_index<160) lenh_sms[sms_index++] = SBUF;
+                        if((((nha_mang == VINAPHONE || nha_mang == MOBIFONE) && SBUF !=' ') || ((nha_mang==VIETTEL || nha_mang==VIETNAM) && SBUF!='d'))  && sms_index<160){
+                            if(SBUF!='.')lenh_sms[sms_index++] = SBUF;
+                        } 
                         else{
                             have_quote = have_cusd = 0;
                             lenh_sms[sms_index] = 0;
                             sms_index = 0;
-                            gsm_serial_cmd = NORMAL;
+                            // gsm_serial_cmd = NORMAL;
                             gui_lenh_thanh_cong = 1;
                         }
                     
-                }else if(gsm_receive_buf[gsm_receive_pointer]=='=' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='h' &&
+                }else if((nha_mang == VINAPHONE && gsm_receive_buf[gsm_receive_pointer]=='=' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='h' &&
                                     gsm_receive_buf[(gsm_receive_pointer+11)%13] =='n' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='i' &&
-                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] =='h' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='c')
-                                    have_cusd = 1;
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] =='h' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='c') ||
+                        (nha_mang == VIETTEL && gsm_receive_buf[gsm_receive_pointer]==' ' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+11)%13] =='G' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='K' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] =='T' && gsm_receive_buf[(gsm_receive_pointer+8)%13] ==' ') ||
+                        (nha_mang == MOBIFONE && gsm_receive_buf[gsm_receive_pointer]==':' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='C' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+11)%13] =='K' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='T' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] ==' ' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='.') ||
+                        (nha_mang == VIETNAM && gsm_receive_buf[gsm_receive_pointer]==' ' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+11)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='K' &&
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] =='T'))
+                                    {have_cusd = 1;}
                 break;
             case CPBR:
                 if(SBUF == '"'){

@@ -47,6 +47,9 @@ u8  __xdata eeprom_buf[SECTOR1_LENGTH];
 u8	__data  second;
 u8	__data  minute;
 u8	__data  hour;
+u8	__data  day;
+u8	__data  month;
+u8	__data  year;
 
 u16	__xdata	PCA_Timer0;
 u8  __xdata  ngay_reset_con_lai;
@@ -82,6 +85,8 @@ u8 __xdata mode_wait;
 //GSM MODULE
 __bit   gui_lenh_thanh_cong;
 __bit   have_not;
+__bit   nosim;
+u8 __xdata   nha_mang;
 
 u8 __xdata   connect;
 u8 __xdata   connect_time_out;

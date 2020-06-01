@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.1.6";
+u8 __code ver[] = " CUACUON 0.1.8";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -35,6 +35,7 @@ void main() {
 	relay4_delay_tat = 2;
 	phim_mode_doi = phim_back_doi = phim_cong_doi = 2;
 	mode = 0;
+	nosim=0;
 
 	/*validate eeprom*/
 	u8 __xdata i;
@@ -56,8 +57,12 @@ void main() {
   	// /*Khoi tao man hinh LCD*/
 	LCD_Init();
 
-	gsm_thietlapgoidien();
-	gsm_thietlapnhantin();
+	gsm_thietlapsim800();
+	if(!nosim){
+		gsm_thietlapngaygiothuc();
+		gsm_thietlapgoidien();
+		gsm_thietlapnhantin();
+	}
 
 	mode_wait = 60;
 
@@ -100,8 +105,12 @@ void main() {
 		}
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
-			i = 0;
-			while(i++<3) gsm_sendandcheck("AT+CPBW=,\"0829224041\",129,\"master\"\r", 15, 1,"  SENDING CPBW  ");	
+			kiemtrataikhoan();
+			LCD_guilenh(0x84);
+			LCD_guichuoi(lenh_sms);
+			while(!phim_cong_nhan)WATCHDOG;
+			kiemtrasodienthoai();
+			while(!phim_cong_nhan)WATCHDOG;
 		}
 		if(lcd_update_chop){
 			lcd_update_chop = 0;	
@@ -110,7 +119,10 @@ void main() {
 			else if(mode==2) LCD_guichuoi("PHU:");
 			else if(mode==3) LCD_guichuoi("TAM:");
 			else LCD_guichuoi(Relay1? "ON :":"OFF:");
-			LCD_guigio(0xc0,"  TMA  ",hour,minute,second,flip_pulse);
+			LCD_guilenh(0x8f);
+			LCD_guidulieu(nha_mang);
+			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
+			LCD_guingay(0xc0,year,month,day);
 		}
 		if(phone_update){
 			phone_update = 0;

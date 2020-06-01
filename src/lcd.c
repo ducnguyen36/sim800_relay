@@ -26,7 +26,7 @@ void LCD_chop(u8 hang,u8 *vanban){
 	}else LCD_xoa(hang);
 }
 void LCD_guidulieu(u8 dulieu){
-	
+	if(!dulieu)return;
 	LCD_rs=1;
 	LCD_D4=(dulieu>>4)&1;
 	LCD_D5=(dulieu>>5)&1;
@@ -48,7 +48,7 @@ void LCD_guidulieu(u8 dulieu){
 }
 
 void LCD_guilenh(u8 lenh){
-	
+	if(!lenh)return;
 	LCD_rs=0;
 	LCD_D4=(lenh>>4)&1;
 	LCD_D5=(lenh>>5)&1;
@@ -149,4 +149,15 @@ void LCD_guigio(u8 vitri, u8 *chuoi, u8 gio, u8 phut, u8 giay,__bit haicham){
 		LCD_guidulieu(' ');
 	}
 	
+}
+
+void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay){
+	LCD_guilenh(vitri);
+	LCD_guidulieu(ngay/10+'0');
+	LCD_guidulieu(ngay%10+'0');
+	LCD_guidulieu(thang/10+'0');
+	LCD_guidulieu(thang%10+'0');
+	LCD_guidulieu(nam/10+'0');
+	LCD_guidulieu(nam%10+'0');
+	LCD_guidulieu(' ');
 }
