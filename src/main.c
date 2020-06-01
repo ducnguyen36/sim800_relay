@@ -11,7 +11,6 @@ u8 __code ver[] = " CUACUON 0.1.9";
 void luu_lich_su(u8 *phone,u8 cmd){
 	u8 temp=0,i=0;
 	send_gsm_cmd("AT+CPBF=\"");
-	phone[10] = 0;
 	send_gsm_cmd(phone);
 	lenh_sms[159] = 9;
 	sms_index = 0;

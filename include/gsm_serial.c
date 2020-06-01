@@ -163,13 +163,73 @@ void baocaodanhba(){
 }
 
 void baocaolichsu(){
-    u8 i,j;
-
-    i=((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
-    j = (i+9)%100;
-    while(i!=j){
-        
-        i=(i+1)%100;
+    u8 index,m,n,temp,pbindex,total;
+    if(!eep_index_history && eep_history[4]>250){
+        lenh_sms[0] = 0;
+        if(!send_sms()) return;
+        send_gsm_cmd("CHUA CO LICH SU NAO");
+        gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+    }
+    index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
+    total = index?10:(eep_index_history/10+1);
+    for(m=0;index!=eep_index_history && m<10;m++){
+        temp = index;
+        for(n=0;index!=eep_index_history && n<10;n++){
+            sms_index = 11*n;
+            gsm_serial_cmd = PBR2;
+            send_gsm_cmd("AT+CPBR=");
+            pbindex = eep_history[index*4];
+            if(pbindex<10) send_gsm_byte(pbindex+'0');
+            else if(pbindex<100){
+                send_gsm_byte(pbindex/10+'0');
+                send_gsm_byte(pbindex%10+'0');
+            }else{
+                send_gsm_byte(pbindex/100+'0');
+                send_gsm_byte((pbindex/10)%10+'0');
+                send_gsm_byte(pbindex%10+'0');
+            } 
+            
+            gsm_sendandcheck("\r", 1, 31,"  SENDING CPBR  ");
+            lenh_sms[11*n+10] = 0;
+            index = (index+1)%100;
+        }
+        index = temp;
+        //send_sms()
+        lenh_sms[0] = 0;
+        if(!send_sms()) return;
+        for(n=0;index!=eep_index_history && n<10;n++){
+            send_gsm_cmd(lenh_sms+11*n);
+            switch(eep_history[index*4]>>6){
+                case 0:send_gsm_cmd(",l,");break;
+                case 1:send_gsm_cmd(",L,");break;
+                case 2:send_gsm_cmd(",X,");break;
+                case 3:send_gsm_cmd(",K,");break;
+            }
+            send_gsm_byte((eep_history[index*4+2]>>3)/10+'0');
+            send_gsm_byte((eep_history[index*4+2]>>3)%10+'0');
+            send_gsm_byte('/');
+            send_gsm_byte((eep_history[index*4+1] & 15)/10+'0');
+            send_gsm_byte((eep_history[index*4+1] & 15)%10+'0');
+            send_gsm_byte('/');
+            send_gsm_byte(((eep_history[index*4+1] & 48)>>4)/10+'0');
+            send_gsm_byte(((eep_history[index*4+1] & 48)>>4)%10+'0');
+            send_gsm_byte(',');
+            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) & (eep_history[index*4+3]>>6))/10+'0');
+            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) & (eep_history[index*4+3]>>6))%10+'0');
+            send_gsm_byte(':');
+            send_gsm_byte((eep_history[index*4+3] & 63)/10+'0');
+            send_gsm_byte((eep_history[index*4+3] & 63)%10+'0');
+            send_gsm_byte('/r');
+            
+            index = (index+1)%100;
+        }
+        send_gsm_cmd("Trang ");
+        if(m==9)send_gsm_cmd("10");
+        else send_gsm_byte(m+'1');
+        send_gsm_byte('/');
+        if(total==10) send_gsm_cmd("10");
+        else send_gsm_byte(total+'0');
+        gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
     }
     
     
@@ -286,6 +346,7 @@ __bit gsm_thietlapnhantin(){
 
 
 void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
+    u8 temp = sms_index;
 	if(gsm_RI){
         WATCHDOG;
 	 	connect = connect_time_out;
@@ -526,6 +587,15 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 }else if(SBUF>47){
                     if(!have_quote)danh_ba_cuoi = danh_ba_cuoi*10 + SBUF - '0'; 
                     lenh_sms[sms_index++] = SBUF;
+                }
+                break;
+            case PBR2:
+                
+                lenh_sms[sms_index++] = SBUF;
+                if(SBUF=='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==',')sms_index = temp;
+                else if(SBUF=='"'){
+                    lenh_sms[sms_index-1] = 0;
+                    gui_lenh_thanh_cong = 1;
                 }
                 break;
             default: break;

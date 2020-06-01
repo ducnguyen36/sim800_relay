@@ -34,6 +34,7 @@ extern u8 __xdata    gsm_serial_cmd;
 #define     COPS        12
 #define     SDT         13
 #define     CSQ         14
+#define     PBR2        15
 
 #define     VIETTEL     't'
 #define     MOBIFONE    'f'

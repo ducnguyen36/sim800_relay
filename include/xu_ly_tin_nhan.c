@@ -9,6 +9,10 @@ void xu_ly_tin_nhan(){
     if((lenh_sms[0]=='?'||lenh_sms[1]=='?') && !phone_so_sanh_that_bai)gui_huong_dan();
     else{ 
         switch(lenh_sms[0]){
+            case 'h':
+            case 'H':
+                baocaolichsu();
+                break;
             case 'S':
             case 's':
                 Relay2 = 1;
