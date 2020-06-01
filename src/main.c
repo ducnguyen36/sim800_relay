@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.1.8";
+u8 __code ver[] = " CUACUON 0.1.9";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -127,9 +127,9 @@ void main() {
 			LCD_guilenh(0x8e);
 			LCD_guidulieu(signal/10+'0');
 			LCD_guidulieu(signal%10+'0');
+			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			LCD_guilenh(0xcf);
 			LCD_guidulieu(nha_mang);
-			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			LCD_guingay(0xc0,year,month,day);
 		}
 		if(phone_update){
