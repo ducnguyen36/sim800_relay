@@ -9,6 +9,10 @@ u8 __code ver[] = " CUACUON 0.1.9";
 #include "gsm_serial.c"
 #include "xu_ly_tin_nhan.c"
 
+void luu_lich_su(u8 *phone,u8 type){
+	send_gsm_cmd("AT+CPBF=\"");
+}
+
 void main() {
 	
 	/*PORT IO INIT*/
