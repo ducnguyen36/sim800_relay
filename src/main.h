@@ -38,6 +38,7 @@ __bit have_cusd;
 __bit lenh_khong_hop_le;
 __bit have_quote;
 u8  __data  sms_index;
+u8  __data  sms_index_goc;
 
 
 //EEPROM

@@ -92,6 +92,7 @@ __bit gsm_themdanhba(u8 *phone,u8 type){
         send_gsm_cmd("\",129,\"");
         send_gsm_byte(type);
         send_gsm_cmd(phone);
+        send_gsm_byte(type);
         gsm_sendandcheck("\"\r",15,1,"   SENDING CPBW   ");
         return 1;     
 }
@@ -163,19 +164,22 @@ void baocaodanhba(){
 }
 
 void baocaolichsu(){
-    u8 index,m,n,temp,pbindex,total;
+    u8 index,m,n,temp,pbindex,total,last;
     if(!eep_index_history && eep_history[4]>250){
         lenh_sms[0] = 0;
         if(!send_sms()) return;
         send_gsm_cmd("CHUA CO LICH SU NAO");
         gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
     }
-    index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
-    total = index?10:(eep_index_history/10+1);
-    for(m=0;index!=eep_index_history && m<10;m++){
+    // index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
+    // total = index?10:(eep_index_history/10+1);
+    index = eep_index_history-1;
+    last = ((eep_history[eep_index_history*4]<255)?eep_index_history:0);
+    total = last?10:(eep_index_history/10+1);
+    for(m=0;index!=last && m<10;m++){
         temp = index;
-        for(n=0;index!=eep_index_history && n<10;n++){
-            sms_index = 11*n;
+        for(n=0;index!=last && n<10;n++){
+            sms_index = sms_index_goc = 1+11*n;
             gsm_serial_cmd = PBR2;
             send_gsm_cmd("AT+CPBR=");
             pbindex = eep_history[index*4];
@@ -190,16 +194,28 @@ void baocaolichsu(){
             } 
             
             gsm_sendandcheck("\r", 1, 31,"  SENDING CPBR  ");
-            lenh_sms[11*n+10] = 0;
-            index = (index+1)%100;
+            lenh_sms[11*n+11] = 0;
+            index = (index+99)%100;
         }
         index = temp;
         //send_sms()
         lenh_sms[0] = 0;
         if(!send_sms()) return;
-        for(n=0;index!=eep_index_history && n<10;n++){
-            send_gsm_cmd(lenh_sms+11*n);
-            switch(eep_history[index*4]>>6){
+        for(n=0;index!=last && n<10;n++){
+            pbindex = m*10 + n + 1;
+            if(pbindex<10) send_gsm_byte(pbindex+'0');
+            else if(pbindex<100){
+                send_gsm_byte(pbindex/10+'0');
+                send_gsm_byte(pbindex%10+'0');
+            }else{
+                send_gsm_byte(pbindex/100+'0');
+                send_gsm_byte((pbindex/10)%10+'0');
+                send_gsm_byte(pbindex%10+'0');
+            }
+            send_gsm_byte('.');
+            send_gsm_cmd(lenh_sms+11*n+1);
+            // signal = eep_history[index*4];
+            switch(eep_history[index*4+1]>>6){
                 case 0:send_gsm_cmd(",l,");break;
                 case 1:send_gsm_cmd(",L,");break;
                 case 2:send_gsm_cmd(",X,");break;
@@ -211,17 +227,18 @@ void baocaolichsu(){
             send_gsm_byte((eep_history[index*4+1] & 15)/10+'0');
             send_gsm_byte((eep_history[index*4+1] & 15)%10+'0');
             send_gsm_byte('/');
-            send_gsm_byte(((eep_history[index*4+1] & 48)>>4)/10+'0');
-            send_gsm_byte(((eep_history[index*4+1] & 48)>>4)%10+'0');
+            // signal = (eep_history[index*4+1] & 48) >>4 + 20;
+            send_gsm_byte((((eep_history[index*4+1] & 48)>>4) + 20)/10+'0');
+            send_gsm_byte((((eep_history[index*4+1] & 48)>>4) + 20)%10+'0');
             send_gsm_byte(',');
-            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) & (eep_history[index*4+3]>>6))/10+'0');
-            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) & (eep_history[index*4+3]>>6))%10+'0');
+            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) + (eep_history[index*4+3]>>6))/10+'0');
+            send_gsm_byte((((eep_history[index*4+2] & 7)<<2) + (eep_history[index*4+3]>>6))%10+'0');
             send_gsm_byte(':');
             send_gsm_byte((eep_history[index*4+3] & 63)/10+'0');
             send_gsm_byte((eep_history[index*4+3] & 63)%10+'0');
-            send_gsm_byte('/r');
+            send_gsm_byte('\r');
             
-            index = (index+1)%100;
+            index = (index+99)%100;
         }
         send_gsm_cmd("Trang ");
         if(m==9)send_gsm_cmd("10");
@@ -346,7 +363,6 @@ __bit gsm_thietlapnhantin(){
 
 
 void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
-    u8 temp = sms_index;
 	if(gsm_RI){
         WATCHDOG;
 	 	connect = connect_time_out;
@@ -397,7 +413,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                                         
                     send_gsm_cmd("ATH\r");
 
-                }else if((gsm_receive_buf[gsm_receive_pointer]==':' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='R' &&
+                }else if((gsm_receive_buf[gsm_receive_pointer]==':' && (gsm_receive_buf[(gsm_receive_pointer+12)%13] =='R' || gsm_receive_buf[(gsm_receive_pointer+12)%13] =='F') &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='B' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='P' &&
                 gsm_receive_buf[(gsm_receive_pointer+9)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='+')){
                     if(lenh_sms[159]>9){lenh_sms[159]=11; break;}
@@ -593,9 +609,11 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
             case PBR2:
                 
                 lenh_sms[sms_index++] = SBUF;
-                if(SBUF=='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==',')sms_index = temp;
+                if(SBUF=='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==',')sms_index = sms_index_goc;
                 else if(SBUF=='"'){
                     lenh_sms[sms_index-1] = 0;
+                    sms_index = 0;
+                    gsm_serial_cmd = NORMAL;
                     gui_lenh_thanh_cong = 1;
                 }
                 break;
