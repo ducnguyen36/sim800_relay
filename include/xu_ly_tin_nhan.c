@@ -95,7 +95,16 @@ void xu_ly_tin_nhan(){
                 }
                
                 break;
-
+            case 'u':
+            case 'U':
+                 if(lenh_sms[4] == 'B' || lenh_sms[4] == 'b' || lenh_sms[5] == 'n' || lenh_sms[5] == 'N'){
+                     Relay4 = 0;
+                     baocaosms("\rBat UPS");
+                 }else if(lenh_sms[4] == 'T' || lenh_sms[4] == 't' || lenh_sms[5] == 'f' || lenh_sms[5] == 'F'){
+                     Relay4 = 1;
+                     baocaosms("\rTat UPS");
+                 }
+                break;
             default:
                     baocaosms("\rLenh khong hop le");
                
