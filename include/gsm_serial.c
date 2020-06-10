@@ -27,7 +27,6 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
 
 
 __bit send_sms(){
-    if(!eep_baocao){gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  "); return 0;}
     if(lenh_sms[0] && !lenh_sms[3]){gsm_sendandcheck("\032",3,1,"TK<1000 K BAOCAO"); return 0;}
     phone[10] = 0;
     send_gsm_cmd("AT+CMGS=\"");
@@ -61,7 +60,6 @@ __bit kiemtrasodienthoai(){
 }
 
 __bit kiemtrataikhoan(){
-    if(!eep_baocao) return 0;
     lenh_sms[0] = 0;
     have_cusd = 0;
     gsm_serial_cmd = CUSD;
@@ -256,7 +254,7 @@ void baocaolichsu(){
 }
 
 void baocaosms(u8  *noidung){
-                
+    if(!eep_baocao){gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  "); return;}
     gsm_sendandcheck("AT\r", 15, 1,ver);
     if(*(noidung+1)!='*') kiemtrataikhoan();
      
