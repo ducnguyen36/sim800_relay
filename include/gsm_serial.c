@@ -10,6 +10,7 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
             LCD_guilenh(0x80);
             LCD_guichuoi(display);
             LCD_guigio(0xc0,"  TMA  ",hour,minute,second,flip_pulse);
+            if(skip_gsm_cmd){skip_gsm_cmd = 0;return 0;}
             if(!connect || error){
                 error = 0;
                 if(!retry--) break;
@@ -290,7 +291,7 @@ void gui_huong_dan(){
     gsm_sendandcheck("\032",50,1," GUI HUONG DAN  ");
 }
 
-void gsm_thietlapsim800(){
+__bit gsm_thietlapsim800(){
     if(gsm_sendandcheck("AT\r", 15, 1,ver)){
 
         
@@ -300,8 +301,9 @@ void gsm_thietlapsim800(){
         if(gsm_sendandcheck("AT+CSPN?\r",15,1," TEN MANG ")){
             nha_mang = lenh_sms[4];
         }
-        
+        return 1;
     }
+    return 0;
 }
 
 void gsm_thietlapngaygiothuc(){

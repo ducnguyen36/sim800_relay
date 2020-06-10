@@ -18,10 +18,11 @@ void xu_ly_tin_nhan(){
                 Relay2 = 1;
                 delay_ms(100);
                 Relay2 = 0;
-                baocaosms("\rDung cua cuon");
+                // baocaosms("\rDung cua cuon");
                 break;
             case 'K':
             case 'k':
+                if(!phone_master) break;
                 Relay2 = 1;
                 phone[10] = 0;
                 luu_lich_su(phone,3);
@@ -69,7 +70,7 @@ void xu_ly_tin_nhan(){
                     Relay3 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,2);
-                    baocaosms("\rXuong cua cuon");
+                    // baocaosms("\rXuong cua cuon");
                 }
                 
                 break;
@@ -91,7 +92,7 @@ void xu_ly_tin_nhan(){
                     Relay1 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,1);
-                    baocaosms("\rMo cua cuon");
+                    // baocaosms("\rMo cua cuon");
                 }
                
                 break;

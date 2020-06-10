@@ -84,6 +84,7 @@ u8 __xdata mode_wait;
 
 
 //GSM MODULE
+__bit   skip_gsm_cmd;
 __bit   gui_lenh_thanh_cong;
 __bit   have_not;
 __bit   nosim;

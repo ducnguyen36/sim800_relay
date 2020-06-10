@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.2.1";
+u8 __code ver[] = " CUACUON 0.2.2";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -63,7 +63,8 @@ void main() {
 	relay2_delay_tat = 2;
 	relay3_delay_tat = 2;
 	relay4_delay_tat = 2;
-	phim_mode_doi = phim_back_doi = phim_cong_doi = 2;
+	phim_mode_doi = phim_cong_doi = 2;
+	phim_back_doi = 6;
 	mode = 0;
 	nosim=0;
 
@@ -88,8 +89,8 @@ void main() {
   	// /*Khoi tao man hinh LCD*/
 	LCD_Init();
 
-	gsm_thietlapsim800();
-	if(!nosim){
+	// gsm_thietlapsim800();
+	if(!nosim && gsm_thietlapsim800()){
 		gsm_thietlapngaygiothuc();
 		gsm_thietlapgoidien();
 		gsm_thietlapnhantin();
@@ -115,13 +116,19 @@ void main() {
 			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1," DELETING SMS ");
 			sms_dang_xu_ly = 0;
 		}
+		if(!mode && !phim_mode_doi){
+			phim_mode_nhan = 0;
+			mode = 1;
+			mode_wait = 60;
+			LCD_xoa(TREN);
+		}
 		if(phim_mode_nhan){
 			phim_mode_nhan = 0;
 			mode = (mode+1)%4;
 			mode_wait = 60;
 			LCD_xoa(TREN);
 		}
-		if(phim_back_nhan){
+		if(!phim_back_doi){
 			// u8 thong_so[4];
 			phim_back_nhan = 0;
 			xoadanhba(0);
@@ -148,10 +155,11 @@ void main() {
 			while(!phim_cong_nhan)WATCHDOG;
 			phim_cong_nhan=0;
 		}
+
 		if(lcd_update_chop){
 			lcd_update_chop = 0;	
 			LCD_guilenh(0x80);
-			if(mode==1) LCD_guichuoi("CHI:");
+			if(mode==1) LCD_guichuoi("CHINH:");
 			else if(mode==2) LCD_guichuoi("PHU:");
 			else if(mode==3) LCD_guichuoi("TAM:");
 			else LCD_guichuoi(Relay1? "ON :":"OFF:");
@@ -159,8 +167,8 @@ void main() {
 			LCD_guidulieu(signal/10+'0');
 			LCD_guidulieu(signal%10+'0');
 			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-			LCD_guilenh(0xcf);
-			LCD_guidulieu(nha_mang);
+			// LCD_guilenh(0xcf);
+			// LCD_guidulieu(nha_mang);
 			LCD_guingay(0xc0,year,month,day);
 		}
 		if(phone_update){
@@ -185,7 +193,7 @@ void main() {
 				}
 			}
 			phone[10] = 0;	
-			LCD_guilenh(0x84); 
+			LCD_guilenh(0x80); 
 			LCD_guichuoi(phone);
 		}
 		WATCHDOG;

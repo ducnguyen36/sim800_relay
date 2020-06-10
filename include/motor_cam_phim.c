@@ -17,7 +17,10 @@ void xunggiay(){
 	// 	Relay1 = 0;
 	// 	relay1_delay_tat = 5;
 	// } 
-	
+	if(phim_mode_doi && phim_mode_giu)phim_mode_doi--;
+	if(phim_back_doi && phim_back_giu)phim_back_doi--;
+	if(phim_cong_doi && phim_cong_giu)phim_cong_doi--;
+	if(!phim_cong_doi)skip_gsm_cmd = 1;
 	if(connect) connect--;
 	if(total_try_time_out) total_try_time_out--;
 	if(mode && mode_wait) mode_wait--;
@@ -60,7 +63,7 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		phim_mode_nhan = phim_mode_nhan || (!phim_mode_giu && phim_mode_xuong);
 		phim_mode_cu = phim_mode_vao;
 		
-		if(phim_back_xuong && key_in2) phim_back_doi = 2;
+		if(phim_back_xuong && key_in2) phim_back_doi = 6;
 		phim_back_giu = phim_back_xuong && !key_in2;
 		phim_back_xuong = !phim_back_cu && !key_in2;
 		phim_back_nhan = phim_back_nhan || (!phim_back_giu && phim_back_xuong);
