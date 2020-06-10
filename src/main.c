@@ -82,10 +82,8 @@ void main() {
 	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 	
 	IAP_ghisector1();	
-	
-	Relay2 = eep_baocao;
-	Relay4 = eep_ups?1:0;
 
+	Relay2 = Relay4 = eep_khoa;
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	gsm_init();
 	

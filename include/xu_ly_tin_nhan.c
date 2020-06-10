@@ -22,6 +22,7 @@ void xu_ly_tin_nhan(){
                     eeprom_buf[KHOA_EEPROM] = 0;
                     IAP_ghisector1();
                 }
+                Relay4 = 0;
                 Relay2 = 1;
                 delay_ms(100);
                 Relay2 = 0;
@@ -33,6 +34,7 @@ void xu_ly_tin_nhan(){
                 IAP_docxoasector1();
                 eeprom_buf[KHOA_EEPROM] = 1;
                 IAP_ghisector1();
+                Relay4 = 1;
                 Relay2 = 1;
                 phone[10] = 0;
                 luu_lich_su(phone,3);
@@ -107,23 +109,23 @@ void xu_ly_tin_nhan(){
                 }
                
                 break;
-            case 'u':
-            case 'U':
-                if(!phone_master) break;
-                if(lenh_sms[4] == 'B' || lenh_sms[4] == 'b' || lenh_sms[5] == 'n' || lenh_sms[5] == 'N'){
-                   IAP_docxoasector1();
-                   eeprom_buf[UPS_EEPROM] = 10;
-                   IAP_ghisector1();
-                   Relay4 = 1;
-                   baocaosms("\rBat UPS");
-                }else if(lenh_sms[4] == 'T' || lenh_sms[4] == 't' || lenh_sms[5] == 'f' || lenh_sms[5] == 'F'){
-                   IAP_docxoasector1();
-                   eeprom_buf[UPS_EEPROM] = 0;
-                   IAP_ghisector1();
-                   Relay4 = 0;
-                   baocaosms("\rTat UPS");
-                }
-                break;
+            // case 'u':
+            // case 'U':
+            //     if(!phone_master) break;
+            //     if(lenh_sms[4] == 'B' || lenh_sms[4] == 'b' || lenh_sms[5] == 'n' || lenh_sms[5] == 'N'){
+            //        IAP_docxoasector1();
+            //        eeprom_buf[UPS_EEPROM] = 10;
+            //        IAP_ghisector1();
+            //        Relay4 = 1;
+            //        baocaosms("\rBat UPS");
+            //     }else if(lenh_sms[4] == 'T' || lenh_sms[4] == 't' || lenh_sms[5] == 'f' || lenh_sms[5] == 'F'){
+            //        IAP_docxoasector1();
+            //        eeprom_buf[UPS_EEPROM] = 0;
+            //        IAP_ghisector1();
+            //        Relay4 = 0;
+            //        baocaosms("\rTat UPS");
+            //     }
+            //     break;
             case 'b':
             case 'B':
                 if(!phone_master) break;
