@@ -77,9 +77,15 @@ void main() {
 	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
 	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
 	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
+	if(eeprom_buf[KHOA_EEPROM]>1) eeprom_buf[KHOA_EEPROM] = 0;
+	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
 	
 	IAP_ghisector1();	
 	
+	Relay2 = eep_khoa;
+	Relay4 = eep_ups;
+
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	gsm_init();
 	
@@ -105,6 +111,12 @@ void main() {
 	phone[10] = 0;
 
 	while(1){
+		if(phut_out && eep_ups){
+			if(eep_ups==1) Relay4 = 0;
+			IAP_docxoasector1();
+			eeprom_buf[UPS_EEPROM]--;
+			IAP_ghisector1();
+		}
 		if(!mode_wait && mode) mode = 0;
 		if(co_tin_nhan_moi){
 			co_tin_nhan_moi = 0;

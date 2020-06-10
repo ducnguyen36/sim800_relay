@@ -30,6 +30,7 @@ void xunggiay(){
 		gsm_reset=1;
 	}
 	if(++second>59){
+		phut_out = 1;
 		second=0;
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
 		if(++minute>59){

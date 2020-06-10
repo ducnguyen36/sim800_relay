@@ -11,18 +11,28 @@ void xu_ly_tin_nhan(){
         switch(lenh_sms[0]){
             case 'h':
             case 'H':
+                if(!phone_master) break;
                 baocaolichsu();
                 break;
             case 'S':
             case 's':
+                if(eep_khoa && !phone_master) break;
+                if(eep_khoa){
+                    IAP_docxoasector1();
+                    eeprom_buf[KHOA_EEPROM] = 0;
+                    IAP_ghisector1();
+                }
                 Relay2 = 1;
                 delay_ms(100);
                 Relay2 = 0;
-                // baocaosms("\rDung cua cuon");
+                baocaosms("\rDung cua cuon");
                 break;
             case 'K':
             case 'k':
                 if(!phone_master) break;
+                IAP_docxoasector1();
+                eeprom_buf[KHOA_EEPROM] = 1;
+                IAP_ghisector1();
                 Relay2 = 1;
                 phone[10] = 0;
                 luu_lich_su(phone,3);
@@ -38,11 +48,12 @@ void xu_ly_tin_nhan(){
                 if(!phone_master) break;
                 if(lenh_sms[4]>='0' && lenh_sms[4]<='9' && lenh_sms[5]>='0' && lenh_sms[5]<='9'
                 && lenh_sms[6]>='0' && lenh_sms[6]<='9' && lenh_sms[7]>='0' && lenh_sms[7]<='9'){
-                    IAP_xoasector(SECTOR1);
-                    IAP_ghibyte(PIN_EEPROM  ,lenh_sms[4]);
-                    IAP_ghibyte(PIN_EEPROM+1,lenh_sms[5]);
-                    IAP_ghibyte(PIN_EEPROM+2,lenh_sms[6]);
-                    IAP_ghibyte(PIN_EEPROM+3,lenh_sms[7]);
+                    IAP_docxoasector1();
+                    eeprom_buf[PIN_EEPROM  ] = lenh_sms[4];
+                    eeprom_buf[PIN_EEPROM+1] = lenh_sms[5];
+                    eeprom_buf[PIN_EEPROM+2] = lenh_sms[6];
+                    eeprom_buf[PIN_EEPROM+3] = lenh_sms[7];
+                    IAP_ghisector1();
                     baocaosms("\rDoi ma pin thanh cong");
                 }else baocaosms("\rLenh khong hop le");
                 break;
@@ -70,7 +81,7 @@ void xu_ly_tin_nhan(){
                     Relay3 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,2);
-                    // baocaosms("\rXuong cua cuon");
+                    baocaosms("\rXuong cua cuon");
                 }
                 
                 break;
@@ -92,18 +103,40 @@ void xu_ly_tin_nhan(){
                     Relay1 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,1);
-                    // baocaosms("\rMo cua cuon");
+                    baocaosms("\rMo cua cuon");
                 }
                
                 break;
             case 'u':
             case 'U':
-                 if(lenh_sms[4] == 'B' || lenh_sms[4] == 'b' || lenh_sms[5] == 'n' || lenh_sms[5] == 'N'){
-                     Relay4 = 0;
-                     baocaosms("\rBat UPS");
-                 }else if(lenh_sms[4] == 'T' || lenh_sms[4] == 't' || lenh_sms[5] == 'f' || lenh_sms[5] == 'F'){
-                     Relay4 = 1;
-                     baocaosms("\rTat UPS");
+                if(!phone_master) break;
+                if(lenh_sms[4] == 'B' || lenh_sms[4] == 'b' || lenh_sms[5] == 'n' || lenh_sms[5] == 'N'){
+                   IAP_docxoasector1();
+                   eeprom_buf[UPS_EEPROM] = 10;
+                   IAP_ghisector1();
+                   Relay4 = 1;
+                   baocaosms("\rBat UPS");
+                }else if(lenh_sms[4] == 'T' || lenh_sms[4] == 't' || lenh_sms[5] == 'f' || lenh_sms[5] == 'F'){
+                   IAP_docxoasector1();
+                   eeprom_buf[UPS_EEPROM] = 0;
+                   IAP_ghisector1();
+                   Relay4 = 0;
+                   baocaosms("\rTat UPS");
+                }
+                break;
+            case 'b':
+            case 'B':
+                if(!phone_master) break;
+                if(lenh_sms[3] == 'B' || lenh_sms[3] == 'b' || lenh_sms[4] == 'n' || lenh_sms[4] == 'N'){
+                    IAP_docxoasector1();
+                    eeprom_buf[BAOCAO_EEPROM] = 1;
+                    IAP_ghisector1();
+                    baocaosms("\rBat bao cao");
+                 }else if(lenh_sms[3] == 'T' || lenh_sms[3] == 't' || lenh_sms[4] == 'f' || lenh_sms[4] == 'F'){
+                    baocaosms("\rTat bao cao");
+                    IAP_docxoasector1();
+                    eeprom_buf[BAOCAO_EEPROM] = 0;
+                    IAP_ghisector1();
                  }
                 break;
             default:

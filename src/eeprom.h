@@ -5,19 +5,28 @@
 
 #define        PIN_EEPROM                   SECTOR1 
 #define        INDEX_HISTORY_EEPROM         PIN_EEPROM+4 
-#define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1 
+#define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1
+#define        BAOCAO_EEPROM                HISTORY_EEPROM+400 
+#define        KHOA_EEPROM                  BAOCAO_EEPROM+1 
+#define        UPS_EEPROM                   KHOA_EEPROM+1 
 
 
-#define     SECTOR1_LENGTH      HISTORY_EEPROM+400
+#define     SECTOR1_LENGTH      UPS_EEPROM+1
 
 #define pinEEprom                           PIN_EEPROM+MOVC_START_ADDRESS
 #define index_historyEEprom                 INDEX_HISTORY_EEPROM+MOVC_START_ADDRESS
 #define historyEEprom                       HISTORY_EEPROM+MOVC_START_ADDRESS
+#define baocaoEEprom                        BAOCAO_EEPROM+MOVC_START_ADDRESS
+#define khoaEEprom                          KHOA_EEPROM+MOVC_START_ADDRESS
+#define upsEEprom                           UPS_EEPROM+MOVC_START_ADDRESS
 
 
 __code __at        pinEEprom                    u8 eep_pin[4];
 __code __at        index_historyEEprom          u8 eep_index_history;
 __code __at        historyEEprom                u8 eep_history[400];
+__code __at        baocaoEEprom                 u8 eep_baocao;
+__code __at        khoaEEprom                   u8 eep_khoa;
+__code __at        upsEEprom                    u8 eep_ups;
 
 
 extern u8  __xdata eeprom_buf[SECTOR1_LENGTH];

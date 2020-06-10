@@ -51,6 +51,7 @@ u8	__data  hour;
 u8	__data  day;
 u8	__data  month;
 u8	__data  year;
+__bit  phut_out;
 
 u16	__xdata	PCA_Timer0;
 u8  __xdata  ngay_reset_con_lai;
