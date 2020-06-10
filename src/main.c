@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.2.2";
+u8 __code ver[] = " CUACUON 0.2.3";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -83,7 +83,7 @@ void main() {
 	
 	IAP_ghisector1();	
 	
-	Relay2 = eep_baocao;
+	Relay2 = eep_khoa;
 	Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
@@ -112,6 +112,7 @@ void main() {
 
 	while(1){
 		if(phut_out && eep_ups){
+			phut_out=0;
 			if(eep_ups==1) Relay4 = 0;
 			IAP_docxoasector1();
 			eeprom_buf[UPS_EEPROM]--;
