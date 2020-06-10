@@ -134,7 +134,7 @@ void main() {
 			mode_wait = 60;
 			LCD_xoa(TREN);
 		}
-		if(phim_mode_nhan){
+		if(mode && phim_mode_nhan){
 			phim_mode_nhan = 0;
 			mode = (mode+1)%4;
 			mode_wait = 60;
@@ -172,8 +172,8 @@ void main() {
 			lcd_update_chop = 0;	
 			LCD_guilenh(0x80);
 			if(mode==1) LCD_guichuoi("CHINH:");
-			else if(mode==2) LCD_guichuoi("PHU:");
-			else if(mode==3) LCD_guichuoi("TAM:");
+			else if(mode==2) LCD_guichuoi("PHU  :");
+			else if(mode==3) LCD_guichuoi("TAM  :");
 			else LCD_guichuoi(Relay1? "ON :":"OFF:");
 			LCD_guilenh(0x8e);
 			LCD_guidulieu(signal/10+'0');
@@ -205,7 +205,7 @@ void main() {
 				}
 			}
 			phone[10] = 0;	
-			LCD_guilenh(0x80); 
+			LCD_guilenh(0x84); 
 			LCD_guichuoi(phone);
 		}
 		WATCHDOG;

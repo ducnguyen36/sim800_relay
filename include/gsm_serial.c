@@ -61,6 +61,7 @@ __bit kiemtrasodienthoai(){
 }
 
 __bit kiemtrataikhoan(){
+    if(!eep_baocao) return 0;
     lenh_sms[0] = 0;
     have_cusd = 0;
     gsm_serial_cmd = CUSD;
