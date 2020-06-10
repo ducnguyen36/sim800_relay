@@ -72,19 +72,19 @@ void main() {
 	// u8 __xdata i;
 	IAP_docxoasector1();
 	if(eeprom_buf[INDEX_HISTORY_EEPROM]>99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
+	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
+	if(eeprom_buf[KHOA_EEPROM]>1) eeprom_buf[KHOA_EEPROM] = 0;
+	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
 	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
 	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
 	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
 	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
 	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
-	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
-	if(eeprom_buf[KHOA_EEPROM]>1) eeprom_buf[KHOA_EEPROM] = 0;
-	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
 	
 	IAP_ghisector1();	
 	
-	Relay2 = eep_khoa;
-	Relay4 = eep_ups;
+	Relay2 = eep_baocao;
+	Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	gsm_init();
