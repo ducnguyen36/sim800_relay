@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.2.4";
+u8 __code ver[] = " CUACUON 0.2.5";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -25,13 +25,13 @@ void luu_lich_su(u8 *phone,u8 cmd){
 	IAP_docxoasector1();
 	i = eeprom_buf[INDEX_HISTORY_EEPROM];
 	// signal = i;
-	eeprom_buf[i*4+5] = temp;
+	eeprom_buf[i*4+8] = temp;
 	// signal = cmd;
 	temp = (cmd<<2) + ((year-20)<3?year-20:3);
 	// signal = temp;
-	eeprom_buf[i*4+6] = (temp<<4) + month;
-	eeprom_buf[i*4+7] = (day<<3) + (hour>>2);
-	eeprom_buf[i*4+8] = ((hour&3)<<6) + minute;
+	eeprom_buf[i*4+ 9] = (temp<<4) + month;
+	eeprom_buf[i*4+10] = (day<<3) + (hour>>2);
+	eeprom_buf[i*4+11] = ((hour&3)<<6) + minute;
 	if(eeprom_buf[INDEX_HISTORY_EEPROM]==99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	else eeprom_buf[INDEX_HISTORY_EEPROM]++;
 	IAP_ghisector1();

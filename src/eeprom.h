@@ -11,7 +11,7 @@
 #define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1
 
 
-#define     SECTOR1_LENGTH      UPS_EEPROM+400
+#define     SECTOR1_LENGTH      HISTORY_EEPROM+400
 
 #define pinEEprom                           PIN_EEPROM+MOVC_START_ADDRESS
 #define baocaoEEprom                        BAOCAO_EEPROM+MOVC_START_ADDRESS

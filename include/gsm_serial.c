@@ -171,12 +171,29 @@ void baocaolichsu(){
         if(!send_sms()) return;
         send_gsm_cmd("CHUA CO LICH SU NAO");
         gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+        return;
     }
     // index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
     // total = index?10:(eep_index_history/10+1);
     index = eep_index_history-1;
     last = ((eep_history[eep_index_history*4]<255)?eep_index_history:0);
+    last = (last + 99) % 100;
     total = last?10:(eep_index_history/10+1);
+    // lenh_sms[0] = 0;
+    // if(!send_sms()) return;
+    // send_gsm_byte(index/10+'0');
+    // send_gsm_byte(index%10+'0');
+    // send_gsm_byte(' ');
+    // send_gsm_byte(last/10+'0');
+    // send_gsm_byte(last%10+'0');
+    // send_gsm_byte(' ');
+    // send_gsm_byte(eep_history[eep_index_history*4]/10+'0');
+    // send_gsm_byte(eep_history[eep_index_history*4]%10+'0');
+    // send_gsm_byte(' ');
+    // send_gsm_byte(total/10+'0');
+    // send_gsm_byte(total%10+'0');
+    // gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+    // return;
     for(m=0;index!=last && m<10;m++){
         temp = index;
         for(n=0;index!=last && n<10;n++){
