@@ -173,10 +173,9 @@ void baocaolichsu(){
         gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
         return;
     }
-    // index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
-    // total = index?10:(eep_index_history/10+1);
     index = eep_index_history-1;
     last = ((eep_history[eep_index_history*4]<255)?eep_index_history:0);
+    last = (last + 99) % 100;
     total = last?10:(eep_index_history/10+1);
     if(!send_sms()) return;
     send_gsm_byte(index);
@@ -210,7 +209,6 @@ void baocaolichsu(){
             index = (index+99)%100;
         }
         index = temp;
-        //send_sms()
         lenh_sms[0] = 0;
         if(!send_sms()) return;
         for(n=0;index!=last && n<10;n++){
@@ -226,7 +224,6 @@ void baocaolichsu(){
             }
             send_gsm_byte('.');
             send_gsm_cmd(lenh_sms+11*n+1);
-            // signal = eep_history[index*4];
             switch(eep_history[index*4+1]>>6){
                 case 0:send_gsm_cmd(",l,");break;
                 case 1:send_gsm_cmd(",L,");break;
