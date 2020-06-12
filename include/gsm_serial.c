@@ -171,12 +171,23 @@ void baocaolichsu(){
         if(!send_sms()) return;
         send_gsm_cmd("CHUA CO LICH SU NAO");
         gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+        return;
     }
     // index = ((eep_history[(eep_index_history+1)*4]<255)?eep_index_history+1:0);
     // total = index?10:(eep_index_history/10+1);
     index = eep_index_history-1;
     last = ((eep_history[eep_index_history*4]<255)?eep_index_history:0);
     total = last?10:(eep_index_history/10+1);
+    if(!send_sms()) return;
+    send_gsm_byte(index);
+    send_gsm_byte(" ");
+    send_gsm_byte(last);
+    send_gsm_byte(" ");
+    send_gsm_byte(total);
+    send_gsm_byte(" ");
+    send_gsm_byte(eep_history[eep_index_history*4]);
+    gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+    return;
     for(m=0;index!=last && m<10;m++){
         temp = index;
         for(n=0;index!=last && n<10;n++){
@@ -308,9 +319,9 @@ __bit gsm_thietlapsim800(){
 
 void gsm_thietlapngaygiothuc(){
     if(gsm_sendandcheck("AT+CLTS=1\r",15,1," BAT LAY GIO ")){
-        if(gsm_sendandcheck("AT+COPS=2\r",15,1," NGAT MANG ")){
+        if(gsm_sendandcheck("AT+COPS=2\r",15,1,"   NGAT MANG    ")){
             gsm_serial_cmd = COPS;
-            if(gsm_sendandcheck("AT+COPS=0\r",10,60," LAY MANG ")){
+            if(gsm_sendandcheck("AT+COPS=0\r",10,60,"    TIM MANG    ")){
                 clear_sms_buffer(0);
                 sms_index = 0;
                 gsm_serial_cmd = CLK;
