@@ -22,7 +22,7 @@ u8 __xdata relay1_delay_tat;
 u8 __xdata relay2_delay_tat;
 u8 __xdata relay3_delay_tat;
 u8 __xdata relay4_delay_tat;
-
+__bit relay2giu = 1;
 
 u8 __data so_lan_goi_dien;
 u8 __data delay_cuoc_goi_ke_tiep;
@@ -44,6 +44,13 @@ u8  __data  sms_index_goc;
 //EEPROM
 u8  __xdata eeprom_buf[SECTOR1_LENGTH];
 
+//RF
+__bit rfstatus,rfprocess,rfstop,rflearn;
+u8  __xdata rfwait;
+u8  __xdata rfindex;
+u8  __xdata rfdata[26];
+u8  __xdata count_low,count_hi;
+
 //TIME
 u8	__data  second;
 u8	__data  minute;
@@ -54,6 +61,7 @@ u8	__data  year;
 __bit  phut_out;
 
 u16	__xdata	PCA_Timer0;
+u16	__xdata	PCA_Timer1;
 u8  __xdata  ngay_reset_con_lai;
 
 //XUNG GIAY
