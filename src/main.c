@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.2.5";
+u8 __code ver[] = " CUACUON 0.3.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -81,12 +81,17 @@ void main() {
 	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
 	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 	
-	IAP_ghisector1();	
-	
+	IAP_ghisector1();
+
+	IAP_docxoasector2();	
+	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
+	IAP_ghisector2();
+	relay2giu = 0;
 	Relay2 = eep_khoa;
 	Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
+	// delay_ms(5000);
 	gsm_init();
 	
 	/*PCA TIMER 0 INIT 50us*/
@@ -96,11 +101,11 @@ void main() {
 	LCD_Init();
 
 	// gsm_thietlapsim800();
-	if(!nosim && gsm_thietlapsim800()){
-		gsm_thietlapngaygiothuc();
-		gsm_thietlapgoidien();
-		gsm_thietlapnhantin();
-	}
+	// if(!nosim && gsm_thietlapsim800()){
+	// 	gsm_thietlapngaygiothuc();
+	// 	gsm_thietlapgoidien();
+	// 	gsm_thietlapnhantin();
+	// }
 
 	mode_wait = 60;
 
@@ -109,6 +114,8 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
+
+	rfstop = 1;
 
 	while(1){
 		if(phut_out && eep_ups){
@@ -144,7 +151,8 @@ void main() {
 		if(!phim_back_doi){
 			// u8 thong_so[4];
 			phim_back_nhan = 0;
-			xoadanhba(0);
+			// xoadanhba(0);
+			IAP_xoasector(SECTOR2);
 			IAP_docxoasector1();
 			eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 			IAP_ghisector1();			
@@ -154,31 +162,95 @@ void main() {
 			gsm_thietlapgoidien();
 			gsm_thietlapnhantin();
 		}
+
+		if(rfprocess){
+			u8 i,j,data[3];
+			__bit match=0;
+			data[0]=data[1]=data[2]=0;
+			for(i=0;i<20;i++){
+				j = i/8;
+				data[j] = data[j]*2 + rfdata[i];
+				send_gsm_byte(rfdata[i]+'0');
+			}
+
+			send_gsm_hex(data[0]);
+			send_gsm_hex(data[1]);
+			send_gsm_hex(data[2]);
+			send_gsm_byte(eep_rfindex+'0');
+			for(i=0;!match && i<eep_rfindex;i++){
+				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
+				if(match){
+					send_gsm_byte(i/10+'0');
+					send_gsm_byte(i%10+'0');
+				}
+			}
+
+			if(rflearn){
+				if(!match){
+					IAP_docxoasector2();
+					eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3-SECTOR2] = data[0];
+					eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+1-SECTOR2] = data[1];
+					eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+2-SECTOR2] = data[2];
+					eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
+					IAP_ghisector2();
+					send_gsm_byte(' ');
+					send_gsm_hex(eep_rfdata[eep_rfindex*3-3]);
+					send_gsm_hex(eep_rfdata[eep_rfindex*3-2]);
+					send_gsm_hex(eep_rfdata[eep_rfindex*3-1]);
+				}
+				rflearn = rfstop = 0;
+			}else{
+				if(match){
+					send_gsm_byte('$');
+					send_gsm_byte(rfdata[20]+'0');
+					send_gsm_byte(rfdata[21]+'0');
+					send_gsm_byte(rfdata[22]+'0');
+					send_gsm_byte(rfdata[23]+'0');
+					if(relay2giu){
+						relay2giu = Relay2 = rfdata[22];
+					}else{
+						Relay2 = !rfdata[22] || !rfdata[20];
+						relay2giu = !rfdata[20];
+						Relay1 = !rfdata[21] && !Relay2;
+						Relay3 = !rfdata[23] && !Relay1 && !Relay2;
+					}					
+					
+				}
+				
+			}
+			rfprocess = rfstatus = 0;
+		}
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
-			kiemtrataikhoan();
+			LCD_xoa(TREN);
 			LCD_guilenh(0x80);
-			LCD_guichuoi(lenh_sms);
-			while(!phim_cong_nhan)WATCHDOG;
-			phim_cong_nhan = 0;
-			kiemtrasodienthoai();
-			LCD_guilenh(0x84);
-			phone[10] = 0;
-			LCD_guichuoi(phone);
-			while(!phim_cong_nhan)WATCHDOG;
-			phim_cong_nhan=0;
+			if(eep_rfindex>99) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
+			else rflearn = !rflearn;
+			// kiemtrataikhoan();
+			// LCD_guilenh(0x80);
+			// LCD_guichuoi(lenh_sms);
+			// while(!phim_cong_nhan)WATCHDOG;
+			// phim_cong_nhan = 0;
+			// kiemtrasodienthoai();
+			// LCD_guilenh(0x84);
+			// phone[10] = 0;
+			// LCD_guichuoi(phone);
+			// while(!phim_cong_nhan)WATCHDOG;
+			// phim_cong_nhan=0;
 		}
 
 		if(lcd_update_chop){
-			lcd_update_chop = 0;	
-			LCD_guilenh(0x80);
-			if(mode==1) LCD_guichuoi("CHINH:");
-			else if(mode==2) LCD_guichuoi("PHU  :");
-			else if(mode==3) LCD_guichuoi("TAM  :");
-			else LCD_guichuoi(Relay1? "ON :":"OFF:");
+			lcd_update_chop = 0;
+			LCD_xoa(TREN);	
 			LCD_guilenh(0x8e);
 			LCD_guidulieu(signal/10+'0');
 			LCD_guidulieu(signal%10+'0');
+			LCD_guilenh(0x80);
+			if(rflearn) {LCD_guichuoi("BAM HOC REMOTE");LCD_guidulieu(eep_rfindex/10+'0');LCD_guidulieu(eep_rfindex%10+'0');}
+			else if(mode==1) LCD_guichuoi("CHINH:");
+			else if(mode==2) LCD_guichuoi("PHU  :");
+			else if(mode==3) LCD_guichuoi("TAM  :");
+			else LCD_guichuoi(Relay1? "ON :":"OFF:");
 			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			// LCD_guilenh(0xcf);
 			// LCD_guidulieu(nha_mang);

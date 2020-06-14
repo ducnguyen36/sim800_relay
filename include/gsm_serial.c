@@ -177,16 +177,7 @@ void baocaolichsu(){
     last = ((eep_history[eep_index_history*4]<255)?eep_index_history:0);
     last = (last + 99) % 100;
     total = last?10:(eep_index_history/10+1);
-    if(!send_sms()) return;
-    send_gsm_byte(index);
-    send_gsm_byte(" ");
-    send_gsm_byte(last);
-    send_gsm_byte(" ");
-    send_gsm_byte(total);
-    send_gsm_byte(" ");
-    send_gsm_byte(eep_history[eep_index_history*4]);
     gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
-    return;
     for(m=0;index!=last && m<10;m++){
         temp = index;
         for(n=0;index!=last && n<10;n++){
