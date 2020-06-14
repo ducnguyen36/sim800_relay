@@ -207,7 +207,7 @@ void main() {
 					send_gsm_byte(rfdata[22]+'0');
 					send_gsm_byte(rfdata[23]+'0');
 					if(relay2giu){
-						relay2giu = Relay2 = rfdata[22];
+						relay2giu = rfdata[22];
 					}else{
 						Relay2 = !rfdata[22] || !rfdata[20];
 						relay2giu = !rfdata[20];

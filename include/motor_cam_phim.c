@@ -97,23 +97,25 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		CCF1 = 0;
 		CCAP1L = PCA_Timer1;
 		CCAP1H = PCA_Timer1>>8;
-		PCA_Timer1 +=330;
+		PCA_Timer1 +=315;
 		// if(!--counter_test_giay){
 		// 	over_cur_led = !over_cur_led;
 		// 	counter_test_giay = 2000;
 		// 	xunggiay();
 		// }
 		if(rfprocess)return;
+		if(!rfwait++){if(!rfstop)send_gsm_byte('b');rfstop = 1;Relay1 = Relay3 = 0; Relay2 = relay2giu;}
 		if(cam_che){
 			if(!count_low){
-				if(rfstatus && count_hi>2 && count_hi<5) {rfdata[rfindex++] = 0; send_gsm_byte('0');}
-				if(count_hi>50){rfstop = 1;send_gsm_byte('B');Relay1 = Relay3 = 0; Relay2 = relay2giu;}
+				if(rfstatus && count_hi>2 && count_hi<7) {rfdata[rfindex++] = 0; send_gsm_byte('0');}
+				if(count_hi>60){if(!rfstop)send_gsm_byte('B');rfstop = 1;Relay1 = Relay3 = 0; Relay2 = relay2giu;}
 			}
 			count_low++;count_hi=0;
 		}else{
 			if(!count_hi){
-				if(rfstatus && count_low>2 && count_low<5) {rfdata[rfindex++] = 1;send_gsm_byte('1');}
-				else if(count_low>28 && count_low<34){
+				if(rfstatus && count_low>2 && count_low<7) {rfdata[rfindex++] = 1;send_gsm_byte('1');}
+				else if(count_low>28){
+					rfwait = 1;
 					if(rfstatus && rfindex==24) {rfprocess = 1;send_gsm_byte('P');}
 					else if(rfstop) {rfstatus = 1; rfindex = 0;send_gsm_byte('S');}
 					

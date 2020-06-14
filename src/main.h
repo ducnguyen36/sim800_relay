@@ -46,6 +46,7 @@ u8  __xdata eeprom_buf[SECTOR1_LENGTH];
 
 //RF
 __bit rfstatus,rfprocess,rfstop,rflearn;
+u8  __xdata rfwait;
 u8  __xdata rfindex;
 u8  __xdata rfdata[26];
 u8  __xdata count_low,count_hi;
