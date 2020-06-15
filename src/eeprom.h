@@ -11,10 +11,11 @@
 #define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1
 
 #define        RFDATA_EEPROM                SECTOR2
-#define        RFINDEX_EEPROM               RFDATA_EEPROM+300                       
+#define        RFINDEX_EEPROM               RFDATA_EEPROM+300
+#define        RFLOCK_EEPROM                RFINDEX_EEPROM+1
 
 #define     SECTOR1_LENGTH      HISTORY_EEPROM+400
-#define     SECTOR2_LENGTH      RFINDEX_EEPROM+1-SECTOR2
+#define     SECTOR2_LENGTH      RFLOCK_EEPROM+1-SECTOR2
 
 
 
@@ -27,7 +28,8 @@
 #define historyEEprom                       HISTORY_EEPROM+MOVC_START_ADDRESS
 
 #define rfdataEEprom                        RFDATA_EEPROM+MOVC_START_ADDRESS
-#define rfindexEEprom                        RFINDEX_EEPROM+MOVC_START_ADDRESS
+#define rfindexEEprom                       RFINDEX_EEPROM+MOVC_START_ADDRESS
+#define rflockEEprom                        RFLOCK_EEPROM+MOVC_START_ADDRESS
 
 
 __code __at        pinEEprom                    u8 eep_pin[4];
@@ -39,6 +41,7 @@ __code __at        historyEEprom                u8 eep_history[400];
 
 __code __at        rfdataEEprom                 u8 eep_rfdata[300];
 __code __at        rfindexEEprom                u8 eep_rfindex;
+__code __at        rflockEEprom                 u8 eep_rflock;
 
 
 extern u8  __xdata eeprom_buf[SECTOR1_LENGTH];

@@ -45,11 +45,12 @@ u8  __data  sms_index_goc;
 u8  __xdata eeprom_buf[SECTOR1_LENGTH];
 
 //RF
-__bit rfstatus,rfprocess,rfstop,rflearn;
+__bit rfstatus,rfprocess,rfstop,rflearn,rflock;
 u8  __xdata rfwait;
 u8  __xdata rfindex;
 u8  __xdata rfdata[26];
 u8  __xdata count_low,count_hi;
+u8  __xdata  rf_khancap,rf_khancap_delay;
 
 //TIME
 u8	__data  second;

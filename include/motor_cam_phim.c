@@ -18,7 +18,8 @@ void xunggiay(){
 	// if(Relay1 && !--relay1_delay_tat){
 	// 	Relay1 = 0;
 	// 	relay1_delay_tat = 5;
-	// } 
+	// }
+	if(rf_khancap_delay && !--rf_khancap_delay) rf_khancap = rf_khancap_delay = 0; 
 	if(phim_mode_doi && phim_mode_giu)phim_mode_doi--;
 	if(phim_back_doi && phim_back_giu)phim_back_doi--;
 	if(phim_cong_doi && phim_cong_giu)phim_cong_doi--;

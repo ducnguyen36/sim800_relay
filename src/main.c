@@ -67,6 +67,7 @@ void main() {
 	phim_back_doi = 6;
 	mode = 0;
 	nosim=0;
+	rf_khancap = rf_khancap_delay = 0;
 
 	/*validate eeprom*/
 	// u8 __xdata i;
@@ -85,8 +86,9 @@ void main() {
 
 	IAP_docxoasector2();	
 	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
+	if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 	IAP_ghisector2();
-	relay2giu = 0;	
+	rflock = eep_rflock;	
 	Relay2 = relay2giu = eep_khoa;
 	Relay4 = eep_ups?1:0;
 
@@ -206,12 +208,36 @@ void main() {
 					// send_gsm_byte(rfdata[20]+'0');
 					// send_gsm_byte(rfdata[21]+'0');
 					// send_gsm_byte(rfdata[22]+'0');
-					// send_gsm_byte(rfdata[23]+'0');				
-					if(!relay2giu){
-						Relay2 = !rfdata[22] || !rfdata[20];
-						Relay1 = !rfdata[21] && !Relay2;
-						Relay3 = !rfdata[23] && !Relay1 && !Relay2;
+					// send_gsm_byte(rfdata[23]+'0');
+					if(!rfdata[22]) {rf_khancap++;rf_khancap_delay = 10;}
+					if(rf_khancap>9){
+						relay2giu = 0;
+						Relay2 = 0;
+						Relay1 = 1;
+						delay_ms(100);
+						Relay1 = 0;
 					}
+					if(rflock){
+						if(!rfdata[22]){
+							rflock = 0;
+							IAP_docxoasector2();
+							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
+							IAP_ghisector2();
+						}
+					}else{
+						if(!rfdata[20]){
+							rflock = 1;
+							IAP_docxoasector2();
+							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
+							IAP_ghisector2();
+						}else if(!relay2giu){
+							Relay2 = !rfdata[22];
+							Relay1 = !rfdata[21] && !Relay2;
+							Relay3 = !rfdata[23] && !Relay1 && !Relay2;
+						}
+					}
+									
+					
 				}
 				
 			}
