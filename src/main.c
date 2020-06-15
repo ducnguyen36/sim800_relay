@@ -164,19 +164,46 @@ void main() {
 		}
 
 		if(rfprocess){
-			u8 i,j,data[3];
+			u8 i,j,data[3],cmd[4];
 			__bit match=0;
-			data[0]=data[1]=data[2]=0;
-			for(i=0;i<20;i++){
-				j = i/8;
-				data[j] = data[j]*2 + rfdata[i];
-				send_gsm_byte(rfdata[i]+'0');
+			// pt2240 = (!rfdata[0] && rfdata[1]) || (!rfdata[2] && rfdata[3]) 
+			// 	  || (!rfdata[4] && rfdata[5]) || (!rfdata[6] && rfdata[7])
+			//       || (!rfdata[8] && rfdata[9]) || (!rfdata[10] && rfdata[11]) 
+			// 	  || (!rfdata[12] && rfdata[13) || (!rfdata[14] && rfdata[15])
+			//       || (!rfdata[16] && rfdata[17]) || (!rfdata[18] && rfdata[19]) 
+			// 	  || (!rfdata[12] && rfdata[13) || (!rfdata[14] && rfdata[15]);
+			data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
+			data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
+			data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
+			data[1] += rfdata[12]*8 + rfdata[13]*4 + rfdata[14]*2 +rfdata[15];
+			if(pt2240){
+				data[2] = rfdata[16]*8 + rfdata[17]*4 + rfdata[18]*2 +rfdata[19];
+				cmd[1] = rfdata[21]; cmd[2] = rfdata[22]; cmd[3] = rfdata[23];
 			}
-
+			else{
+				data[2] = 0;
+				cmd[1] = rfdata[22]; cmd[2] = rfdata[18]; cmd[3] = rfdata[16];
+			}
+			cmd[0] = rfdata[20];
+			// for(i=0;i<20;i++){
+			// 	j = i/8;
+			// 	data[j] = data[j]*2 + rfdata[i];
+			// 	send_gsm_byte(rfdata[i]+'0');
+			// }
+			send_gsm_byte(pt2240+'0');
+			send_gsm_byte('-');
 			send_gsm_hex(data[0]);
 			send_gsm_hex(data[1]);
 			send_gsm_hex(data[2]);
-			send_gsm_byte(eep_rfindex+'0');
+			send_gsm_byte('-');
+			send_gsm_byte(cmd[0]+'0');
+			send_gsm_byte(cmd[1]+'0');
+			send_gsm_byte(cmd[2]+'0');
+			send_gsm_byte(cmd[3]+'0');
+			send_gsm_byte('-');
+			send_gsm_byte(rfindex/10+'0');
+			send_gsm_byte(rfindex%10+'0');
+			send_gsm_byte('-');
 			for(i=0;!match && i<eep_rfindex;i++){
 				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
@@ -184,6 +211,9 @@ void main() {
 					send_gsm_byte(i%10+'0');
 				}
 			}
+			send_gsm_byte('-');
+			send_gsm_byte(match+'0');
+			send_gsm_byte('-');
 
 			if(rflearn){
 				if(!match){
@@ -202,17 +232,17 @@ void main() {
 			}else{
 				if(match){
 					send_gsm_byte('$');
-					send_gsm_byte(rfdata[20]+'0');
-					send_gsm_byte(rfdata[21]+'0');
-					send_gsm_byte(rfdata[22]+'0');
-					send_gsm_byte(rfdata[23]+'0');
+					send_gsm_byte(cmd[0]+'0');
+					send_gsm_byte(cmd[1]+'0');
+					send_gsm_byte(cmd[2]+'0');
+					send_gsm_byte(cmd[3]+'0');
 					if(relay2giu){
-						relay2giu = rfdata[22];
+						relay2giu = cmd[2];
 					}else{
-						Relay2 = !rfdata[22] || !rfdata[20];
-						relay2giu = !rfdata[20];
-						Relay1 = !rfdata[21] && !Relay2;
-						Relay3 = !rfdata[23] && !Relay1 && !Relay2;
+						Relay2 = !cmd[2] || !cmd[0];
+						relay2giu = !cmd[0];
+						Relay1 = !cmd[1] && !Relay2;
+						Relay3 = !cmd[3] && !Relay1 && !Relay2;
 					}					
 					
 				}
