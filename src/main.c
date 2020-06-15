@@ -165,26 +165,53 @@ void main() {
 		}
 
 		if(rfprocess){
-			u8 i,j,data[3];
+			u8 i,data[3],cmd[4];
 			__bit match=0;
-			data[0]=data[1]=data[2]=0;
-			for(i=0;i<rfindex-4;i++){
-				j = i/8;
-				data[j] = data[j]*2 + rfdata[i];
-				// send_gsm_byte(rfdata[i]+'0');
+			// data[0]=data[1]=data[2]=0;
+			// for(i=0;i<rfindex-4;i++){
+			// 	j = i/8;
+			// 	data[j] = data[j]*2 + rfdata[i];
+			// 	// send_gsm_byte(rfdata[i]+'0');
+			// }
+			data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
+			data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
+			data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
+			data[1] += rfdata[12]*8 + rfdata[13]*4 + rfdata[14]*2 +rfdata[15];
+			if(pt2240){
+				data[2] = rfdata[16]*8 + rfdata[17]*4 + rfdata[18]*2 +rfdata[19];
+				cmd[1] = rfdata[21]; cmd[2] = rfdata[22]; cmd[3] = rfdata[23];
 			}
-
-			// send_gsm_hex(data[0]);
-			// send_gsm_hex(data[1]);
-			// send_gsm_hex(data[2]);
-			// send_gsm_byte(eep_rfindex+'0');
-			for(j=0;!match && j<eep_rfindex;j++){
-				match = data[0] == eep_rfdata[j*3] && data[1] == eep_rfdata[j*3+1] && data[2] == eep_rfdata[j*3+2];
+			else{
+				data[2] = 0;
+				cmd[1] = rfdata[22]; cmd[2] = rfdata[18]; cmd[3] = rfdata[16];
+			}
+			cmd[0] = rfdata[20];
+			send_gsm_byte('P');
+			send_gsm_byte(pt2240+'0');
+			send_gsm_byte('-');
+			send_gsm_hex(data[0]);
+			send_gsm_hex(data[1]);
+			send_gsm_hex(data[2]);
+			send_gsm_byte('-');
+			send_gsm_byte(cmd[0]+'0');
+			send_gsm_byte(cmd[1]+'0');
+			send_gsm_byte(cmd[2]+'0');
+			send_gsm_byte(cmd[3]+'0');
+			send_gsm_byte('-');
+			send_gsm_byte(rfindex/10+'0');
+			send_gsm_byte(rfindex%10+'0');
+			send_gsm_byte('-');
+			
+			for(i=0;!match && i<eep_rfindex;i++){
+				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
-					// send_gsm_byte(i/10+'0');
-					// send_gsm_byte(i%10+'0');
+					send_gsm_byte(i/10+'0');
+					send_gsm_byte(i%10+'0');
 				}
 			}
+			send_gsm_byte('-');
+			send_gsm_byte(match+'0');
+			send_gsm_byte('-');
 
 			if(mode){
 				if(!match){
@@ -210,32 +237,33 @@ void main() {
 					// send_gsm_byte(rfdata[21]+'0');
 					// send_gsm_byte(rfdata[22]+'0');
 					// send_gsm_byte(rfdata[23]+'0');
-					if(!rfdata[22]) {rf_khancap++;rf_khancap_delay = 10;}
-					if(rf_khancap>9){
+					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
+					if(rf_khancap>29){
 						relay2giu = 0;
 						Relay2 = 0;
 						Relay1 = 1;
 						delay_ms(100);
 						Relay1 = 0;
-						rfstop=0;
+						rf_khancap = rf_khancap_delay = 0;
+						
 					}
 					if(rflock){
-						if(!rfdata[i+2]){
+						if(!cmd[2]){
 							rflock = 0;
 							IAP_docxoasector2();
 							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 							IAP_ghisector2();
 						}
 					}else{
-						if(!rfdata[i]){
+						if(!cmd[0]){
 							rflock = 1;
 							IAP_docxoasector2();
 							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
 							IAP_ghisector2();
 						}else if(!relay2giu){
-							Relay2 = !rfdata[i+2];
-							Relay1 = !rfdata[i+1] && !Relay2;
-							Relay3 = !rfdata[i+3] && !Relay1 && !Relay2;
+							Relay2 = !cmd[2];
+							Relay1 = !cmd[1] && !Relay2;
+							Relay3 = !cmd[3] && !Relay1 && !Relay2;
 						}
 					}
 									
@@ -243,7 +271,8 @@ void main() {
 				}
 				
 			}
-			rfstatus = rfprocess = 0;
+			rfstatus = 0; 
+			rfprocess = 0;
 		}
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;

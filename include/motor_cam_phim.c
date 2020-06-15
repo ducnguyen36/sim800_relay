@@ -4,7 +4,7 @@
 void PCA_Timer_init(){
 	CCAP0L = CCAP0H = 0;
 	PCA_Timer0 = 25000;
-	PCA_Timer1 = 315;
+	PCA_Timer1 = 250;
 	CCAPM0 = 0x49;
 	CCAPM1 = 0x49;
 	CR=1;
@@ -97,7 +97,7 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		CCF1 = 0;
 		CCAP1L = PCA_Timer1;
 		CCAP1H = PCA_Timer1>>8;
-		PCA_Timer1 +=315;
+		PCA_Timer1 +=250;
 		// if(!--counter_test_giay){
 		// 	over_cur_led = !over_cur_led;
 		// 	counter_test_giay = 2000;
@@ -120,18 +120,19 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		}else{
 			if(!count_hi){
 				if(rfstatus && count_low>2 && count_low<7) {
+					if(!pt2240 && rfindex%2 && !rfdata[rfindex-1]) pt2240 = 1;
 					rfdata[rfindex++] = 1;
 					// send_gsm_byte('1');
 				}
 				else if(count_low>28){
 					rfwait = 1;
-					if(rfstatus && (rfindex==24 || rfindex==20)) {
+					if(rfstatus && rfindex==24) {
 						rfprocess = 1;
 						// send_gsm_byte('P');
 					}
 					else if(rfstop) {
 						rfstatus = 1;
-						rfindex = 0;
+						pt2240 = rfindex = 0;
 						// send_gsm_byte('S');
 					}
 					
