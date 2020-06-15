@@ -93,6 +93,7 @@ void main() {
 	Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
+	delay_ms(5000);
 	gsm_init();
 	
 	/*PCA TIMER 0 INIT 50us*/
@@ -167,7 +168,7 @@ void main() {
 			u8 i,j,data[3];
 			__bit match=0;
 			data[0]=data[1]=data[2]=0;
-			for(i=0;i<20;i++){
+			for(i=0;i<rfindex-4;i++){
 				j = i/8;
 				data[j] = data[j]*2 + rfdata[i];
 				// send_gsm_byte(rfdata[i]+'0');
@@ -177,8 +178,8 @@ void main() {
 			// send_gsm_hex(data[1]);
 			// send_gsm_hex(data[2]);
 			// send_gsm_byte(eep_rfindex+'0');
-			for(i=0;!match && i<eep_rfindex;i++){
-				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
+			for(j=0;!match && j<eep_rfindex;j++){
+				match = data[0] == eep_rfdata[j*3] && data[1] == eep_rfdata[j*3+1] && data[2] == eep_rfdata[j*3+2];
 				if(match){
 					// send_gsm_byte(i/10+'0');
 					// send_gsm_byte(i%10+'0');
@@ -216,24 +217,25 @@ void main() {
 						Relay1 = 1;
 						delay_ms(100);
 						Relay1 = 0;
+						rfstop=0;
 					}
 					if(rflock){
-						if(!rfdata[22]){
+						if(!rfdata[i+2]){
 							rflock = 0;
 							IAP_docxoasector2();
 							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 							IAP_ghisector2();
 						}
 					}else{
-						if(!rfdata[20]){
+						if(!rfdata[i]){
 							rflock = 1;
 							IAP_docxoasector2();
 							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
 							IAP_ghisector2();
 						}else if(!relay2giu){
-							Relay2 = !rfdata[22];
-							Relay1 = !rfdata[21] && !Relay2;
-							Relay3 = !rfdata[23] && !Relay1 && !Relay2;
+							Relay2 = !rfdata[i+2];
+							Relay1 = !rfdata[i+1] && !Relay2;
+							Relay3 = !rfdata[i+3] && !Relay1 && !Relay2;
 						}
 					}
 									
@@ -241,7 +243,7 @@ void main() {
 				}
 				
 			}
-			rfprocess = 0;
+			rfstatus = rfprocess = 0;
 		}
 		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
