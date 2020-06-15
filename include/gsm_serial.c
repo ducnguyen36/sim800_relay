@@ -68,6 +68,12 @@ __bit kiemtrataikhoan(){
     return lenh_sms[0];
 }
 
+ __bit gsm_quay_so(u8 *phone){
+    send_gsm_cmd("ATD");
+    send_gsm_cmd(phone);
+    return gsm_sendandcheck(";\r",1,60,"    CALLING     ");
+}
+
 void kiemtradanhba(){
     u8 i = 10;
     send_gsm_cmd("\r");
@@ -410,6 +416,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 }else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='I' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='R')){
                                         
+                    CCAPM1 = 0;
                     send_gsm_cmd("ATH\r");
 
                 }else if((gsm_receive_buf[gsm_receive_pointer]==':' && (gsm_receive_buf[(gsm_receive_pointer+12)%13] =='R' || gsm_receive_buf[(gsm_receive_pointer+12)%13] =='F') &&
@@ -426,6 +433,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='T' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='M' &&
                 gsm_receive_buf[(gsm_receive_pointer+9)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='+')){
                                         
+                    
                     co_tin_nhan_moi = 1;
                     
                 }else if((gsm_receive_buf[gsm_receive_pointer]==' ' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':' &&
@@ -508,7 +516,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                             phone_header = 1;
                             sms_index = 1;
                     }
-                    if(SBUF=='\r') gsm_serial_cmd = NORMAL;
+                    if(SBUF=='\r') {gsm_serial_cmd = NORMAL; CCAPM1 = 0x49;}
                 }
                 break;
             case CMD:/*SMS buoc 7: tim duoc pin chinh xac tien hanh lay lenh trong tin nhan

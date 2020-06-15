@@ -22,9 +22,11 @@ void xu_ly_tin_nhan(){
                     eeprom_buf[KHOA_EEPROM] = 0;
                     IAP_ghisector1();
                 }
+                rfprocess = 1;
                 Relay2 = 1;
+                relay2giu = 0;
                 delay_ms(100);
-                Relay2 = 0;
+                rfprocess = Relay2 = 0;
                 baocaosms("\rDung cua cuon");
                 break;
             case 'K':
@@ -33,7 +35,7 @@ void xu_ly_tin_nhan(){
                 IAP_docxoasector1();
                 eeprom_buf[KHOA_EEPROM] = 1;
                 IAP_ghisector1();
-                Relay2 = 1;
+                Relay2 = 1;relay2giu = 1;
                 phone[10] = 0;
                 luu_lich_su(phone,3);
                 baocaosms("\rKhoa cua cuon");
@@ -76,9 +78,14 @@ void xu_ly_tin_nhan(){
                         baocaosms("\rXoa danh ba thanh cong");
                     }else baocaosms("\rLenh khong hop le");
                 }else if(lenh_sms[1] == 'u' || lenh_sms[1] == 'U'){
+                    if(relay2giu){
+                        baocaosms("\rCua cuon dang khoa");
+                        break;
+                    }
+                    rfprocess = 1;
                     Relay3 = 1;
                     delay_ms(100);
-                    Relay3 = 0;
+                    rfprocess =  Relay3 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,2);
                     baocaosms("\rXuong cua cuon");
@@ -98,9 +105,14 @@ void xu_ly_tin_nhan(){
                         
                     }else baocaosms("\rSo dt khong hop le");
                 }else if(lenh_sms[1] == 'e' || lenh_sms[1] == 'E'){
+                    if(relay2giu){
+                        baocaosms("\rCua cuon dang khoa");
+                        break;
+                    }
+                    rfprocess = 1;
                     Relay1 = 1;
                     delay_ms(100);
-                    Relay1 = 0;
+                    rfprocess = Relay1 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,1);
                     baocaosms("\rMo cua cuon");
@@ -138,6 +150,11 @@ void xu_ly_tin_nhan(){
                     eeprom_buf[BAOCAO_EEPROM] = 0;
                     IAP_ghisector1();
                  }
+                break;
+            case 'g':
+            case 'G':
+                phone[10] = 0;
+                gsm_quay_so(phone);
                 break;
             default:
                     baocaosms("\rLenh khong hop le");

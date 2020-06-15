@@ -12,6 +12,7 @@
 
 void gsm_init();
 void send_gsm_byte(u8 dulieu);
+void send_gsm_hex(u8 dulieu);
 void send_gsm_cmd(u8 *cmd);
 
 extern u8 __xdata    gsm_serial_cmd;

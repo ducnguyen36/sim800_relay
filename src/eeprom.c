@@ -61,13 +61,37 @@ void IAP_docxoasector1(){
     IAP_xoasector(SECTOR1);
 }
 
+void IAP_docxoasector2(){
+    u16 __data i=SECTOR1_LENGTH;
+    WATCHDOG;
+    while(i) eeprom_buf[--i] = 0xff;
+    
+    while(i<SECTOR2_LENGTH) eeprom_buf[i] = *(eep_rfdata+i++);
+    IAP_xoasector(SECTOR2);
+}
+
 void IAP_ghisector1(){
     u16 __data i=0;
     while(i<SECTOR1_LENGTH){
         IAP_CONTR = ENABLE_IAP;
         IAP_CMD = CMD_PROGRAM;
         IAP_ADDRL = i;
-        IAP_ADDRH = 0;
+        IAP_ADDRH = i>>8;
+        IAP_DATA = eeprom_buf[i++];
+        IAP_TRIG = 0x5a;
+        IAP_TRIG = 0xa5;
+        _nop_();
+        IAP_cho();
+    }
+}
+
+void IAP_ghisector2(){
+    u16 __data i=0;
+    while(i<SECTOR2_LENGTH){
+        IAP_CONTR = ENABLE_IAP;
+        IAP_CMD = CMD_PROGRAM;
+        IAP_ADDRL = (i+SECTOR2);
+        IAP_ADDRH = (i+SECTOR2)>>8;
         IAP_DATA = eeprom_buf[i++];
         IAP_TRIG = 0x5a;
         IAP_TRIG = 0xa5;
