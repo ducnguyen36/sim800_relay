@@ -1,6 +1,7 @@
 #include "help.h"
 
 __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
+    if(!gsm_pw) return 0;
     connect_time_out = delay;
     total_try_time_out = retry*delay + 10;
     gui_lenh_thanh_cong = 0;

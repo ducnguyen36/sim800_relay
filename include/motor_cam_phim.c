@@ -27,7 +27,7 @@ void xunggiay(){
 	if(connect) connect--;
 	if(total_try_time_out) total_try_time_out--;
 	if(mode && mode_wait) mode_wait--;
-	if(!gsm_pw && !--gsm_delay_reset){
+	if(!sleep && !gsm_pw && !--gsm_delay_reset){
 		gsm_pw = 1;
 		gsm_delay_reset = 10;
 		gsm_reset=1;

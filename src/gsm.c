@@ -17,6 +17,7 @@ void gsm_init(){
     gsm_pw = 1;
 }
 void send_gsm_byte(u8 dulieu){
+	if(!gsm_pw) return;
 	if(!dulieu) return;
 	gsm_TI = 0;
 	gsm_SBUF = dulieu;
@@ -26,6 +27,7 @@ void send_gsm_byte(u8 dulieu){
 
 void send_gsm_hex(u8 dulieu){
 	u8 hi,lo;
+	if(!gsm_pw) return;
 	hi = dulieu>>4;
 	lo = dulieu & 15;
 	send_gsm_byte(hi+(hi<10?'0':87));
@@ -33,6 +35,7 @@ void send_gsm_hex(u8 dulieu){
 }
 
 void send_gsm_cmd(u8 *cmd){
+	if(!gsm_pw) return;
 	gsm_TI = 0;
     while(*cmd){
 		gsm_SBUF = *cmd;

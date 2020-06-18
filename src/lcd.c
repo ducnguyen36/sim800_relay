@@ -26,6 +26,7 @@ void LCD_chop(u8 hang,u8 *vanban){
 	}else LCD_xoa(hang);
 }
 void LCD_guidulieu(u8 dulieu){
+	if(lcd_pw) return;
 	if(!dulieu)return;
 	LCD_rs=1;
 	LCD_D4=(dulieu>>4)&1;
@@ -48,6 +49,7 @@ void LCD_guidulieu(u8 dulieu){
 }
 
 void LCD_guilenh(u8 lenh){
+	if(lcd_pw) return;
 	if(!lenh)return;
 	LCD_rs=0;
 	LCD_D4=(lenh>>4)&1;

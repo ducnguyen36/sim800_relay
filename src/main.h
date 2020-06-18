@@ -93,6 +93,9 @@ __bit chop;
 u8 __xdata mode_wait;
 
 
+//SLEEP
+__bit sleep;
+
 //GSM MODULE
 __bit   skip_gsm_cmd;
 __bit   gui_lenh_thanh_cong;

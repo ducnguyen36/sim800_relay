@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.3.1";
+u8 __code ver[] = " CUACUON 0.3.2D";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -42,21 +42,23 @@ void luu_lich_su(u8 *phone,u8 cmd){
 void main() {
 	
 	/*PORT IO INIT*/
-	P0M1 = 0; P0M0 = 0xff; //port LCD -- chân xuất với điện trở kéo lên nhỏ, dòng lớn -> 20mA
+	P0M1 = 0; P0M0 = 0; //port LCD -- chân xuất với điện trở kéo lên nhỏ, dòng lớn -> 20mA
 	P1M1 = P1M0 = 0;
 	P2M1 = 0; P2M0 = 0xff; // output
 	P3M1 = P3M0 = 0; //full compatip 8051 -- key and cam
-	P4M1 = 2; P4M0 = 0x1c;//full compatip 8051 --motor port
+	P4M1 = 0; P4M0 = 0;//full compatip 8051 --motor port
 	P5M1 = P5M0 = 0; // full compatip 8051
 	P4 = 0;
-	P3 = 0xff;
+	// P36 = P37 = 0;
+	// P33 = P34 = P35 = P32 = 0;
+	P31 = P30 = 1;
 	P2 = 0;
-	/****************/
-	IP = 0x81; //priority PCA
+	// P1 = P0 = 0;
+	// /****************/
+	// IP = 0x81; //priority PCA
 	CLK_DIV = 0;
 	EA = 1; //bat tat ca interupt
-	/****************/
-	
+	// /****************/
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
 	relay1_delay_tat = 6;
@@ -70,7 +72,7 @@ void main() {
 	rf_khancap = rf_khancap_delay = 0;
 
 	/*validate eeprom*/
-	// u8 __xdata i;
+	u8 __xdata i;
 	IAP_docxoasector1();
 	if(eeprom_buf[INDEX_HISTORY_EEPROM]>99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
@@ -88,13 +90,14 @@ void main() {
 	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
 	if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 	IAP_ghisector2();
-	rflock = eep_rflock;	
-	Relay2 = relay2giu = eep_khoa;
-	Relay4 = eep_ups?1:0;
+	// rflock = eep_rflock;	
+	// Relay2 = relay2giu = eep_khoa;
+	Relay2 = relay2giu = 0;
+	// Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
-	delay_ms(5000);
-	gsm_init();
+	// delay_ms(5000);
+	// gsm_init();
 	
 	/*PCA TIMER 0 INIT 50us*/
 	PCA_Timer_init();	
@@ -103,13 +106,13 @@ void main() {
 	LCD_Init();
 
 	// gsm_thietlapsim800();
-	if(!nosim && gsm_thietlapsim800()){
-		gsm_thietlapngaygiothuc();
-		gsm_thietlapgoidien();
-		gsm_thietlapnhantin();
-	}
+	// if(!nosim && gsm_thietlapsim800()){
+	// 	gsm_thietlapngaygiothuc();
+	// 	gsm_thietlapgoidien();
+	// 	gsm_thietlapnhantin();
+	// }
 
-	mode_wait = 60;
+	// mode_wait = 60;
 
 	/******** Initial watdog ****WDT**/	
 	WDT_CONTR = EN_WDT | CLR_WDT | WDT_SCALE_64; // Enable watchdog, clear watchdog, pre scale = 64, watchdog idle mode = NO
@@ -337,6 +340,12 @@ void main() {
 			CCAPM1 = 0x49;
 		}
 		WATCHDOG;
+		lcd_pw = 1;
+		sleep = 1;
+		PCON |= 0x01;
+		// _nop_();
+		// _nop_();
+		// _nop_();
 	}
 }
 
