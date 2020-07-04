@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.3.1";
+u8 __code ver[] = " CUACUON 0.3.3";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -118,6 +118,10 @@ void main() {
 	phone[10] = 0;
 
 	while(1){
+		if(gio_out){
+			gio_out = 0;
+			gsm_thietlapngaygiothuc();
+		}
 		if(phut_out && eep_ups){
 			phut_out=0;
 			if(eep_ups==1) Relay4 = 0;

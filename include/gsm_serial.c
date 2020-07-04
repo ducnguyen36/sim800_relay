@@ -257,15 +257,15 @@ void baocaolichsu(){
 }
 
 void baocaosms(u8  *noidung){
-    if(!eep_baocao){gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  "); return;}
+    // if(!eep_baocao){gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  "); return;}
     gsm_sendandcheck("AT\r", 15, 1,ver);
     if(*(noidung+1)!='*') kiemtrataikhoan();
      
     else lenh_sms[0]=0;
    
     if(!send_sms()) return;
-    send_gsm_cmd(" RELAY=");
-    send_gsm_cmd(Relay1?"ON":"OFF");
+    send_gsm_cmd(" KHOA=");
+    send_gsm_cmd(relay2giu?"ON":"OFF");
 
 
   

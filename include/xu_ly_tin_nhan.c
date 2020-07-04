@@ -21,13 +21,15 @@ void xu_ly_tin_nhan(){
                     IAP_docxoasector1();
                     eeprom_buf[KHOA_EEPROM] = 0;
                     IAP_ghisector1();
+                    baocaosms("\rMo Khoa cua cuon");
                 }
                 rfprocess = 1;
                 Relay2 = 1;
                 relay2giu = 0;
                 delay_ms(100);
                 rfprocess = Relay2 = 0;
-                baocaosms("\rDung cua cuon");
+                if(eep_baocao) baocaosms("\rDung cua cuon");
+                else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
                 break;
             case 'K':
             case 'k':
@@ -88,7 +90,8 @@ void xu_ly_tin_nhan(){
                     rfprocess =  Relay3 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,2);
-                    baocaosms("\rXuong cua cuon");
+                    if(eep_baocao) baocaosms("\rXuong cua cuon");
+                    else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
                 }
                 
                 break;
@@ -115,7 +118,8 @@ void xu_ly_tin_nhan(){
                     rfprocess = Relay1 = 0;
                     phone[10] = 0;
                     luu_lich_su(phone,1);
-                    baocaosms("\rMo cua cuon");
+                    if(eep_baocao) baocaosms("\rMo cua cuon");
+                    else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
                 }
                
                 break;

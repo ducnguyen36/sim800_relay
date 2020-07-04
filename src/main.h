@@ -60,6 +60,7 @@ u8	__data  day;
 u8	__data  month;
 u8	__data  year;
 __bit  phut_out;
+__bit  gio_out;
 
 u16	__xdata	PCA_Timer0;
 u16	__xdata	PCA_Timer1;

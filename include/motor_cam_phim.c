@@ -38,6 +38,7 @@ void xunggiay(){
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
 		if(++minute>59){
 			minute=0;
+			gio_out = 1;
 			if(++hour>23){
 				hour=0;
 				if(ngay_reset_con_lai)
