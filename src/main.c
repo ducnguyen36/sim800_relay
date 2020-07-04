@@ -148,7 +148,7 @@ void main() {
 		}
 		if(mode && phim_mode_nhan){
 			phim_mode_nhan = 0;
-			mode = (mode+1)%4;
+			mode = (mode+1)%3;
 			mode_wait = 60;
 			LCD_xoa(TREN);
 		}
@@ -302,7 +302,7 @@ void main() {
 			LCD_guilenh(0x80);
 			if(mode==1) LCD_guichuoi("CHINH:");
 			else if(mode==2) LCD_guichuoi("PHU  :");
-			else if(mode==3) LCD_guichuoi("TAM  :");
+			// else if(mode==3) LCD_guichuoi("TAM  :");
 			else LCD_guichuoi(Relay1? "ON :":"OFF:");
 			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			// LCD_guilenh(0xcf);
