@@ -153,7 +153,6 @@ void main() {
 			LCD_xoa(TREN);
 		}
 		if(!phim_back_doi){
-			// u8 thong_so[4];
 			phim_back_nhan = 0;
 			xoadanhba(0);
 			IAP_xoasector(SECTOR2);
