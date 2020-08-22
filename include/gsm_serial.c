@@ -42,21 +42,17 @@ __bit kiemtrasodienthoai(){
     gsm_serial_cmd = SDT;
     switch(nha_mang){
         case VIETTEL:
-            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
-            break;
+            return gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
         case VINAPHONE:
-            gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA SDT   ");
-            break;
+            return gsm_sendandcheck("AT+CUSD=1,\"*110#\",\r",3,30,"  KIEM TRA SDT   ");
         case MOBIFONE:
-            gsm_sendandcheck("AT+CUSD=1,\"*0#\",\r",3,30,"  KIEM TRA SDT   ");
-            break;
+           return gsm_sendandcheck("AT+CUSD=1,\"*0#\",\r",3,30,"  KIEM TRA SDT   ");
         case VIETNAM:
-            gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
-            break;
+           return gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
     }
     // gsm_serial_cmd = NORMAL;
     // return lenh_sms[0];
-    return 1;
+    return 0;
 }
 
 __bit kiemtrataikhoan(){
