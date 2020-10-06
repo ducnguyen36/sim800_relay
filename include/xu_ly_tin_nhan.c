@@ -21,7 +21,7 @@ void xu_ly_tin_nhan(){
                     IAP_docxoasector1();
                     eeprom_buf[KHOA_EEPROM] = 0;
                     IAP_ghisector1();
-                    baocaosms("\rMo Khoa cua cuon");
+                    // baocaosms("\rMo Khoa cua cuon");
                 }
                 rfprocess = 1;
                 Relay2 = 1;
@@ -143,7 +143,9 @@ void xu_ly_tin_nhan(){
             case 'b':
             case 'B':
                 if(!phone_master) break;
-                if(lenh_sms[3] == 'B' || lenh_sms[3] == 'b' || lenh_sms[4] == 'n' || lenh_sms[4] == 'N'){
+                if(!lenh_sms[3] || !lenh_sms[2]){
+                    baocaosms("\rBao cao thanh cong");
+                }else if(lenh_sms[3] == 'B' || lenh_sms[3] == 'b' || lenh_sms[4] == 'n' || lenh_sms[4] == 'N'){
                     IAP_docxoasector1();
                     eeprom_buf[BAOCAO_EEPROM] = 1;
                     IAP_ghisector1();
