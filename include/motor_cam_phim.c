@@ -43,7 +43,6 @@ void xunggiay(){
 				hour=0;
 				if(ngay_reset_con_lai)
 				ngay_reset_con_lai--;
-
 			}
 		}
 			

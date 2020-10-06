@@ -278,7 +278,7 @@ void main() {
 			rfprocess = 0;
 		}
 		if(phim_cong_nhan){
-			u16 doims = 200
+			u16 doims = 200;
 
 			phim_cong_nhan = 0;
 			kiemtrataikhoan();
@@ -290,8 +290,8 @@ void main() {
 			LCD_guilenh(0x84);
 			phone[10] = 0;
 			LCD_guichuoi(phone);
-			doims=200
-			while(!phim_cong_nhan && countms--)delay_ms(300);
+			doims=200;
+			while(!phim_cong_nhan && doims--)delay_ms(300);
 			// while(!phim_cong_nhan)WATCHDOG;
 			phim_cong_nhan=0;
 		}

@@ -59,6 +59,7 @@ u8	__data  hour;
 u8	__data  day;
 u8	__data  month;
 u8	__data  year;
+__bit  new_day;
 __bit  phut_out;
 __bit  gio_out;
 
