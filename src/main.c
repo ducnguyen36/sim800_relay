@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.3.4";
+u8 __code ver[] = " CUACUON 0.5.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
