@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.5.0";
+u8 __code ver[] = " CUACUON 0.5.1";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -74,7 +74,7 @@ void main() {
 	IAP_docxoasector1();
 	if(eeprom_buf[INDEX_HISTORY_EEPROM]>99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
-	if(eeprom_buf[KHOA_EEPROM]>1) eeprom_buf[KHOA_EEPROM] = 0;
+	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
 	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
 	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
@@ -140,19 +140,74 @@ void main() {
 			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1," DELETING SMS ");
 			sms_dang_xu_ly = 0;
 		}
-		if(!mode && !phim_mode_doi){
-			phim_mode_nhan = 0;
-			mode = 1;
-			mode_wait = 60;
-			LCD_xoa(TREN);
-		}
 		if(mode && phim_mode_nhan){
 			phim_mode_nhan = 0;
-			mode = (mode+1)%3;
+			if(mode>1 && mode<4) mode++;
+			else sub_mode++;
+			
+			if(mode == 1 && sub_mode>3){
+				sub_mode = 0;
+				if(pin[0] == eep_pin[0]-'0' && pin[1] == eep_pin[1]-'0' &&
+				   pin[2] == eep_pin[2]-'0' && pin[3] == eep_pin[3]-'0'){
+					   mode = 2;
+					   so_lan_sai_pin = 0;
+					   pin[0] = pin[1] = pin[2] = pin[3] = 0;
+				}else{
+					if(++so_lan_sai_pin>4){
+						mode = 0;
+						IAP_docxoasector1();
+                        eeprom_buf[KHOA_EEPROM] |= 2;
+						IAP_ghisector1();
+                        if(kiemtraphonemaster())baocaosms("\rSai ma pin nhieu lan khoa ban phim"); 
+                    
+					}
+				}
+			}else if(mode == 4){
+				if(sub_mode==4){
+					if(pin[0] == eep_pin[0]-'0' && pin[1] == eep_pin[1]-'0' &&
+						pin[2] == eep_pin[2]-'0' && pin[3] == eep_pin[3]-'0'){
+							so_lan_sai_pin = 0;
+					}else{
+						sub_mode = 0;
+						if(++so_lan_sai_pin>4){
+							mode = 0;
+							if(kiemtraphonemaster())baocaosms("\rdoi ma Pin khong thanh cong"); 
+						
+						}
+					}
+				}else if(sub_mode == 8){
+					sub_mode = 0;
+					mode = 0;
+					IAP_docxoasector1();
+                    eeprom_buf[PIN_EEPROM  ] = new_pin[0]+'0';//1+0
+                    eeprom_buf[PIN_EEPROM+1] = new_pin[1]+'0';//2+1
+                    eeprom_buf[PIN_EEPROM+2] = new_pin[2]+'0';//3+2
+                    eeprom_buf[PIN_EEPROM+3] = new_pin[3]+'0';//4+3
+                    IAP_ghisector1();
+					pin[0] = pin[1] = pin[2] = pin[3] = 0;
+					new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
+				}
+			}
 			mode_wait = 60;
 			LCD_xoa(TREN);
 		}
-		if(!phim_back_doi){
+		
+		if(!mode && !(eep_khoa&2) && !phim_mode_doi){
+			phim_mode_nhan = 0;
+			if(sub_mode!=10)mode = 1;
+			sub_mode = 0;
+			// LCD_blinkXY(TREN,4);
+			mode_wait = 60;
+			LCD_xoa(TREN);
+		}
+		else if(mode && !phim_cong_doi){
+			phim_mode_nhan = 0;
+			mode = 0;
+			sub_mode = 0;
+			pin[0] = pin[1] = pin[2] = pin[3] = 0;
+			new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
+		}
+		if(mode == 2 && !phim_back_doi){
 			phim_back_nhan = 0;
 			xoadanhba(0);
 			IAP_xoasector(SECTOR2);
@@ -161,6 +216,7 @@ void main() {
 			eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 			IAP_ghisector1();			
 		}
+		
 		if(gsm_reset){
 			gsm_reset = 0;
 			gsm_thietlapgoidien();
@@ -169,7 +225,7 @@ void main() {
 
 		if(rfprocess){
 			u8 i,data[3],cmd[4];
-			__bit match=0;
+			u8 match=0;
 			// data[0]=data[1]=data[2]=0;
 			// for(i=0;i<rfindex-4;i++){
 			// 	j = i/8;
@@ -208,6 +264,7 @@ void main() {
 			for(i=0;!match && i<eep_rfindex;i++){
 				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
+					if(!i)match = 2;
 					send_gsm_byte(i/10+'0');
 					send_gsm_byte(i%10+'0');
 				}
@@ -218,18 +275,27 @@ void main() {
 
 			if(mode){
 				if(!match){
-					if(eep_rfindex>99) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
-					else{
+					if(mode==3){
+						//remote khan cap
 						IAP_docxoasector2();
-						eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3-SECTOR2] = data[0];
-						eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+1-SECTOR2] = data[1];
-						eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+2-SECTOR2] = data[2];
-						eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
+						eeprom_buf[0] = data[0];
+						eeprom_buf[1] = data[1];
+						eeprom_buf[2] = data[2];
 						IAP_ghisector2();
-						// send_gsm_byte(' ');
-						// send_gsm_hex(eep_rfdata[eep_rfindex*3-3]);
-						// send_gsm_hex(eep_rfdata[eep_rfindex*3-2]);
-						// send_gsm_hex(eep_rfdata[eep_rfindex*3-1]);
+					}else{
+						if(eep_rfindex>98) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
+						else{
+							IAP_docxoasector2();
+							eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+3-SECTOR2] = data[0];
+							eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+4-SECTOR2] = data[1];
+							eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+5-SECTOR2] = data[2];
+							eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
+							IAP_ghisector2();
+							// send_gsm_byte(' ');
+							// send_gsm_hex(eep_rfdata[eep_rfindex*3-3]);
+							// send_gsm_hex(eep_rfdata[eep_rfindex*3-2]);
+							// send_gsm_hex(eep_rfdata[eep_rfindex*3-1]);
+						}
 					}
 				}
 				mode = rfstop = 0;
@@ -240,15 +306,16 @@ void main() {
 					// send_gsm_byte(rfdata[21]+'0');
 					// send_gsm_byte(rfdata[22]+'0');
 					// send_gsm_byte(rfdata[23]+'0');
-					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
-					if(rf_khancap>29){
-						relay2giu = 0;
-						Relay2 = 0;
-						Relay1 = 1;
-						delay_ms(100);
-						Relay1 = 0;
-						rf_khancap = rf_khancap_delay = 0;
-						
+					if(match==2){
+						if(!phim_back_doi){
+							phim_back_nhan = 0;
+							xoadanhba(0);
+							IAP_xoasector(SECTOR2);
+							IAP_ghibyte(RFINDEX_EEPROM,0);
+							IAP_docxoasector1();
+							eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+							IAP_ghisector1();			
+						}
 					}
 					if(rflock){
 						if(!cmd[2]){
@@ -269,7 +336,19 @@ void main() {
 							Relay3 = !cmd[3] && !Relay1 && !Relay2;
 						}
 					}
-									
+					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
+					if(relay2giu && (rf_khancap>29 || (match==2 &&  !cmd[1] ))){
+						 IAP_docxoasector1();
+                		eeprom_buf[KHOA_EEPROM] = 0;
+               			IAP_ghisector1();
+						relay2giu = 0;
+						Relay2 = 0;
+						Relay1 = 1;
+						delay_ms(100);
+						Relay1 = 0;
+						rf_khancap = rf_khancap_delay = 0;
+						
+					}				
 					
 				}
 				
@@ -277,54 +356,102 @@ void main() {
 			rfstatus = 0; 
 			rfprocess = 0;
 		}
-		if(phim_cong_nhan){
-			u16 doims = 200;
 
+
+		if(phim_cong_nhan){
 			phim_cong_nhan = 0;
-			kiemtrataikhoan();
-			LCD_guilenh(0x80);
-			LCD_guichuoi(lenh_sms);
-			while(!phim_cong_nhan && doims--)delay_ms(300);
-			phim_cong_nhan = 0;
-			kiemtrasodienthoai();
-			LCD_guilenh(0x84);
-			phone[10] = 0;
-			LCD_guichuoi(phone);
-			doims=200;
-			while(!phim_cong_nhan && doims--)delay_ms(300);
-			// while(!phim_cong_nhan)WATCHDOG;
-			phim_cong_nhan=0;
+			
+			if(mode == 1 || mode ==4){
+				if(sub_mode<4){
+					pin[sub_mode] = (pin[sub_mode]+1)%10;
+				}else{
+					new_pin[sub_mode-4] = (new_pin[sub_mode-4]+1)%10;
+				}
+			}else if(mode == 2){
+				u16 doims = 200;
+
+				
+				kiemtrataikhoan();
+				LCD_guilenh(0x80);
+				LCD_guichuoi(lenh_sms);
+				while(!phim_cong_nhan && doims--)delay_ms(300);
+				phim_cong_nhan = 0;
+				kiemtrasodienthoai();
+				LCD_guilenh(0x84);
+				phone[10] = 0;
+				LCD_guichuoi(phone);
+				doims=200;
+				while(!phim_cong_nhan && doims--)delay_ms(300);
+				// while(!phim_cong_nhan)WATCHDOG;
+				mode_wait = 60;
+				phim_cong_nhan=0;
+			}
+			
 		}
 
 		if(lcd_update_chop){
+			LCD_xoa(TREN);
 			lcd_update_chop = 0;
-			LCD_xoa(TREN);	
-			LCD_guilenh(0x8e);
-			LCD_guidulieu(signal/10+'0');
-			LCD_guidulieu(signal%10+'0');
-			LCD_guilenh(0x80);
-			if(mode==1) LCD_guichuoi("CHINH:");
-			else if(mode==2) LCD_guichuoi("PHU  :");
-			// else if(mode==3) LCD_guichuoi("TAM  :");
-			else LCD_guichuoi(Relay1? "ON :":"OFF:");
+			if(mode == 1){
+				LCD_guilenh(0x80);
+				LCD_guichuoi("PIN:");
+				LCD_guidulieu(pin[0]+'0');
+				LCD_guidulieu(pin[1]+'0');
+				LCD_guidulieu(pin[2]+'0');
+				LCD_guidulieu(pin[3]+'0');
+				LCD_guidulieu(so_lan_sai_pin?'X':' ');
+				LCD_guidulieu(so_lan_sai_pin?so_lan_sai_pin+'0':' ');
+			}else{
+				LCD_guilenh(0x8e);
+				LCD_guidulieu(signal/10+'0');
+				LCD_guidulieu(signal%10+'0');
+				LCD_guilenh(0x80);
+				if(mode==2) LCD_guichuoi("CHINH:");
+				else if(mode==3) LCD_guichuoi("PHU  :");
+				// else if(mode==3) LCD_guichuoi("TAM  :");
+				else if(mode == 4){
+					LCD_guichuoi("PIN:");
+					LCD_guidulieu(pin[0]+'0');
+					LCD_guidulieu(pin[1]+'0');
+					LCD_guidulieu(pin[2]+'0');
+					LCD_guidulieu(pin[3]+'0');
+					LCD_guidulieu(so_lan_sai_pin?'X':' ');
+					LCD_guidulieu(so_lan_sai_pin?so_lan_sai_pin+'0':' ');
+					LCD_guidulieu(' ');
+					LCD_guidulieu(new_pin[0]+'0');
+					LCD_guidulieu(new_pin[1]+'0');
+					LCD_guidulieu(new_pin[2]+'0');
+					LCD_guidulieu(new_pin[3]+'0');
+					LCD_guidulieu(' ');
+				}
+				else LCD_guichuoi(Relay1? "ON :":"OFF:");
+			}
+			
+				
+			
 			LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 			// LCD_guilenh(0xcf);
 			// LCD_guidulieu(nha_mang);
 			LCD_guingay(0xc0,year,month,day);
+			if(mode == 1 || mode == 4){
+				LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
+			}else{
+				LCD_noblink();
+			}
 		}
 		if(phone_update){
 			phone_update = 0;
 			if(co_cuoc_goi_toi){
 				co_cuoc_goi_toi = 0;
-				if(mode){
+				if(mode>1 && mode<4){
 					gsm_sendandcheck("AT\r",15,1,ver);
 					phone[10] = 0;
-					if(phone_so_sanh_that_bai) gsm_themdanhba(phone,mode==1?'m':(mode==2?'u':'t'));
+					if(phone_so_sanh_that_bai) gsm_themdanhba(phone,mode==2?'m':'u');
 					// gsm_sendandcheck("AT+CPBR=1,99\r", 15, 1,"  SENDING CPBR  ");
-					baocaosms("\rLuu danh ba thanh cong");
+					baocaosms("\rLuu thanh cong");
 				}else{
 					if(!phone_so_sanh_that_bai){
-						if(relay2giu)baocaosms("\rCua cuon dang khoa");
+						if(relay2giu)baocaosms("\rCua dang khoa");
                     	else{
 							rfprocess = 1;
 							Relay1 = 1;

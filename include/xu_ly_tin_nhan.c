@@ -16,10 +16,10 @@ void xu_ly_tin_nhan(){
                 break;
             case 'S':
             case 's':
-                if(eep_khoa && !phone_master) break;
-                if(eep_khoa){
+                if((eep_khoa&1) && !phone_master) break;
+                if(eep_khoa&1){
                     IAP_docxoasector1();
-                    eeprom_buf[KHOA_EEPROM] = 0;
+                    eeprom_buf[KHOA_EEPROM] &= 2;
                     IAP_ghisector1();
                     // baocaosms("\rMo Khoa cua cuon");
                 }
@@ -34,17 +34,30 @@ void xu_ly_tin_nhan(){
             case 'K':
             case 'k':
                 if(!phone_master) break;
-                IAP_docxoasector1();
-                eeprom_buf[KHOA_EEPROM] = 1;
-                IAP_ghisector1();
-                Relay2 = 1;relay2giu = 1;
-                phone[10] = 0;
-                luu_lich_su(phone,3);
-                baocaosms("\rKhoa cua cuon");
+                if(lenh_sms[1] == 'P' || lenh_sms[1] == 'p' ){
+                    IAP_docxoasector1();
+                    if(lenh_sms[4] == 'N' || lenh_sms[4] == 'n' ){
+                        eeprom_buf[KHOA_EEPROM] |= 2;
+                        baocaosms("\rKhoa ban phim");
+                    }else{
+                        eeprom_buf[KHOA_EEPROM] &= 1;
+                        baocaosms("\rMo ban phim");
+                    } 
+                    IAP_ghisector1();
+                    
+                }else{
+                    IAP_docxoasector1();
+                    eeprom_buf[KHOA_EEPROM] |= 1;
+                    IAP_ghisector1();
+                    Relay2 = 1;relay2giu = 1;
+                    phone[10] = 0;
+                    luu_lich_su(phone,3);
+                    baocaosms("\rKhoa cua cuon");
+                }
                 break;
             case 'R':
             case 'r':
-                baocaosms("\rreset gsm sau10s");
+                baocaosms("\rreset gsm sau 10s");
                 gsm_pw = 0; 
                 break;
             case 'P':

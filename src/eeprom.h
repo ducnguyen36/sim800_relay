@@ -4,8 +4,9 @@
 #define     MOVC_START_ADDRESS  0xF000
 
 #define        PIN_EEPROM                   SECTOR1 
-#define        BAOCAO_EEPROM                PIN_EEPROM+4 
-#define        KHOA_EEPROM                  BAOCAO_EEPROM+1 
+#define        BAOCAO_EEPROM                PIN_EEPROM+4
+#define        HUONG_MOTOR                  BAOCAO_EEPROM+1
+#define        KHOA_EEPROM                  HUONG_MOTOR+1 
 #define        UPS_EEPROM                   KHOA_EEPROM+1 
 #define        INDEX_HISTORY_EEPROM         UPS_EEPROM+1 
 #define        HISTORY_EEPROM               INDEX_HISTORY_EEPROM+1

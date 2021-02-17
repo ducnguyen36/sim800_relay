@@ -90,9 +90,10 @@ __bit      phim_cong_cu;
 __bit      phim_cong_giu;
 u8 __xdata phim_cong_doi;
 
-u8 __xdata mode;
+u8 __xdata mode, sub_mode;
 __bit chop;
 u8 __xdata mode_wait;
+u8 __xdata pin[4],new_pin[4],so_lan_sai_pin;
 
 
 //GSM MODULE
