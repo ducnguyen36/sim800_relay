@@ -28,7 +28,7 @@ u8 __data so_lan_goi_dien;
 u8 __data delay_cuoc_goi_ke_tiep;
 __bit co_cuoc_goi_toi;
 __bit phone_so_sanh_that_bai;
-__bit phone_master;
+__bit phone_master,phone_super;
 
 __bit phone_header;
 __bit pin_chinh_xac;

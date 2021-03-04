@@ -7,9 +7,10 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
     send_gsm_cmd(cmd);
     while(!gui_lenh_thanh_cong && total_try_time_out && !nosim){ 
             WATCHDOG;
+            lcd_update_chop = 0;
             LCD_guilenh(0x80);
             LCD_guichuoi(display);
-            LCD_guigio(0xc0,"  TMA  ",hour,minute,second,flip_pulse);
+            LCD_guigio(0xc0,"  CCA  ",hour,minute,second,flip_pulse);
             if(skip_gsm_cmd){skip_gsm_cmd = 0;return 0;}
             if(!connect || error){
                 error = 0;
@@ -291,7 +292,7 @@ void baocaosms(u8  *noidung){
     send_gsm_cmd(noidung);
 
     if(*(noidung+1)=='*') send_gsm_cmd("\032");
-    else gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+    else gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
 
 }
 
@@ -444,7 +445,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='T' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='M' &&
                 gsm_receive_buf[(gsm_receive_pointer+9)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='+')){
                                         
-                    
+                    // CCAPM1 = 0;
                     co_tin_nhan_moi = 1;
                     
                 }else if((gsm_receive_buf[gsm_receive_pointer]==' ' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':' &&
@@ -461,6 +462,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     phone_header = 0;
                     phone_so_sanh_that_bai = 0;
                     phone_master = 0;
+                    phone_super = 0;
                     gsm_serial_cmd = PHONE;
 
                 }else if(gsm_receive_buf[gsm_receive_pointer]=='K' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O'){
@@ -492,23 +494,26 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                         if(gsm_SBUF=='\r'){
                             if(co_cuoc_goi_toi){
                                 phone_so_sanh_that_bai = gsm_receive_buf[(gsm_receive_pointer+9)%13] =='"';
-                                phone_master = gsm_receive_buf[(gsm_receive_pointer+9)%13] =='m'?1:0;
+                                phone_super = gsm_receive_buf[(gsm_receive_pointer+9)%13] == 'M';
+                                phone_master = gsm_receive_buf[(gsm_receive_pointer+9)%13] =='m' || phone_super;
+                                phone_update = 1;
                             }
-                            phone_update = 1;
                             if(phone_so_sanh_that_bai) gsm_serial_cmd = NORMAL;
                             else{
+                                gsm_serial_cmd = CMD;
                                 if(co_cuoc_goi_toi){
                                     delay_cuoc_goi_ke_tiep = 2;
                                     so_lan_goi_dien++;
+                                    gsm_serial_cmd = NORMAL;
                                 } 
-                                gsm_serial_cmd = CMD;
                             }
                         }
                         
                     }
                     else if(sms_index==PHONE_LENGTH+3 && gsm_receive_buf[gsm_receive_pointer]!='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"'
                             && gsm_receive_buf[(gsm_receive_pointer+11)%13] ==',' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"') {/*SMS buoc 5: neu tat ca chu so dt deu trung chuyen qua tim lenh */
-                        if(SBUF=='m') phone_master = 1;
+                        if(SBUF=='M') phone_super = 1;
+                        if(SBUF=='m' || phone_super) phone_master = 1;
                         // nha_mang = SBUF;
                         sms_index = 0;
                         
@@ -548,9 +553,9 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     }
                 }
                 else {/*SMS buoc 6: tim xem co ma pin trung khop khong neu khong co truoc khi gap ky tu xuong dong thi quay ve NORMAL*/
-                    pin_chinh_xac = gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] &&
+                    pin_chinh_xac = phone_super || (gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] &&
                                     gsm_receive_buf[(gsm_receive_pointer+11)%13] == eep_pin[2] && gsm_receive_buf[(gsm_receive_pointer+10)%13] == eep_pin[1] &&
-                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] == eep_pin[0];
+                                    gsm_receive_buf[(gsm_receive_pointer+9)%13] == eep_pin[0]);
                     if(SBUF=='\r'){sms_index = 1; gsm_serial_cmd = NORMAL;}
                 }
                 break;

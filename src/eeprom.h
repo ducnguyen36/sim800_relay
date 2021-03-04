@@ -23,6 +23,7 @@
 
 #define pinEEprom                           PIN_EEPROM+MOVC_START_ADDRESS
 #define baocaoEEprom                        BAOCAO_EEPROM+MOVC_START_ADDRESS
+#define huongEEprom                         HUONG_MOTOR+MOVC_START_ADDRESS
 #define khoaEEprom                          KHOA_EEPROM+MOVC_START_ADDRESS
 #define upsEEprom                           UPS_EEPROM+MOVC_START_ADDRESS
 #define index_historyEEprom                 INDEX_HISTORY_EEPROM+MOVC_START_ADDRESS
@@ -35,6 +36,7 @@
 
 __code __at        pinEEprom                    u8 eep_pin[4];
 __code __at        baocaoEEprom                 u8 eep_baocao;
+__code __at        huongEEprom                  u8 eep_huong;
 __code __at        khoaEEprom                   u8 eep_khoa;
 __code __at        upsEEprom                    u8 eep_ups;
 __code __at        index_historyEEprom          u8 eep_index_history;

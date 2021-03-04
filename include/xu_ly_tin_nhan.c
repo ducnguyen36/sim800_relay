@@ -57,6 +57,7 @@ void xu_ly_tin_nhan(){
                 break;
             case 'R':
             case 'r':
+                if(!phone_master) break;
                 baocaosms("\rreset gsm sau 10s");
                 gsm_pw = 0; 
                 break;
@@ -98,13 +99,21 @@ void xu_ly_tin_nhan(){
                         break;
                     }
                     rfprocess = 1;
-                    Relay3 = 1;
-                    delay_ms(100);
-                    rfprocess =  Relay3 = 0;
+                    if(eep_huong){
+                        Relay1 = 1;
+                        delay_ms(100);
+                        rfprocess =  Relay1 = 0;
+                    }else{
+                        Relay3 = 1;
+                        delay_ms(100);
+                        rfprocess =  Relay3 = 0;
+                    }
                     phone[10] = 0;
                     luu_lich_su(phone,2);
                     if(eep_baocao) baocaosms("\rXuong cua cuon");
                     else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
+                }else{
+                    baocaosms("\rLenh Khong Hop Le");
                 }
                 
                 break;
@@ -119,20 +128,29 @@ void xu_ly_tin_nhan(){
                         gsm_themdanhba(lenh_sms+4,(lenh_sms[15]!='m' && lenh_sms[15]!= 't')?'u':lenh_sms[15]);
                         baocaosms("\rthem danh ba thanh cong");
                         
-                    }else baocaosms("\rSo dt khong hop le");
+                    }else baocaosms("\rSo dt khong hop Le");
                 }else if(lenh_sms[1] == 'e' || lenh_sms[1] == 'E'){
                     if(relay2giu){
                         baocaosms("\rCua cuon dang khoa");
                         break;
                     }
                     rfprocess = 1;
-                    Relay1 = 1;
-                    delay_ms(100);
-                    rfprocess = Relay1 = 0;
+                    
+                    if(eep_huong){
+                        Relay1 = 1;
+                        delay_ms(100);
+                        rfprocess = Relay1 = 0;
+                    }else{
+                        Relay1 = 1;
+                        delay_ms(100);
+                        rfprocess = Relay1 = 0;
+                    }
                     phone[10] = 0;
                     luu_lich_su(phone,1);
                     if(eep_baocao) baocaosms("\rMo cua cuon");
                     else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
+                }else{
+                    baocaosms("\rLenh Khong Hop Le");
                 }
                
                 break;
@@ -151,6 +169,8 @@ void xu_ly_tin_nhan(){
                    IAP_ghisector1();
                    Relay4 = 0;
                    baocaosms("\rTat UPS");
+                }else{
+                    baocaosms("\rLenh Khong Hop Le");
                 }
                 break;
             case 'b':
@@ -168,10 +188,13 @@ void xu_ly_tin_nhan(){
                     IAP_docxoasector1();
                     eeprom_buf[BAOCAO_EEPROM] = 0;
                     IAP_ghisector1();
-                 }
+                 }else{
+                    baocaosms("\rLenh Khong Hop Le");
+                }
                 break;
             case 'g':
             case 'G':
+                if(!phone_master) break;
                 phone[10] = 0;
                 gsm_quay_so(phone);
                 break;
