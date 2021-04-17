@@ -58,8 +58,23 @@ void xu_ly_tin_nhan(){
             case 'R':
             case 'r':
                 if(!phone_master) break;
-                baocaosms("\rreset gsm sau 10s");
-                gsm_pw = 0; 
+                if(lenh_sms[2] == lenh_sms[4] && (lenh_sms[2] == 'r' || lenh_sms[2] == 'R') && phone_super){
+                     baocaosms("\rKhoi tao lai thiet bi");
+                    xoadanhba(0);
+					IAP_xoasector(SECTOR2);
+					IAP_ghibyte(RFINDEX_EEPROM,0);
+					IAP_docxoasector1();
+					eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+					eeprom_buf[KHOA_EEPROM] = 0;
+                    eeprom_buf[HUONG_MOTOR] = 0;
+                    eeprom_buf[UPS_EEPROM] = 0;
+                    eeprom_buf[BAOCAO_EEPROM] = 0; 
+                    IAP_ghisector1();
+					have_master = 0;
+                }else{
+                    baocaosms("\rreset gsm sau 10s");
+                    gsm_pw = 0; 
+                }
                 break;
             case 'P':
             case 'p':

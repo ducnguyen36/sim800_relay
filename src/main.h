@@ -22,10 +22,12 @@ u8 __xdata relay1_delay_tat;
 u8 __xdata relay2_delay_tat;
 u8 __xdata relay3_delay_tat;
 u8 __xdata relay4_delay_tat;
-__bit relay2giu = 1;
+__bit relay2giu;
 
 u8 __data so_lan_goi_dien;
 u8 __data delay_cuoc_goi_ke_tiep;
+u8 __xdata delay_chay_khoi_tao;
+// __bit da_chay_khoi_tao;
 __bit co_cuoc_goi_toi;
 __bit phone_so_sanh_that_bai;
 __bit phone_master,phone_super;
@@ -37,6 +39,7 @@ __bit co_tin_nhan_moi;
 __bit have_cusd;
 __bit lenh_khong_hop_le;
 __bit have_quote;
+__bit have_master;
 u8  __data  sms_index;
 u8  __data  sms_index_goc;
 

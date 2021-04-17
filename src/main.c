@@ -3,7 +3,7 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 
 
-u8 __code ver[] = " CUACUON 0.7.4";
+u8 __code ver[] = " CUACUON 0.8.3";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -56,7 +56,7 @@ void main() {
 	CLK_DIV = 0;
 	EA = 1; //bat tat ca interupt
 	/****************/
-	
+	delay_chay_khoi_tao = 30;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
 	relay1_delay_tat = 2;
@@ -70,10 +70,12 @@ void main() {
 	rf_khancap = rf_khancap_delay = 0;
 	ngay_reset_con_lai = 1;
 
+	__bit nhan_remote_lan_dau = 1;
+
 	/*validate eeprom*/
 	// u8 __xdata i;
 	IAP_docxoasector1();
-	if(eeprom_buf[INDEX_HISTORY_EEPROM]>99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
+	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
 	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
@@ -85,17 +87,15 @@ void main() {
 	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 	
 	IAP_ghisector1();
-
+	Relay4 = eep_ups?1:0;
 	IAP_docxoasector2();	
 	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
 	if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 	IAP_ghisector2();
-	rflock = eep_rflock;	
-	Relay2 = relay2giu = eep_khoa;
-	Relay4 = eep_ups?1:0;
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	delay_ms(5000);
+	
 	gsm_init();
 	
 	/*PCA TIMER 0 INIT 50us*/
@@ -118,7 +118,7 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
-	__bit have_master = kiemtraphonemaster();
+	have_master = kiemtraphonemaster();
 	__bit run_button = 0;
 	if(have_master){
 		baocaosms("\rBDK Khoi Dong");
@@ -150,7 +150,7 @@ void main() {
 		if(sms_dang_xu_ly && !mode){
 			// CCAPM1 = 0x49;
 			xu_ly_tin_nhan();
-			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1," DELETING SMS ");
+			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1,"  DELETING SMS  ");
 			sms_dang_xu_ly = 0;
 			send_gsm_byte('S');
 		}
@@ -500,7 +500,7 @@ void main() {
 			send_gsm_byte(rfindex%10+'0');
 			send_gsm_byte('-');
 			
-			for(i=0;!match && i<eep_rfindex;i++){
+			for(i=0;!match && i<eep_rfindex+2;i++){
 				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
 					if(i<2)match = i+2;
@@ -535,7 +535,7 @@ void main() {
 								// send_gsm_hex(eep_rfdata[eep_rfindex*3-3]);
 								// send_gsm_hex(eep_rfdata[eep_rfindex*3-2]);
 								// send_gsm_hex(eep_rfdata[eep_rfindex*3-1]);
-								if(kiemtraphonemaster()) baocaosms("\rremote dc hoc");
+								if(kiemtraphonemaster() && eep_baocao) baocaosms("\rremote dc hoc");
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -543,11 +543,11 @@ void main() {
 							eeprom_buf[4] = data[1];
 							eeprom_buf[5] = data[2];
 							IAP_ghisector2();
-							if(kiemtraphonemaster()) baocaosms("\rmodule bao dong duoc hoc");
+							if(kiemtraphonemaster() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
 						}
 					}
 				}
-				mode = rfstop = 0;
+				rfstop = 0;
 			}else{
 				if(match){
 					// send_gsm_byte('$');
@@ -583,6 +583,10 @@ void main() {
 							IAP_ghisector2();
 						}else if(!relay2giu){
 							Relay2 = !cmd[2];
+							if(nhan_remote_lan_dau){
+								nhan_remote_lan_dau = 0;
+								delay_chay_khoi_tao += 60;
+							}
 							if(eep_huong){
 								Relay3 = !cmd[1] && !Relay2;
 								Relay1 = !cmd[3] && !Relay3 && !Relay2;
@@ -594,7 +598,7 @@ void main() {
 					}
 					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
 					if(relay2giu && (rf_khancap>29 || (match==2 &&  !cmd[1] ))){
-						 IAP_docxoasector1();
+						IAP_docxoasector1();
                 		eeprom_buf[KHOA_EEPROM] = 0;
                			IAP_ghisector1();
 						relay2giu = 0;
@@ -712,7 +716,7 @@ void main() {
 					// gsm_sendandcheck("AT+CPBR=1,99\r", 15, 1,"  SENDING CPBR  ");
 					if(have_master)baocaosms("\rLuu thanh cong");
 					else baocaosms("\rLuu Master");
-					if(have_master && kiemtraphonemaster())baocaosms("\rDT moi duoc luu");
+					if(have_master && kiemtraphonemaster() && eep_baocao)baocaosms("\rDT moi duoc luu");
 					have_master = 1;
 					
 				}else{
@@ -742,6 +746,12 @@ void main() {
 			// LCD_guichuoi(phone);
 			CCAPM1 = 0x49;
 		}
+		// if(chay_khoi_tao){
+		// 	chay_khoi_tao = 0;
+		// 	rflock = eep_rflock;	
+		// 	Relay2 = relay2giu = eep_khoa;
+		// 	Relay4 = eep_ups?1:0;
+		// }
 		WATCHDOG;
 	}
 }

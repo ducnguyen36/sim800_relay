@@ -279,7 +279,7 @@ void baocaosms(u8  *noidung){
    
     if(!send_sms()) return;
     send_gsm_cmd(" KHOA=");
-    send_gsm_cmd(relay2giu?"ON":"OFF");
+    send_gsm_cmd(eep_khoa?"ON":"OFF");
 
 
   
