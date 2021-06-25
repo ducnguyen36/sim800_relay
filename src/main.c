@@ -2,9 +2,15 @@
 #include "true.h"
 #include "main.h"
 // _IAP_CONTR = 0x60 //reset to ISP
+/*
+	Change Log:
+		0.2.6: +doi relay 4 thanh relas4 va nguoc lai
+			de khong can module mo rong van khoi dong lai thang may duoc
+		0.2.7: kiem tra co phone master moi gui thong bao khoi dong
 
+*/
 
-u8 __code ver[] = " THANGMAY 0.2.6";
+u8 __code ver[] = " THANGMAY 0.2.7";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -67,8 +73,8 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
-	kiemtraphonemaster();
-	baocaosms("\rKhoi dong");
+	if(kiemtraphonemaster()) baocaosms("\rKhoi dong");
+
 	while(1){
 		if(!mode_wait && mode) mode = 0;
 
