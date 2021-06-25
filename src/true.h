@@ -45,7 +45,7 @@
 #define     RelayS1    P27
 #define     RelayS2    P26
 #define     RelayS3    P25
-#define     RelayS4    P24
+#define     Relay4     P24
 
 
 #define	cam_sign_out	cam_out1
@@ -55,6 +55,6 @@
 #define		Relay1  		P23
 #define		Relay2      	P22
 #define		Relay3  		P21
-#define		Relay4  		P42
+#define		RelayS4  		P42
 
 #endif
