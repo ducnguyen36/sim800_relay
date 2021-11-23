@@ -72,8 +72,12 @@ __bit kiemtraphonemaster(){
         if(lenh_sms[10]>64)i = 11;
         else if(lenh_sms[11]>64) i = 12;
         else i = 13;
-        for(j = 1;j<10;j++) phone[j] = lenh_sms[i+j];
+        for(j = 1;j<10;j++){
+            if(j<9 && (lenh_sms[i+j]>'9' || lenh_sms[i+j]<'0')) return 0;
+            phone[j] = lenh_sms[i+j];
+        } 
         phone[9] -= (lenh_sms[159]==1?37:27);
+        if(phone[9]<'0'|| phone[9]>'9') return 0;
         phone[10] = 0;
         return 1; 
     }

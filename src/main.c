@@ -10,7 +10,7 @@
 
 */
 
-u8 __code ver[] = " THANGMAY 0.2.7";
+u8 __code ver[] = " THANGMAY 0.3.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
