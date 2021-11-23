@@ -4,9 +4,10 @@
 /*
 	change log:
 		0.8.4: sua loi kiem tra phonemaster voi danh ba mac dinh cua sim
+		0.8.5: them thu vao ngay thang nam
 */
 
-u8 __code ver[] = " CUACUON 0.8.4";
+u8 __code ver[] = " CUACUON 0.8.5";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -168,7 +169,7 @@ void main() {
 					LCD_guilenh(0x80);
 					LCD_guichuoi(ver);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-					LCD_guingay(0xc0,year,month,day);
+					LCD_guingay(0xc0,year,month,day,date);
 				}
 				//button
 				//M

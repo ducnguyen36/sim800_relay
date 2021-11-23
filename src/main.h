@@ -59,6 +59,7 @@ u8  __xdata  rf_khancap,rf_khancap_delay;
 u8	__data  second;
 u8	__data  minute;
 u8	__data  hour;
+u8	__data  date;
 u8	__data  day;
 u8	__data  month;
 u8	__data  year;
