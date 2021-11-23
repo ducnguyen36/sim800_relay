@@ -71,11 +71,10 @@ void main() {
 	ngay_reset_con_lai = 1;
 
 	__bit nhan_remote_lan_dau = 1;
-	__bit lan_chay_dau_sau_reset = 0;
 	/*validate eeprom*/
 	// u8 __xdata i;
 	IAP_docxoasector1();
-	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97){eeprom_buf[INDEX_HISTORY_EEPROM]=0;lan_chay_dau_sau_reset = 1;}
+	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
 	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
@@ -118,7 +117,7 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
-	have_master = !lan_chay_dau_sau_reset && kiemtraphonemaster();
+	have_master = kiemtraphonemaster();
 	__bit run_button = 0;
 	if(have_master){
 		baocaosms("\rBDK Khoi Dong");
