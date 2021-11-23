@@ -1,7 +1,10 @@
 #include "true.h"
 #include "main.h"
 // _IAP_CONTR = 0x60 //reset to ISP
-
+/*
+	change log:
+		0.8.4: sua loi kiem tra phonemaster voi danh ba mac dinh cua sim
+*/
 
 u8 __code ver[] = " CUACUON 0.8.4";
 
