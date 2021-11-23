@@ -151,7 +151,7 @@ void LCD_guigio(u8 vitri, u8 *chuoi, u8 gio, u8 phut, u8 giay,__bit haicham){
 	
 }
 
-void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay){
+void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay, u8 thu){
 	LCD_guilenh(vitri);
 	LCD_guidulieu(ngay/10+'0');
 	LCD_guidulieu(ngay%10+'0');
@@ -159,5 +159,5 @@ void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay){
 	LCD_guidulieu(thang%10+'0');
 	LCD_guidulieu(nam/10+'0');
 	LCD_guidulieu(nam%10+'0');
-	LCD_guidulieu(' ');
+	LCD_guidulieu(thu);
 }
