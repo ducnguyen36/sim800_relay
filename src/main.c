@@ -290,13 +290,13 @@ void main() {
 					lcd_update_chop =  0;
 					// LCD_blinkXY(TREN,4+sub_mode);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-					LCD_guingay(0xc0,year,month,day);
+					LCD_guingay(0xc0,year,month,day,date);
 				}
 				
 				break;
 			case 2:
 				LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-				LCD_guingay(0xc0,year,month,day);
+				LCD_guingay(0xc0,year,month,day,date);
 				LCD_guilenh(0x80);
 				switch(sub_mode){
 					case 0: LCD_guichuoi(have_master?"CHINH:          ":"MASTER:          "); break;
@@ -435,7 +435,7 @@ void main() {
 					lcd_update_chop =  0;
 					// LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-					LCD_guingay(0xc0,year,month,day);
+					LCD_guingay(0xc0,year,month,day,date);
 				}
 				break;
 			case 4:
@@ -459,7 +459,7 @@ void main() {
 					mode = 2;
 				}
 				LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-				LCD_guingay(0xc0,year,month,day);
+				LCD_guingay(0xc0,year,month,day,date);
 				break;
 		}
 		
@@ -701,7 +701,7 @@ void main() {
 		// 	LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 		// 	// LCD_guilenh(0xcf);
 		// 	// LCD_guidulieu(nha_mang);
-		// 	LCD_guingay(0xc0,year,month,day);
+		// 	LCD_guingay(0xc0,year,month,day,date);
 		// 	if(mode == 1 || mode == 4){
 		// 		LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
 		// 	}else{
