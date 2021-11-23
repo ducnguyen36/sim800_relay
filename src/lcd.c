@@ -159,5 +159,5 @@ void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay, u8 thu){
 	LCD_guidulieu(thang%10+'0');
 	LCD_guidulieu(nam/10+'0');
 	LCD_guidulieu(nam%10+'0');
-	LCD_guidulieu(thu);
+	LCD_guidulieu(thu+'0');
 }
