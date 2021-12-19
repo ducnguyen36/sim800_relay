@@ -26,6 +26,18 @@ void xunggiay(){
 		gsm_delay_reset = 10;
 		gsm_reset=1;
 	}
+
+	if(tinhieuD){
+		delay_tinhieuD_thap = 15;
+		if(delay_tinhieuD_cao)delay_tinhieuD_cao--;
+	}else{
+		delay_tinhieuD_cao = 15;
+		if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
+	}
+
+	if(!loi_bien_tan && !delay_tinhieuD_cao) loi_bien_tan = 1;
+	else if(loi_bien_tan && !delay_tinhieuD_thap) loi_bien_tan = 0;
+
 	if(++second>59){
 		second=0;
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
@@ -72,27 +84,29 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		phim_cong_nhan = phim_cong_nhan || (!phim_cong_giu && phim_cong_xuong);
 		phim_cong_cu = phim_cong_vao;
 
-		if(tinhieuD){
-			delay_tinhieuD_thap = 80;
-			if(delay_tinhieuD_cao)delay_tinhieuD_cao--;
-		}else{
-			delay_tinhieuD_cao = 80;
-			if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
-		}
+		
 
-		if(tinhieuA){
-			delay_tinhieuA_thap = 40;
-			if(delay_tinhieuA_cao)delay_tinhieuA_cao--;
-		}else{
-			delay_tinhieuA_cao = 40;
-			if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
-		}
+		// if(tinhieuD){
+		// 	delay_tinhieuD_thap = 80;
+		// 	if(delay_tinhieuD_cao)delay_tinhieuD_cao--;
+		// }else{
+		// 	delay_tinhieuD_cao = 80;
+		// 	if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
+		// }
 
-		if(!loi_bien_tan && !delay_tinhieuD_thap && !delay_tinhieuA_thap)loi_bien_tan = 1;
+		// if(tinhieuA){
+		// 	delay_tinhieuA_thap = 40;
+		// 	if(delay_tinhieuA_cao)delay_tinhieuA_cao--;
+		// }else{
+		// 	delay_tinhieuA_cao = 40;
+		// 	if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
+		// }
 
-		if(!che_do_stop && !delay_tinhieuD_thap && !delay_tinhieuA_cao) che_do_stop = 1;
+		// if(!loi_bien_tan && !delay_tinhieuD_thap && !delay_tinhieuA_thap)loi_bien_tan = 1;
 
-		if(!delay_tinhieuD_cao)loi_bien_tan = che_do_stop = 0;
+		// if(!che_do_stop && !delay_tinhieuD_thap && !delay_tinhieuA_cao) che_do_stop = 1;
+
+		// if(!delay_tinhieuD_cao)loi_bien_tan = che_do_stop = 0;
 		
 
 		

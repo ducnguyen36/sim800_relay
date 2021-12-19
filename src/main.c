@@ -4,13 +4,16 @@
 // _IAP_CONTR = 0x60 //reset to ISP
 /*
 	Change Log:
-		0.2.6: +doi relay 4 thanh relas4 va nguoc lai
+		0.2.6: +doi relay 4 thanh relay4 va nguoc lai
 			de khong can module mo rong van khoi dong lai thang may duoc
 		0.2.7: kiem tra co phone master moi gui thong bao khoi dong
 
 */
 
-u8 __code ver[] = " THANGMAY 0.3.0";
+
+
+
+u8 __code ver[] = "THANGMAY 0.3.0A";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
