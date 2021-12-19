@@ -83,7 +83,9 @@ void main() {
 
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
+			RelayS4 = 1;
 			if(kiemtraphonemaster())baocaosms("\rLoi bien tan");
+
 		}
 		if(bao_loi_bien_tan && !loi_bien_tan){
 			bao_loi_bien_tan = 0;
@@ -162,7 +164,7 @@ void main() {
 				}else{
 					if(!phone_so_sanh_that_bai){
 						RelayS4 = 1;
-						baocaosms("\rTAT BAT = CUOC GOI");
+						baocaosms("\rRESET THANG MAY");
 					} 
 				}
 			}	
