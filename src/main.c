@@ -82,6 +82,9 @@ void main() {
 	if(kiemtraphonemaster()) baocaosms("\rKhoi dong");
 
 	while(1){
+		if(!ngay_reset_con_lai && !hour && minute>5){
+			IAP_CONTR = 0x60;
+		}
 		if(!mode_wait && mode) mode = 0;
 
 		if(!bao_loi_bien_tan && loi_bien_tan){
