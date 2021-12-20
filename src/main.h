@@ -101,6 +101,7 @@ u8 __xdata   gsm_receive_pointer;
 u8 __xdata  gsm_receive_buf[15];
 
 //LOI va BAO LOI
+u8 __xdata delay_next_reset_loi_bien_tan
 
 __bit loi_bien_tan;
 __bit bao_loi_bien_tan;

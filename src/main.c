@@ -7,7 +7,9 @@
 		0.2.6: +doi relay 4 thanh relay4 va nguoc lai
 			de khong can module mo rong van khoi dong lai thang may duoc
 		0.2.7: kiem tra co phone master moi gui thong bao khoi dong
-
+		0.3.0: loi bien tan su dung x22
+		0.3.0A: loi bien tan su dung X22 va reset
+		0.3.0B: Delay next reset bien tan
 */
 
 
@@ -38,6 +40,7 @@ void main() {
 	/****************/
 	bao_loi_bien_tan = loi_bien_tan = 0;
 	bao_loi_stop = che_do_stop = 0;
+	delay_next_reset_loi_bien_tan = 0;
 	delay_tinhieuD_cao = delay_tinhieuD_thap = 80;
 	delay_tinhieuA_cao = delay_tinhieuA_thap = 80;
 	so_lan_goi_dien = 0;
@@ -84,6 +87,7 @@ void main() {
 		if(!bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
 			RelayS4 = 1;
+			delay_next_reset_loi_bien_tan = 60;
 			if(kiemtraphonemaster())baocaosms("\rLoi bien tan");
 
 		}

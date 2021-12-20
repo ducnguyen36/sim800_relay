@@ -39,6 +39,7 @@ void xunggiay(){
 	else if(loi_bien_tan && !delay_tinhieuD_thap) loi_bien_tan = 0;
 
 	if(++second>59){
+		if(delay_next_reset_loi_bien_tan) delay_next_reset_loi_bien_tan--;
 		second=0;
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
 		if(++minute>59){
