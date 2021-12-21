@@ -10,12 +10,13 @@
 		0.3.0: loi bien tan su dung x22
 		0.3.0A: loi bien tan su dung X22 va reset
 		0.3.0B: Delay next reset bien tan
+		0.3.0C: reset cabin
 */
 
 
 
 
-u8 __code ver[] = "THANGMAY 0.3.0A";
+u8 __code ver[] = "THANGMAY 0.3.0C";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -41,8 +42,8 @@ void main() {
 	bao_loi_bien_tan = loi_bien_tan = 0;
 	bao_loi_stop = che_do_stop = 0;
 	delay_next_reset_loi_bien_tan = 0;
-	delay_tinhieuD_cao = delay_tinhieuD_thap = 80;
-	delay_tinhieuA_cao = delay_tinhieuA_thap = 80;
+	delay_tinhieuD_cao = delay_tinhieuD_thap = 15;
+	delay_tinhieuA_cao = delay_tinhieuA_thap = 10;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
 	relays4_delay_tat = 6;
@@ -83,7 +84,7 @@ void main() {
 
 	while(1){
 		if(!ngay_reset_con_lai && !hour && minute>5){
-			IAP_CONTR = 0x60;
+			IAP_CONTR = 0x60; 
 		}
 		if(!mode_wait && mode) mode = 0;
 
