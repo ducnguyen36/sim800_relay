@@ -34,6 +34,12 @@ void xunggiay(){
 		delay_tinhieuD_cao = 15;
 		if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
 	}
+	if(tinhieuA){
+		delay_tinhieuA_thap = 10;
+	}else{
+		delay_tinhieuA_thap--;
+		if(!RelayS4 && !delay_tinhieuA_thap)RelayS4=1;
+	}
 
 	if(!loi_bien_tan && !delay_tinhieuD_cao) loi_bien_tan = 1;
 	else if(loi_bien_tan && !delay_tinhieuD_thap) loi_bien_tan = 0;
