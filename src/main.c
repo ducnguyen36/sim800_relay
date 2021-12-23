@@ -39,6 +39,7 @@ void main() {
 	CLK_DIV = 0;
 	EA = 1; //bat tat ca interupt
 	/****************/
+	ngay_reset_con_lai = 1;
 	bao_loi_bien_tan = loi_bien_tan = 0;
 	bao_loi_stop = che_do_stop = 0;
 	delay_next_reset_loi_bien_tan = 0;
