@@ -100,14 +100,7 @@ void main() {
 			if(kiemtraphonemaster())baocaosms("\rHet loi bien tan");
 		}
 
-		if(!bao_loi_stop && che_do_stop){
-			bao_loi_stop = 1;
-			if(kiemtraphonemaster())baocaosms("\rThang may vao che do STOP");
-		}
-		if(bao_loi_stop && !che_do_stop){
-			bao_loi_stop = 0;
-			if(kiemtraphonemaster())baocaosms("\rThang may thoat khoi che do STOP");
-		}
+		
 
 		if(co_tin_nhan_moi){
 			co_tin_nhan_moi = 0;
