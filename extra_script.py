@@ -2,8 +2,8 @@ import json
 Import("env")
 
 
-print(env.Dump())
-print(env["PROGNAME"])
+# print(env.Dump())
+# print(env["PROGNAME"])
 # my_flags = env.ParseFlags(env['BUILD_FLAGS'])
 # print(my_flags)
 
@@ -11,4 +11,4 @@ print(env["PROGNAME"])
 # print(defines.get("VERSION"))
 
 env.Replace(PROGNAME="firmware")
-print(env["PROGNAME"])
+# print(env["PROGNAME"])

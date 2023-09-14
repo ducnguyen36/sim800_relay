@@ -11,12 +11,13 @@
 		0.3.0A: loi bien tan su dung X22 va reset
 		0.3.0B: Delay next reset bien tan
 		0.3.0C: reset cabin
+		0.3.0D: sua loi reset lien tuc
 */
 
 
 
 
-u8 __code ver[] = "THANGMAY 0.3.0C";
+u8 __code ver[] = "THANGMAY 0.3.0D";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -89,7 +90,7 @@ void main() {
 		}
 		if(!mode_wait && mode) mode = 0;
 
-		if(!bao_loi_bien_tan && loi_bien_tan){
+		if(!delay_next_reset_loi_bien_tan && !bao_loi_bien_tan && loi_bien_tan){
 			bao_loi_bien_tan = 1;
 			RelayS4 = 1;
 			delay_next_reset_loi_bien_tan = 60;
