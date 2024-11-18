@@ -59,7 +59,7 @@ void main() {
 	delay_chay_khoi_tao = 30;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
-	relay1_delay_tat = 2;
+	relay1_delay_tat = 10;
 	relay2_delay_tat = 2;
 	relay3_delay_tat = 2;
 	relay4_delay_tat = 2;
@@ -74,29 +74,29 @@ void main() {
 
 	/*validate eeprom*/
 	// u8 __xdata i;
-	IAP_docxoasector1();
-	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
-	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
-	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
-	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
-	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
-	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
-	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
-	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
-	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
-	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+	// IAP_docxoasector1();
+	// if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
+	// if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
+	// if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
+	// if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
+	// if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
+	// if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
+	// || (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
+	// || (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
+	// || (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
+	// eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 	
-	IAP_ghisector1();
-	Relay4 = eep_ups?1:0;
-	IAP_docxoasector2();	
-	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
-	if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
-	IAP_ghisector2();
+	// IAP_ghisector1();
+	// Relay4 = eep_ups?1:0;
+	// IAP_docxoasector2();	
+	// if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
+	// if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
+	// IAP_ghisector2();
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	delay_ms(5000);
 	
-	gsm_init();
+	// gsm_init();
 	
 	/*PCA TIMER 0 INIT 50us*/
 	PCA_Timer_init();	
@@ -105,132 +105,135 @@ void main() {
 	LCD_Init();
 
 	// gsm_thietlapsim800();
-	if(!nosim && gsm_thietlapsim800()){
-		gsm_thietlapngaygiothuc();
-		gsm_thietlapgoidien();
-		gsm_thietlapnhantin();
-	}
+	// if(!nosim && gsm_thietlapsim800()){
+	// 	gsm_thietlapngaygiothuc();
+	// 	gsm_thietlapgoidien();
+	// 	gsm_thietlapnhantin();
+	// }
 
 	mode_wait = 60;
 
 	/******** Initial watdog ****WDT**/	
 	// WDT_CONTR = EN_WDT | CLR_WDT | WDT_SCALE_64; // Enable watchdog, clear watchdog, pre scale = 64, watchdog idle mode = NO
 	
-	phone[0] = '0';
-	phone[10] = 0;
-	have_master = kiemtraphonemaster();
-	__bit run_button = 0;
-	if(have_master){
-		baocaosms("\rBDK Khoi Dong");
-	}
+	// phone[0] = '0';
+	// phone[10] = 0;
+	// have_master = kiemtraphonemaster();
+	// __bit run_button = 0;
+	// if(have_master){
+	// 	baocaosms("\rBDK Khoi Dong");
+	// }
 	while(1){
-		if(gio_out){
-			gio_out = 0;
-			gsm_thietlapngaygiothuc();
-		}
-		if(phut_out && eep_ups){
-			phut_out=0;
-			if(eep_ups==1) Relay4 = 0;
-			IAP_docxoasector1();
-			eeprom_buf[UPS_EEPROM]--;
-			IAP_ghisector1();
-		}
-		if(!mode_wait && mode){
-			mode = sub_mode = 0;
-			pin[0] = pin[1] = pin[2] = pin[3] = 0;
-			new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
+		// if(gio_out){
+		// 	gio_out = 0;
+		// 	gsm_thietlapngaygiothuc();
+		// }
+		// if(phut_out && eep_ups){
+		// 	phut_out=0;
+		// 	if(eep_ups==1) Relay4 = 0;
+		// 	IAP_docxoasector1();
+		// 	eeprom_buf[UPS_EEPROM]--;
+		// 	IAP_ghisector1();
+		// }
+		// if(!mode_wait && mode){
+		// 	mode = sub_mode = 0;
+		// 	pin[0] = pin[1] = pin[2] = pin[3] = 0;
+		// 	new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
 
-		} 
-		if(co_tin_nhan_moi){
-			co_tin_nhan_moi = 0;
-			gsm_sendandcheck("AT\r", 15, 1,ver);
-			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
-			// send_gsm_cmd("ATAT\r");
-		}
-		if(sms_dang_xu_ly && !mode){
-			// CCAPM1 = 0x49;
-			xu_ly_tin_nhan();
-			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1,"  DELETING SMS  ");
-			sms_dang_xu_ly = 0;
-			send_gsm_byte('S');
-		}
-		if(!ngay_reset_con_lai && !hour && minute>5){
-			IAP_CONTR = 0x60;
-		}
+		// } 
+		// if(co_tin_nhan_moi){
+		// 	co_tin_nhan_moi = 0;
+		// 	gsm_sendandcheck("AT\r", 15, 1,ver);
+		// 	send_gsm_cmd("AT+CMGL=\"ALL\"\r");
+		// 	// send_gsm_cmd("ATAT\r");
+		// }
+		// if(sms_dang_xu_ly && !mode){
+		// 	// CCAPM1 = 0x49;
+		// 	xu_ly_tin_nhan();
+		// 	gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1,"  DELETING SMS  ");
+		// 	sms_dang_xu_ly = 0;
+		// 	send_gsm_byte('S');
+		// }
+		// if(!ngay_reset_con_lai && !hour && minute>5){
+		// 	IAP_CONTR = 0x60;
+		// }
 		switch(mode){
 			default:
 			case 0:
 				//display
-				if(lcd_update_chop){
-					lcd_update_chop = 0;
 					LCD_guilenh(0x80);
 					LCD_guichuoi(ver);
-					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-					LCD_guingay(0xc0,year,month,day);
-				}
+				// if(lcd_update_chop){
+				// 	lcd_update_chop = 0;
+				// 	LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
+				// 	LCD_guingay(0xc0,year,month,day);
+				// }
 				//button
 				//M
-				if(!(eep_khoa&2) && !phim_mode_doi){
-					phim_mode_nhan = 0;
-					mode_wait = 60;
-					sub_mode = 0;
-					if(have_master){
-						mode = 1;
-						LCD_xoa(TREN);
-						LCD_guilenh(0x80);
-						LCD_guichuoi("PIN:");
-						LCD_guidulieu(pin[0]+'0');
-						LCD_guidulieu(pin[1]+'0');
-						LCD_guidulieu(pin[2]+'0');
-						LCD_guidulieu(pin[3]+'0');
+				// if(!(eep_khoa&2) && !phim_mode_doi){
+				// 	phim_mode_nhan = 0;
+				// 	mode_wait = 60;
+				// 	sub_mode = 0;
+				// 	if(have_master){
+				// 		mode = 1;
+				// 		LCD_xoa(TREN);
+				// 		LCD_guilenh(0x80);
+				// 		LCD_guichuoi("PIN:");
+				// 		LCD_guidulieu(pin[0]+'0');
+				// 		LCD_guidulieu(pin[1]+'0');
+				// 		LCD_guidulieu(pin[2]+'0');
+				// 		LCD_guidulieu(pin[3]+'0');
 						
 						
-					}
-					else mode = 2;
-				}
+				// 	}
+				// 	else mode = 2;
+				// }
 				//+
 				if(phim_cong_nhan){
 					phim_cong_nhan = 0;
-					if(run_button){
-						rfprocess = 1;
-						Relay2 = 1;
-						delay_ms(100);
-						rfprocess = Relay2 = 0;
-					}else{
-						rfprocess = 1;
-						if(eep_huong){
-							Relay3 = 1;
-							delay_ms(100);
-							rfprocess = Relay3 = 0;
-						}else{
-							Relay1 = 1;
-							delay_ms(100);
-							rfprocess = Relay1 = 0;
-						}
-					}
-					run_button = !run_button;
+					Relay1 = 1;
+					count_down_flag = 0;
+					// if(run_button){
+					// 	rfprocess = 1;
+					// 	Relay2 = 1;
+					// 	delay_ms(100);
+					// 	rfprocess = Relay2 = 0;
+					// }else{
+					// 	rfprocess = 1;
+					// 	if(eep_huong){
+					// 		Relay3 = 1;
+					// 		delay_ms(100);
+					// 		rfprocess = Relay3 = 0;
+					// 	}else{
+					// 		Relay1 = 1;
+					// 		delay_ms(100);
+					// 		rfprocess = Relay1 = 0;
+					// 	}
+					// }
+					// run_button = !run_button;
 				}
 				//B
 				if(phim_back_nhan){
 					phim_back_nhan = 0;
-					if(run_button){
-						rfprocess = 1;
-						Relay2 = 1;
-						delay_ms(100);
-						rfprocess = Relay2 = 0;
-					}else{
-						rfprocess = 1;
-						if(eep_huong){
-							Relay1 = 1;
-							delay_ms(100);
-							rfprocess = Relay1 = 0;
-						}else{
-							Relay3 = 1;
-							delay_ms(100);
-							rfprocess = Relay3 = 0;
-						}
-					}
-					run_button = !run_button;
+					count_down_flag = 1;
+					// if(run_button){
+					// 	rfprocess = 1;
+					// 	Relay2 = 1;
+					// 	delay_ms(100);
+					// 	rfprocess = Relay2 = 0;
+					// }else{
+					// 	rfprocess = 1;
+					// 	if(eep_huong){
+					// 		Relay1 = 1;
+					// 		delay_ms(100);
+					// 		rfprocess = Relay1 = 0;
+					// 	}else{
+					// 		Relay3 = 1;
+					// 		delay_ms(100);
+					// 		rfprocess = Relay3 = 0;
+					// 	}
+					// }
+					// run_button = !run_button;
 				}
 				break;
 			case 1:

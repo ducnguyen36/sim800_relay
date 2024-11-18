@@ -10,7 +10,7 @@ u8  __xdata  phone[11] ;
 __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
-
+__bit count_down_flag;
 
 u8  __xdata lenh_sms[161]; 
 __bit da_gui_bao_cao;
