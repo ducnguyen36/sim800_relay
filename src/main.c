@@ -193,6 +193,7 @@ void main() {
 					phim_cong_nhan = 0;
 					Relay1 = 1;
 					count_down_flag = 0;
+					relay1_delay_tat = 10;
 					// if(run_button){
 					// 	rfprocess = 1;
 					// 	Relay2 = 1;
