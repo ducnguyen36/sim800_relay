@@ -332,7 +332,7 @@ void main() {
 				
 				if(!phim_back_doi && sub_mode <2){
 					phim_back_nhan = 0;
-					xoadanhba(0);
+					phone_del(0);
 					IAP_xoasector(SECTOR2);
 					IAP_ghibyte(RFINDEX_EEPROM,0);
 					IAP_docxoasector1();
@@ -512,7 +512,7 @@ void main() {
 					if(match==2){
 						if(phim_back_nhan){
 							phim_back_nhan = 0;
-							xoadanhba(0);
+							phone_del(0);
 							IAP_xoasector(SECTOR2);
 							IAP_ghibyte(RFINDEX_EEPROM,0);
 							IAP_docxoasector1();

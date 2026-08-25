@@ -52,7 +52,7 @@ void xu_ly_tin_nhan(){
                 if(!phone_master) break;
                 if(lenh_sms[2] == lenh_sms[4] && (lenh_sms[2] == 'r' || lenh_sms[2] == 'R') && phone_super){
                      baocaosms("\rKhoi tao lai thiet bi");
-                    xoadanhba(0);
+                    phone_del(0);
 					IAP_xoasector(SECTOR2);
 					IAP_ghibyte(RFINDEX_EEPROM,0);
 					IAP_docxoasector1();
@@ -85,7 +85,7 @@ void xu_ly_tin_nhan(){
             case 'D':
             case 'd':
                 if(!phone_master) break;
-                baocaodanhba();
+                baocao_bang_sdt();
                 break;
             case 'X':
             case 'x':
@@ -93,11 +93,11 @@ void xu_ly_tin_nhan(){
                     if(!phone_master) break;
                     if(lenh_sms[4]>='0' && lenh_sms[4]<='9' && ((lenh_sms[5]>='0' && lenh_sms[5]<='9') || lenh_sms[5] == 0)
                     && ((lenh_sms[6]>='0' && lenh_sms[6]<='9') || lenh_sms[6] == 0)){
-                        if(lenh_sms[4]=='0') xoadanhba(0);
-                        else if(!lenh_sms[5]) xoadanhba(lenh_sms[4]-'0');
-                        else if(!lenh_sms[6]) xoadanhba((lenh_sms[4]-'0')*10+lenh_sms[5]-'0');
+                        if(lenh_sms[4]=='0') phone_del(0);
+                        else if(!lenh_sms[5]) phone_del(lenh_sms[4]-'0');
+                        else if(!lenh_sms[6]) phone_del((lenh_sms[4]-'0')*10+lenh_sms[5]-'0');
                         else if(((lenh_sms[5]-'0')*10+lenh_sms[6]-'0'>50) && lenh_sms[4]>1) {baocaosms("\rLenh khong hop le");break;}
-                        else xoadanhba((lenh_sms[4]-'0')*100 + (lenh_sms[5]-'0')*10 + lenh_sms[6]-'0'); 
+                        else phone_del((lenh_sms[4]-'0')*100 + (lenh_sms[5]-'0')*10 + lenh_sms[6]-'0'); 
                         baocaosms("\rXoa danh ba thanh cong");
                     }else baocaosms("\rLenh khong hop le");
                 }else if(lenh_sms[1] == 'u' || lenh_sms[1] == 'U'){
@@ -131,8 +131,10 @@ void xu_ly_tin_nhan(){
                     && lenh_sms[8] >='0' && lenh_sms[8] <='9' && lenh_sms[9] >='0' && lenh_sms[9] <='9' && lenh_sms[10]>='0' && lenh_sms[10]<='9' && lenh_sms[11]>='0' && lenh_sms[11]<='9'    
                     && lenh_sms[12]>='0' && lenh_sms[12]<='9' && lenh_sms[13]>='0' && lenh_sms[13]<='9'){
                         lenh_sms[14] = 0;
-                        gsm_themdanhba(lenh_sms+4,(lenh_sms[15]!='m' && lenh_sms[15]!= 't')?'u':lenh_sms[15]);
-                        baocaosms("\rthem danh ba thanh cong");
+                        // luu 9 chu so (bo so 0 dau) + vai tro; 'm' = master, con lai = user
+                        if(phone_add(lenh_sms+5,(lenh_sms[15]=='m')?'m':'u'))
+                            baocaosms("\rthem danh ba thanh cong");
+                        else baocaosms("\rBang so da day");
                         
                     }else baocaosms("\rSo dt khong hop Le");
                 }else if(lenh_sms[1] == 'e' || lenh_sms[1] == 'E'){

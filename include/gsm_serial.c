@@ -114,27 +114,6 @@ __bit kiemtrasodienthoai(){
     return 0;
 }
 
-__bit kiemtraphonemaster(){
-    u8 i,j;
-    sms_index = 10;
-    lenh_sms[159] = 0;
-    gsm_sendandcheck("AT+CPBR=1,250\r", 15, 1,"  SENDING CPBR  ");
-    if(lenh_sms[159]){
-        if(lenh_sms[10]>64)i = 11;
-        else if(lenh_sms[11]>64) i = 12;
-        else i = 13;
-        for(j = 1;j<10;j++){
-            if(j<9 && (lenh_sms[i+j]>'9' || lenh_sms[i+j]<'0')) return 0;
-            phone[j] = lenh_sms[i+j];
-        } 
-        phone[9] -= (lenh_sms[159]==1?37:27);
-        if(phone[9]<'0'|| phone[9]>'9') return 0;
-        phone[10] = 0;
-        return 1; 
-    }
-    return 0;
-}
-
 __bit kiemtrataikhoan(){
     lenh_sms[0] = 0;
     have_cusd = 0;
@@ -150,37 +129,6 @@ __bit kiemtrataikhoan(){
     return gsm_sendandcheck(";\r",1,60,"    CALLING     ");
 }
 
-void kiemtradanhba(){
-    u8 i = 10;
-    send_gsm_cmd("\r");
-    while(i<161){
-        if(lenh_sms[i]>84){
-            send_gsm_byte(lenh_sms[i]-37);
-            i = 161;
-        }else if(lenh_sms[i]>74){
-            send_gsm_byte(lenh_sms[i]-27);
-            send_gsm_cmd("\r");
-        }else if(lenh_sms[i]>64){
-            send_gsm_byte(lenh_sms[i]-17);
-            send_gsm_cmd(",");
-        }else send_gsm_byte(lenh_sms[i]);
-        lenh_sms[i++] = 0;
-    }
-}
-
-__bit gsm_themdanhba(u8 *phone,u8 type){
-    
-        send_gsm_cmd("AT+CPBW=,\"");
-        send_gsm_cmd(phone);
-        send_gsm_cmd("\",129,\"");
-        send_gsm_byte(type);
-        send_gsm_cmd(phone);
-        send_gsm_byte(type);
-        gsm_sendandcheck("\"\r",15,1,"   SENDING CPBW   ");
-        return 1;     
-}
-
-/* Gui chi so danh ba (1-3 chu so, khong so 0 dau) ra cong GSM. */
 void send_pb_index(u8 n){
     if(n<10) send_gsm_byte(n+'0');
     else if(n<100){
@@ -193,62 +141,22 @@ void send_pb_index(u8 n){
     }
 }
 
-void xoadanhba(u8 index){
-    if(index){
-        send_gsm_cmd("AT+CPBW=");
-        send_pb_index(index);
-        gsm_sendandcheck("\r", 1, 31,"    DELETING    ");
-    }else{
-        index = 1;
-
-        while(index<10){
-            send_gsm_cmd("AT+CPBW=");
-            send_gsm_byte(index+'0');
-            gsm_sendandcheck("\r",15,1,"    DELETING    ");
-            index++;
-        }
-        while(index<100){
-            send_gsm_cmd("AT+CPBW=");
-            send_gsm_byte(index/10+'0');
-            send_gsm_byte(index%10+'0');
-            gsm_sendandcheck("\r",15,1,"  ..DELETING..  ");
-            index++;
-        }
-        while(index<251){
-            send_gsm_cmd("AT+CPBW=");
-            send_gsm_byte(index/100+'0');
-            send_gsm_byte(index/10%10+'0');
-            send_gsm_byte(index%10+'0');
-            gsm_sendandcheck("\r",15,1,"....DELETING....");
-            index++;
-        }
-    } 
-}
-
-void baocaodanhba(){
-    gsm_sendandcheck("AT\r", 15, 1,ver);
-    danh_ba_cuoi = 0;
-    lenh_sms[159] = 11;
-    while(lenh_sms[159]>10 && danh_ba_cuoi<251){
-        kiemtrataikhoan();
-        lenh_sms[159] = 0;
-        sms_index = 10;
-        if(danh_ba_cuoi){
-            send_gsm_cmd("AT+CPBR=");
-            if(++danh_ba_cuoi<100){
-                send_gsm_byte(danh_ba_cuoi/10+'0');
-                send_gsm_byte(danh_ba_cuoi%10+'0');
-            }else{
-                send_gsm_byte(danh_ba_cuoi/100+'0');
-                send_gsm_byte(danh_ba_cuoi/10%10+'0');
-                send_gsm_byte(danh_ba_cuoi%10+'0');
-            }
-            gsm_sendandcheck(",250\r", 1, 31,"  SENDING CPBR  ");
-        }else gsm_sendandcheck("AT+CPBR=1,250\r", 1, 31,"  SENDING CPBR  ");
-        if(!send_sms()) return;
-        kiemtradanhba();
-        gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
+/* Gui ve tin nhan danh sach cac so trong bang EEPROM. */
+void baocao_bang_sdt(){
+    u8 i,j;
+    lenh_sms[0] = 0;
+    if(!send_sms()) return;
+    for(i=0;i<eep_phone_count;i++){
+        if(!eep_phone[i*PHONE_ENTRY+9]) continue;
+        send_pb_index(i+1);
+        send_gsm_byte('.');
+        send_gsm_byte('0');
+        for(j=0;j<9;j++) send_gsm_byte(eep_phone[i*PHONE_ENTRY+j]);
+        send_gsm_byte(',');
+        send_gsm_byte(eep_phone[i*PHONE_ENTRY+9]);
+        send_gsm_byte('\r');
     }
+    gsm_sendandcheck("\032",50,1,"DANG GUI BAO CAO");
 }
 
 void baocaosms(u8  *noidung){
