@@ -11,31 +11,6 @@ u8 __code ver[] = " CUACUON 0.8.5";
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
 
-void luu_lich_su(u8 *phone,u8 cmd){
-	u8 temp=0,i=0;
-	gsm_sendandcheck("AT\r",15,1,ver);
-	send_gsm_cmd("AT+CPBF=\"");
-	send_gsm_byte(phone_super?'M':(phone_master?'m':'u'));
-	phone[10] = 0;
-	send_gsm_cmd(phone);
-	send_gsm_byte(phone_super?'M':(phone_master?'m':'u'));
-	lenh_sms[159] = 9;
-	sms_index = 0;
-	gsm_sendandcheck("\"\r",15,2," SAVING HISTORY ");
-	while(lenh_sms[i]<58)temp = temp*10 + lenh_sms[i++]-48;
-	temp = temp*10 + lenh_sms[i] - 65;
-	IAP_docxoasector1();
-	i = eeprom_buf[INDEX_HISTORY_EEPROM];
-	eeprom_buf[i*4+HISTORY_EEPROM] = temp;
-	temp = (cmd<<2) + ((year-20)<3?year-20:3);
-	eeprom_buf[i*4 + HISTORY_EEPROM + 1] = (temp<<4) + month;
-	eeprom_buf[i*4 + HISTORY_EEPROM + 2] = (day<<3) + (hour>>2);
-	eeprom_buf[i*4 + HISTORY_EEPROM + 3] = ((hour&3)<<6) + minute;
-	if(eeprom_buf[INDEX_HISTORY_EEPROM]==99)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
-	else eeprom_buf[INDEX_HISTORY_EEPROM]++;
-	IAP_ghisector1();
-}
-
 #include "xu_ly_tin_nhan.c"
 
 /* Tra ve 1 neu 4 chu so pin nhap trung voi ma pin luu trong eeprom. */
@@ -78,7 +53,6 @@ void main() {
 	__bit nhan_remote_lan_dau = 1;
 	/*validate eeprom*/
 	IAP_docxoasector1();
-	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
 	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
@@ -632,7 +606,6 @@ void main() {
 								rfprocess = Relay1 = 0;
 							}
 							phone[10] = 0;
-							luu_lich_su(phone,0);
 							baocaosms("\rMo cua len");
 						}
 						

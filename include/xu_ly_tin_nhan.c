@@ -8,11 +8,6 @@ void xu_ly_tin_nhan(){
     if((lenh_sms[0]=='?'||lenh_sms[1]=='?') && !phone_so_sanh_that_bai)gui_huong_dan();
     else{ 
         switch(lenh_sms[0]){
-            case 'h':
-            case 'H':
-                if(!phone_master) break;
-                baocaolichsu();
-                break;
             case 'S':
             case 's':
                 if((eep_khoa&1) && !phone_master) break;
@@ -49,7 +44,6 @@ void xu_ly_tin_nhan(){
                     IAP_ghisector1();
                     Relay2 = 1;relay2giu = 1;
                     phone[10] = 0;
-                    luu_lich_su(phone,3);
                     baocaosms("\rKhoa cua cuon");
                 }
                 break;
@@ -122,7 +116,6 @@ void xu_ly_tin_nhan(){
                         rfprocess =  Relay3 = 0;
                     }
                     phone[10] = 0;
-                    luu_lich_su(phone,2);
                     if(eep_baocao) baocaosms("\rXuong cua cuon");
                     else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
                 }else{
@@ -159,7 +152,6 @@ void xu_ly_tin_nhan(){
                         rfprocess = Relay1 = 0;
                     }
                     phone[10] = 0;
-                    luu_lich_su(phone,1);
                     if(eep_baocao) baocaosms("\rMo cua cuon");
                     else gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  ");
                 }else{
