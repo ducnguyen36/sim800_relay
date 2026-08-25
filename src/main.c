@@ -57,6 +57,7 @@ void main() {
 	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
 	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
+	if(eeprom_buf[PHONE_COUNT_EEPROM]>PHONE_MAX) eeprom_buf[PHONE_COUNT_EEPROM] = 0;
 	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
 	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
 	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')

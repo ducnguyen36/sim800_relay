@@ -45,7 +45,7 @@ u8  __data  sms_index_goc;
 
 
 //EEPROM
-u8  __xdata eeprom_buf[SECTOR1_LENGTH];
+u8  __xdata eeprom_buf[EEPROM_BUF_LENGTH];
 
 //RF
 __bit rfstatus,rfprocess,rfstop,rflearn,rflock,pt2240;
