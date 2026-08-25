@@ -124,7 +124,7 @@ void main() {
 		if(sms_dang_xu_ly && !mode){
 			// CCAPM1 = 0x49;
 			xu_ly_tin_nhan();
-			gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r",15,1,"  DELETING SMS  ");
+			gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
 			sms_dang_xu_ly = 0;
 			send_gsm_byte('S');
 		}

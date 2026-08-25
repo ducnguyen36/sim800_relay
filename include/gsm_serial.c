@@ -283,7 +283,8 @@ void gui_huong_dan(){
 }
 
 __bit gsm_thietlapsim800(){
-    if(gsm_sendandcheck("AT\r", 15, 1,ver)){      
+    if(gsm_sendandcheck("AT\r", 15, 1,ver)){
+        gsm_sendandcheck("AT+IPR=0\r",15,1,"   BAUD AUTO   ");   // A7680C autobaud
         clear_sms_buffer(0);
         sms_index = 0;
         gsm_serial_cmd = CSPN;
@@ -296,7 +297,7 @@ __bit gsm_thietlapsim800(){
 }
 
 void gsm_thietlapngaygiothuc(){
-    if(gsm_sendandcheck("AT+CLTS=1\r",15,1," BAT LAY GIO ")){
+    if(gsm_sendandcheck("AT+CTZU=1\r",15,1," BAT LAY GIO ")){   // A7680C auto timezone
         if(gsm_sendandcheck("AT+COPS=2\r",15,1,"   NGAT MANG    ")){
             gsm_serial_cmd = COPS;
             if(gsm_sendandcheck("AT+COPS=0\r",10,60,"    TIM MANG    ")){
@@ -319,17 +320,8 @@ void gsm_thietlapngaygiothuc(){
 }
 
 __bit gsm_thietlapgoidien(){
-   
-    if(gsm_sendandcheck("AT+CLIP=1\r", 15, 1,"  SENDING CLIP  ")){
-        clear_sms_buffer(0);
-        sms_index = 0;
-        gsm_serial_cmd = CALR;
-        if(gsm_sendandcheck("AT+CCALR?\r",15,1," THIET LAP GOI ")){
-            return 1;
-        }
-    }
-    return 0;
-	
+    // A7680C: CLIP la du de nhan dien cuoc goi den (bo AT+CCALR?)
+    return gsm_sendandcheck("AT+CLIP=1\r", 15, 1,"  SENDING CLIP  ");
 }
 
 
@@ -337,7 +329,7 @@ __bit gsm_thietlapnhantin(){
     
     if(gsm_sendandcheck("AT+CMGF=1\r", 15, 1,"  SENDING CMGF  ")){
         if(gsm_sendandcheck("AT+CNMI=1,1,0,0,1\r", 15, 1,"  SENDING CNMI  ")){
-            if(gsm_sendandcheck("AT+CMGDA=\"DEL ALL\"\r", 15, 1,"  THIET LAP TN  ")){
+            if(gsm_sendandcheck("AT+CMGD=1,4\r", 15, 1,"  THIET LAP TN  ")){
                 gsm_serial_cmd = CSQ;
                 clear_sms_buffer(0);
                 sms_index  = 0;
@@ -447,7 +439,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     }
                     if(sms_index){
                         sms_index = 0;
-                        send_gsm_cmd("AT+CMGDA=\"DEL ALL\"\r");
+                        send_gsm_cmd("AT+CMGD=1,4\r");
                     }
 
 
