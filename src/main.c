@@ -4,9 +4,11 @@
 	change log:
 		0.8.4: sua loi kiem tra phonemaster voi danh ba mac dinh cua sim
 		0.8.5: them thu vao ngay thang nam
+		A7-1.0: chuyen sang module A7680C; nhan dien so goi/nhan tin bang
+		        bang so trong EEPROM (thay cho danh ba SIM); bo lich su
 */
 
-u8 __code ver[] = " CUACUON 0.8.5";
+u8 __code ver[] = " CUACUON A7-1.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
