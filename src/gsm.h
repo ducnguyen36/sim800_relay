@@ -8,10 +8,11 @@
 #define		gsm_TI			TI
 #define		gsm_SBUF		SBUF
 
-#define		gsm_BAUD		38400
+#define		gsm_BAUD		57600
 
 void gsm_init();
 void send_gsm_byte(u8 dulieu);
+void send_gsm_hex(u8 dulieu);
 void send_gsm_cmd(u8 *cmd);
 
 extern u8 __xdata    gsm_serial_cmd;
@@ -29,7 +30,17 @@ extern u8 __xdata    gsm_serial_cmd;
 #define     CUSD        7
 #define     CPBR        8
 #define     CMGS        9
-#define     CUS2        10
+#define     CSPN        10
+#define     CALR        11
+#define     COPS        12
+#define     SDT         13
+#define     CSQ         14
+#define     PBR2        15
+
+#define     VIETTEL     't'
+#define     MOBIFONE    'f'
+#define     VINAPHONE   'P'
+#define     VIETNAM     'n'
 
 #define     CHOXULY     1
 #define     DANGXULY    2

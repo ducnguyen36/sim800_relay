@@ -24,6 +24,14 @@ void send_gsm_byte(u8 dulieu){
 	gsm_TI = 0;
 }
 
+void send_gsm_hex(u8 dulieu){
+	u8 hi,lo;
+	hi = dulieu>>4;
+	lo = dulieu & 15;
+	send_gsm_byte(hi+(hi<10?'0':87));
+	send_gsm_byte(lo+(lo<10?'0':87));
+}
+
 void send_gsm_cmd(u8 *cmd){
 	gsm_TI = 0;
     while(*cmd){

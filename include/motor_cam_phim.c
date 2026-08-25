@@ -4,7 +4,9 @@
 void PCA_Timer_init(){
 	CCAP0L = CCAP0H = 0;
 	PCA_Timer0 = 25000;
+	PCA_Timer1 = 250;
 	CCAPM0 = 0x49;
+	CCAPM1 = 0x49;
 	CR=1;
 }
 
@@ -13,11 +15,17 @@ void xunggiay(){
 	WATCHDOG;
 	flip_pulse^=1;
 	over_cur_led = flip_pulse;
-	if(RelayS4)relays4_delay_tat--;
-	if(!relays4_delay_tat){
-		RelayS4 = 0;
-		relays4_delay_tat = 6;
+	if(!--delay_chay_khoi_tao){
+			delay_chay_khoi_tao = 0;
+			rflock = eep_rflock;	
+			Relay2 = relay2giu = eep_khoa;
+			
 	}
+	if(rf_khancap_delay && !--rf_khancap_delay) rf_khancap = rf_khancap_delay = 0; 
+	if(phim_mode_doi && phim_mode_giu)phim_mode_doi--;
+	if(phim_back_doi && phim_back_giu)phim_back_doi--;
+	if(phim_cong_doi && phim_cong_giu)phim_cong_doi--;
+	if(!phim_cong_doi)skip_gsm_cmd = 1;
 	if(connect) connect--;
 	if(total_try_time_out) total_try_time_out--;
 	if(mode && mode_wait) mode_wait--;
@@ -27,15 +35,16 @@ void xunggiay(){
 		gsm_reset=1;
 	}
 	if(++second>59){
+		phut_out = 1;
 		second=0;
 		if(so_lan_goi_dien && !--delay_cuoc_goi_ke_tiep) so_lan_goi_dien = 0;
 		if(++minute>59){
 			minute=0;
+			gio_out = 1;
 			if(++hour>23){
 				hour=0;
 				if(ngay_reset_con_lai)
 				ngay_reset_con_lai--;
-
 			}
 		}
 			
@@ -60,47 +69,23 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		phim_mode_nhan = phim_mode_nhan || (!phim_mode_giu && phim_mode_xuong);
 		phim_mode_cu = phim_mode_vao;
 		
-		if(phim_back_xuong && phim_back_vao) phim_back_doi = 2;
-		phim_back_giu = phim_back_xuong && !phim_back_vao;
-		phim_back_xuong = !phim_back_cu && !phim_back_vao;
+		if(phim_back_xuong && key_in2) phim_back_doi = 6;
+		phim_back_giu = phim_back_xuong && !key_in2;
+		phim_back_xuong = !phim_back_cu && !key_in2;
 		phim_back_nhan = phim_back_nhan || (!phim_back_giu && phim_back_xuong);
-		phim_back_cu = phim_back_vao;
+		phim_back_cu = key_in2;
 
-		if(phim_cong_xuong && phim_cong_vao) phim_cong_doi = 2;
-		phim_cong_giu = phim_cong_xuong && !phim_cong_vao;
-		phim_cong_xuong = !phim_cong_cu && !phim_cong_vao;
+		if(phim_cong_xuong && key_in3) phim_cong_doi = 2;
+		phim_cong_giu = phim_cong_xuong && !key_in3;
+		phim_cong_xuong = !phim_cong_cu && !key_in3;
 		phim_cong_nhan = phim_cong_nhan || (!phim_cong_giu && phim_cong_xuong);
-		phim_cong_cu = phim_cong_vao;
+		phim_cong_cu = key_in3;
 
-		if(tinhieuD){
-			delay_tinhieuD_thap = 80;
-			if(delay_tinhieuD_cao)delay_tinhieuD_cao--;
-		}else{
-			delay_tinhieuD_cao = 80;
-			if(delay_tinhieuD_thap)delay_tinhieuD_thap--;
-		}
-
-		if(tinhieuA){
-			delay_tinhieuA_thap = 40;
-			if(delay_tinhieuA_cao)delay_tinhieuA_cao--;
-		}else{
-			delay_tinhieuA_cao = 40;
-			if(delay_tinhieuA_thap)delay_tinhieuA_thap--;
-		}
-
-		if(!loi_bien_tan && !delay_tinhieuD_thap && !delay_tinhieuA_thap)loi_bien_tan = 1;
-
-		if(!che_do_stop && !delay_tinhieuD_thap && !delay_tinhieuA_cao) che_do_stop = 1;
-
-		if(!delay_tinhieuD_cao)loi_bien_tan = che_do_stop = 0;
-		
-
-		
 		if(!--cnt){
 			lcd_update_chop = 1;
 			cnt=10;
 			chop=!chop;
-			
+		
 		}
 
 		if(!--counter_xung_giay){
@@ -109,5 +94,45 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		}
 		
 	}
-
+	if(CCF1){
+		CCF1 = 0;
+		CCAP1L = PCA_Timer1;
+		CCAP1H = PCA_Timer1>>8;
+		PCA_Timer1 +=250;
+		if(rfprocess)return;
+		if(!rfwait++){
+			rfstop = 1;Relay1 = Relay3 = 0; Relay2 = relay2giu;
+		}
+		if(cam_che){
+			if(!count_low){
+				if(rfstatus && count_hi>2 && count_hi<7) {
+					rfdata[rfindex++] = 0;
+				}
+			}
+			count_low++;count_hi=0;
+		}else{
+			if(!count_hi){
+				if(rfstatus && count_low>2 && count_low<7) {
+					if(!pt2240 && rfindex%2 && !rfdata[rfindex-1]) pt2240 = 1;
+					rfdata[rfindex++] = 1;
+				}
+				else if(count_low>28){
+					rfwait = 1;
+					if(rfstatus && rfindex==24) {
+						rfprocess = 1;
+					}
+					else if(rfstop) {
+						rfstatus = 1;
+						pt2240 = rfindex = 0;
+					}
+					
+				}
+			}
+			count_hi++;count_low=0;
+		}
+		if(rfindex>24){
+			rfindex = 0;
+			rfstatus = 0;
+		}
+	}
 }
