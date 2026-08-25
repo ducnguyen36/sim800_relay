@@ -1,7 +1,6 @@
 void xu_ly_tin_nhan(){
     //lenh DH
     lenh_khong_hop_le = 0;
-    // u8 giodelta,phutdelta, kim_index;
     u8 i = 0;
     while(lenh_sms[i++])WATCHDOG;
     while(i<160)lenh_sms[i++] = 0;
@@ -21,7 +20,6 @@ void xu_ly_tin_nhan(){
                     IAP_docxoasector1();
                     eeprom_buf[KHOA_EEPROM] &= 2;
                     IAP_ghisector1();
-                    // baocaosms("\rMo Khoa cua cuon");
                 }
                 rfprocess = 1;
                 Relay2 = 1;

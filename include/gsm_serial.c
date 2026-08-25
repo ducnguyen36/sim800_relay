@@ -38,7 +38,6 @@ __bit send_sms(){
 }
 
 __bit kiemtrasodienthoai(){
-    // lenh_sms[0] = 0;
     have_cusd = 0;
     gsm_serial_cmd = SDT;
     switch(nha_mang){
@@ -51,8 +50,6 @@ __bit kiemtrasodienthoai(){
         case VIETNAM:
            return gsm_sendandcheck("AT+CUSD=1,\"*101#\",\r",3,30,"  KIEM TRA SDT   ");
     }
-    // gsm_serial_cmd = NORMAL;
-    // return lenh_sms[0];
     return 0;
 }
 
@@ -122,18 +119,23 @@ __bit gsm_themdanhba(u8 *phone,u8 type){
         return 1;     
 }
 
+/* Gui chi so danh ba (1-3 chu so, khong so 0 dau) ra cong GSM. */
+void send_pb_index(u8 n){
+    if(n<10) send_gsm_byte(n+'0');
+    else if(n<100){
+        send_gsm_byte(n/10+'0');
+        send_gsm_byte(n%10+'0');
+    }else{
+        send_gsm_byte(n/100+'0');
+        send_gsm_byte(n/10%10+'0');
+        send_gsm_byte(n%10+'0');
+    }
+}
+
 void xoadanhba(u8 index){
     if(index){
         send_gsm_cmd("AT+CPBW=");
-        if(index<10) send_gsm_byte(index+'0');
-        else if(index<100){
-            send_gsm_byte(index/10+'0');
-            send_gsm_byte(index%10+'0');
-        }else{
-            send_gsm_byte(index/100+'0');
-            send_gsm_byte(index/10%10+'0');
-            send_gsm_byte(index%10+'0');
-        }
+        send_pb_index(index);
         gsm_sendandcheck("\r", 1, 31,"    DELETING    ");
     }else{
         index = 1;
@@ -208,15 +210,7 @@ void baocaolichsu(){
             gsm_serial_cmd = PBR2;
             send_gsm_cmd("AT+CPBR=");
             pbindex = eep_history[index*4];
-            if(pbindex<10) send_gsm_byte(pbindex+'0');
-            else if(pbindex<100){
-                send_gsm_byte(pbindex/10+'0');
-                send_gsm_byte(pbindex%10+'0');
-            }else{
-                send_gsm_byte(pbindex/100+'0');
-                send_gsm_byte((pbindex/10)%10+'0');
-                send_gsm_byte(pbindex%10+'0');
-            } 
+            send_pb_index(pbindex);
             
             gsm_sendandcheck("\r", 1, 31,"  SENDING CPBR  ");
             lenh_sms[11*n+11] = 0;
@@ -227,15 +221,7 @@ void baocaolichsu(){
         if(!send_sms()) return;
         for(n=0;index!=last && n<10;n++){
             pbindex = m*10 + n + 1;
-            if(pbindex<10) send_gsm_byte(pbindex+'0');
-            else if(pbindex<100){
-                send_gsm_byte(pbindex/10+'0');
-                send_gsm_byte(pbindex%10+'0');
-            }else{
-                send_gsm_byte(pbindex/100+'0');
-                send_gsm_byte((pbindex/10)%10+'0');
-                send_gsm_byte(pbindex%10+'0');
-            }
+            send_pb_index(pbindex);
             send_gsm_byte('.');
             send_gsm_cmd(lenh_sms+11*n+1);
             switch(eep_history[index*4+1]>>6){
@@ -275,7 +261,6 @@ void baocaolichsu(){
 }
 
 void baocaosms(u8  *noidung){
-    // if(!eep_baocao){gsm_sendandcheck("\032",3,1,"  TAT BAO CAO  "); return;}
     gsm_sendandcheck("AT\r", 15, 1,ver);
     if(*(noidung+1)!='*') kiemtrataikhoan();
      
@@ -418,7 +403,6 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 break;
             case CALR:
                 if(SBUF=='1')gui_lenh_thanh_cong = 1;
-                // else if(SBUF=='0') connect = 0;
                 break;
             case CLK:
                 lenh_sms[sms_index++] = SBUF;
@@ -429,8 +413,6 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
 
                 if(SBUF=='>'){
                     send_gsm_cmd("\032");
-                // }else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
-                //     error = 1;
                 }else if((gsm_receive_buf[gsm_receive_pointer]=='G' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='N' &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='I' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='R')){
                                         
@@ -451,7 +433,6 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='T' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='M' &&
                 gsm_receive_buf[(gsm_receive_pointer+9)%13] =='C' && gsm_receive_buf[(gsm_receive_pointer+8)%13] =='+')){
                                         
-                    // CCAPM1 = 0;
                     co_tin_nhan_moi = 1;
                     
                 }else if((gsm_receive_buf[gsm_receive_pointer]==' ' && gsm_receive_buf[(gsm_receive_pointer+12)%13] ==':' &&
@@ -520,7 +501,6 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                             && gsm_receive_buf[(gsm_receive_pointer+11)%13] ==',' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"') {/*SMS buoc 5: neu tat ca chu so dt deu trung chuyen qua tim lenh */
                         if(SBUF=='M') phone_super = 1;
                         if(SBUF=='m' || phone_super) phone_master = 1;
-                        // nha_mang = SBUF;
                         sms_index = 0;
                         
                     }//neu co mot chu so khong trung thi reset sms_index phone_header va chuyen ve tim CMGL hoac OK
@@ -580,7 +560,6 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                             have_quote = have_cusd = 0;
                             lenh_sms[sms_index] = 0;
                             sms_index = 0;
-                            // gsm_serial_cmd = NORMAL;
                             gui_lenh_thanh_cong = 1;
                         }
                     
@@ -653,4 +632,3 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
 	}
 }
 
-// 23:17

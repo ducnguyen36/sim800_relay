@@ -57,7 +57,6 @@ void IAP_docxoasector1(){
     while(i) eeprom_buf[--i] = 0xff;
     
     while(i<SECTOR1_LENGTH) eeprom_buf[i] = *(eep_pin+i++);
-    // while(i<SECTOR1_LENGTH) eeprom_buf[i++] = *(&eep_motor+i);
     IAP_xoasector(SECTOR1);
 }
 

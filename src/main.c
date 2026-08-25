@@ -1,6 +1,5 @@
 #include "true.h"
 #include "main.h"
-// _IAP_CONTR = 0x60 //reset to ISP
 /*
 	change log:
 		0.8.4: sua loi kiem tra phonemaster voi danh ba mac dinh cua sim
@@ -23,16 +22,12 @@ void luu_lich_su(u8 *phone,u8 cmd){
 	lenh_sms[159] = 9;
 	sms_index = 0;
 	gsm_sendandcheck("\"\r",15,2," SAVING HISTORY ");
-	// signal = lenh_sms[0];
 	while(lenh_sms[i]<58)temp = temp*10 + lenh_sms[i++]-48;
 	temp = temp*10 + lenh_sms[i] - 65;
 	IAP_docxoasector1();
 	i = eeprom_buf[INDEX_HISTORY_EEPROM];
-	// signal = i;
 	eeprom_buf[i*4+HISTORY_EEPROM] = temp;
-	// signal = cmd;
 	temp = (cmd<<2) + ((year-20)<3?year-20:3);
-	// signal = temp;
 	eeprom_buf[i*4 + HISTORY_EEPROM + 1] = (temp<<4) + month;
 	eeprom_buf[i*4 + HISTORY_EEPROM + 2] = (day<<3) + (hour>>2);
 	eeprom_buf[i*4 + HISTORY_EEPROM + 3] = ((hour&3)<<6) + minute;
@@ -43,8 +38,14 @@ void luu_lich_su(u8 *phone,u8 cmd){
 
 #include "xu_ly_tin_nhan.c"
 
+/* Tra ve 1 neu 4 chu so pin nhap trung voi ma pin luu trong eeprom. */
+__bit pin_dung(){
+	return pin[0] == eep_pin[0]-'0' && pin[1] == eep_pin[1]-'0' &&
+	       pin[2] == eep_pin[2]-'0' && pin[3] == eep_pin[3]-'0';
+}
+
 void main() {
-	
+
 	/*PORT IO INIT*/
 	P0M1 = 0; P0M0 = 0xff; //port LCD -- chân xuất với điện trở kéo lên nhỏ, dòng lớn -> 20mA
 	P1M1 = P1M0 = 0;
@@ -76,7 +77,6 @@ void main() {
 
 	__bit nhan_remote_lan_dau = 1;
 	/*validate eeprom*/
-	// u8 __xdata i;
 	IAP_docxoasector1();
 	if(eeprom_buf[INDEX_HISTORY_EEPROM]>97)eeprom_buf[INDEX_HISTORY_EEPROM]=0;
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
@@ -107,7 +107,6 @@ void main() {
   	// /*Khoi tao man hinh LCD*/
 	LCD_Init();
 
-	// gsm_thietlapsim800();
 	if(!nosim && gsm_thietlapsim800()){
 		gsm_thietlapngaygiothuc();
 		gsm_thietlapgoidien();
@@ -116,8 +115,6 @@ void main() {
 
 	mode_wait = 60;
 
-	/******** Initial watdog ****WDT**/	
-	// WDT_CONTR = EN_WDT | CLR_WDT | WDT_SCALE_64; // Enable watchdog, clear watchdog, pre scale = 64, watchdog idle mode = NO
 	
 	phone[0] = '0';
 	phone[10] = 0;
@@ -148,7 +145,6 @@ void main() {
 			co_tin_nhan_moi = 0;
 			gsm_sendandcheck("AT\r", 15, 1,ver);
 			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
-			// send_gsm_cmd("ATAT\r");
 		}
 		if(sms_dang_xu_ly && !mode){
 			// CCAPM1 = 0x49;
@@ -246,8 +242,7 @@ void main() {
 
 					if(sub_mode==4){
 						sub_mode = 0;
-						if(pin[0] == eep_pin[0]-'0' && pin[1] == eep_pin[1]-'0' &&
-				   		pin[2] == eep_pin[2]-'0' && pin[3] == eep_pin[3]-'0'){
+						if(pin_dung()){
 							mode = 2;
 							so_lan_sai_pin = 0;
 							pin[0] = pin[1] = pin[2] = pin[3] = 0;
@@ -288,7 +283,6 @@ void main() {
 				
 				if(lcd_update_chop){
 					lcd_update_chop =  0;
-					// LCD_blinkXY(TREN,4+sub_mode);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 					LCD_guingay(0xc0,year,month,day,date);
 				}
@@ -325,7 +319,6 @@ void main() {
 						LCD_guichuoi(phone);
 						doims=200;
 						while(!phim_cong_nhan && doims--)delay_ms(300);
-						// while(!phim_cong_nhan)WATCHDOG;
 						mode_wait = 60;
 						phim_cong_nhan=0;
 					}else sub_mode = 4;
@@ -383,8 +376,7 @@ void main() {
 					sub_mode++;
 
 					if(sub_mode==4){
-						if(pin[0] != eep_pin[0]-'0' || pin[1] != eep_pin[1]-'0' ||
-				   		pin[2] != eep_pin[2]-'0' || pin[3] != eep_pin[3]-'0'){
+						if(!pin_dung()){
 							sub_mode = 0;
 							LCD_guilenh(0x88);
 							LCD_guidulieu('X');
@@ -433,7 +425,6 @@ void main() {
 				LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
 				if(lcd_update_chop){
 					lcd_update_chop =  0;
-					// LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 					LCD_guingay(0xc0,year,month,day,date);
 				}
@@ -468,12 +459,6 @@ void main() {
 		if(rfprocess){
 			u8 i,data[3],cmd[4];
 			u8 match=0;
-			// data[0]=data[1]=data[2]=0;
-			// for(i=0;i<rfindex-4;i++){
-			// 	j = i/8;
-			// 	data[j] = data[j]*2 + rfdata[i];
-			// 	// send_gsm_byte(rfdata[i]+'0');
-			// }
 			data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
 			data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
 			data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
@@ -534,10 +519,6 @@ void main() {
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								// send_gsm_byte(' ');
-								// send_gsm_hex(eep_rfdata[eep_rfindex*3-3]);
-								// send_gsm_hex(eep_rfdata[eep_rfindex*3-2]);
-								// send_gsm_hex(eep_rfdata[eep_rfindex*3-1]);
 								if(kiemtraphonemaster() && eep_baocao) baocaosms("\rremote dc hoc");
 							}
 						}else if(sub_mode == 1){
@@ -553,11 +534,6 @@ void main() {
 				rfstop = 0;
 			}else{
 				if(match){
-					// send_gsm_byte('$');
-					// send_gsm_byte(rfdata[20]+'0');
-					// send_gsm_byte(rfdata[21]+'0');
-					// send_gsm_byte(rfdata[22]+'0');
-					// send_gsm_byte(rfdata[23]+'0');
 					if(match==2){
 						if(phim_back_nhan){
 							phim_back_nhan = 0;
@@ -627,87 +603,6 @@ void main() {
 		}
 
 
-		// if(phim_cong_nhan){
-		// 	phim_cong_nhan = 0;
-			
-		// 	if(mode == 1 || mode ==4){
-		// 		if(sub_mode<4){
-		// 			pin[sub_mode] = (pin[sub_mode]+1)%10;
-		// 		}else{
-		// 			new_pin[sub_mode-4] = (new_pin[sub_mode-4]+1)%10;
-		// 		}
-		// 	}else if(mode == 2){
-		// 		u16 doims = 200;
-
-				
-		// 		kiemtrataikhoan();
-		// 		LCD_guilenh(0x80);
-		// 		LCD_guichuoi(lenh_sms);
-		// 		while(!phim_cong_nhan && doims--)delay_ms(300);
-		// 		phim_cong_nhan = 0;
-		// 		kiemtrasodienthoai();
-		// 		LCD_guilenh(0x84);
-		// 		phone[10] = 0;
-		// 		LCD_guichuoi(phone);
-		// 		doims=200;
-		// 		while(!phim_cong_nhan && doims--)delay_ms(300);
-		// 		// while(!phim_cong_nhan)WATCHDOG;
-		// 		mode_wait = 60;
-		// 		phim_cong_nhan=0;
-		// 	}
-			
-		// }
-
-		// if(lcd_update_chop){
-		// 	LCD_xoa(TREN);
-		// 	lcd_update_chop = 0;
-		// 	if(mode == 1){
-		// 		LCD_guilenh(0x80);
-		// 		LCD_guichuoi("PIN:");
-		// 		LCD_guidulieu(pin[0]+'0');
-		// 		LCD_guidulieu(pin[1]+'0');
-		// 		LCD_guidulieu(pin[2]+'0');
-		// 		LCD_guidulieu(pin[3]+'0');
-		// 		LCD_guidulieu(so_lan_sai_pin?'X':' ');
-		// 		LCD_guidulieu(so_lan_sai_pin?so_lan_sai_pin+'0':' ');
-		// 	}else{
-		// 		LCD_guilenh(0x8e);
-		// 		LCD_guidulieu(signal/10+'0');
-		// 		LCD_guidulieu(signal%10+'0');
-		// 		LCD_guilenh(0x80);
-		// 		if(mode==2) LCD_guichuoi("CHINH:");
-		// 		else if(mode==3) LCD_guichuoi("PHU  :");
-		// 		// else if(mode==3) LCD_guichuoi("TAM  :");
-		// 		else if(mode == 4){
-		// 			LCD_guichuoi("PIN:");
-		// 			LCD_guidulieu(pin[0]+'0');
-		// 			LCD_guidulieu(pin[1]+'0');
-		// 			LCD_guidulieu(pin[2]+'0');
-		// 			LCD_guidulieu(pin[3]+'0');
-		// 			LCD_guidulieu(so_lan_sai_pin?'X':' ');
-		// 			LCD_guidulieu(so_lan_sai_pin?so_lan_sai_pin+'0':' ');
-		// 			LCD_guidulieu(' ');
-		// 			LCD_guidulieu(new_pin[0]+'0');
-		// 			LCD_guidulieu(new_pin[1]+'0');
-		// 			LCD_guidulieu(new_pin[2]+'0');
-		// 			LCD_guidulieu(new_pin[3]+'0');
-		// 			LCD_guidulieu(' ');
-		// 		}
-		// 		else LCD_guichuoi(Relay1? "ON :":"OFF:");
-		// 	}
-			
-				
-			
-		// 	LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-		// 	// LCD_guilenh(0xcf);
-		// 	// LCD_guidulieu(nha_mang);
-		// 	LCD_guingay(0xc0,year,month,day,date);
-		// 	if(mode == 1 || mode == 4){
-		// 		LCD_blinkXY(TREN,4+sub_mode+sub_mode/4*3);
-		// 	}else{
-		// 		LCD_noblink();
-		// 	}
-		// }
 		if(phone_update){
 			phone_update = 0;
 			if(co_cuoc_goi_toi){
@@ -744,17 +639,8 @@ void main() {
 					} 
 				}
 			}
-			// phone[10] = 0;	
-			// LCD_guilenh(0x84); 
-			// LCD_guichuoi(phone);
 			CCAPM1 = 0x49;
 		}
-		// if(chay_khoi_tao){
-		// 	chay_khoi_tao = 0;
-		// 	rflock = eep_rflock;	
-		// 	Relay2 = relay2giu = eep_khoa;
-		// 	Relay4 = eep_ups?1:0;
-		// }
 		WATCHDOG;
 	}
 }
