@@ -9,7 +9,7 @@ void gsm_init(){
 	SCON = 0x50;  // 8 bits, variable baudrate 
 	AUXR |= 0x40;		//Timer1's clock is Fosc (1T)
 	AUXR &= 0xFE;		//Use Timer1 as baudrate generator
-	TL1= (65536 - (FOSC/4/gsm_BAUD));	
+	TL1= (65536 - (FOSC/4/gsm_BAUD)) & 0xFF;
 	TH1= (65536 - (FOSC/4/gsm_BAUD))>>8;
 	ET1 = 0;
 	TR1 = 1;
