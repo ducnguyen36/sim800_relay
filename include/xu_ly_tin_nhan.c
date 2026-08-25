@@ -143,11 +143,11 @@ void xu_ly_tin_nhan(){
                         break;
                     }
                     rfprocess = 1;
-                    
+                    // Mo cua: dung relay nguoc voi lenh xuong (Relay3 khi huong=1, Relay1 khi =0)
                     if(eep_huong){
-                        Relay1 = 1;
+                        Relay3 = 1;
                         delay_ms(100);
-                        rfprocess = Relay1 = 0;
+                        rfprocess = Relay3 = 0;
                     }else{
                         Relay1 = 1;
                         delay_ms(100);
