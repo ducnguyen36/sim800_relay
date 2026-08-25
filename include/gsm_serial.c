@@ -1,5 +1,60 @@
 #include "help.h"
 
+/* ---- Bang so dien thoai trong EEPROM (thay cho danh ba SIM) ----
+   Moi so: 9 chu so (so VN bo so 0 dau) + 1 byte vai tro ('M'/'m'/'u', 0 = trong). */
+
+/* Tim so 9 chu so num9 trong bang. Tra ve chi so+1 neu thay (0 neu khong),
+   va luu vai tro vao found_role. */
+u8 phone_find(u8 *num9){
+    u8 i,j,ok;
+    for(i=0;i<eep_phone_count;i++){
+        ok = 1;
+        for(j=0;j<9;j++) if(eep_phone[i*PHONE_ENTRY+j]!=num9[j]){ok=0;break;}
+        if(ok && eep_phone[i*PHONE_ENTRY+9]){
+            found_role = eep_phone[i*PHONE_ENTRY+9];
+            return i+1;
+        }
+    }
+    return 0;
+}
+
+/* Them so 9 chu so + vai tro vao khe trong dau tien (hoac cuoi bang).
+   Tra ve 1 neu thanh cong, 0 neu bang da day. */
+__bit phone_add(u8 *num9, u8 role){
+    u8 j,slot,cnt = eep_phone_count;
+    for(slot=0;slot<cnt;slot++) if(!eep_phone[slot*PHONE_ENTRY+9]) break;
+    if(slot==cnt && cnt>=PHONE_MAX) return 0;   // day: khong dong toi flash
+    IAP_docxoasector1();
+    for(j=0;j<9;j++) eeprom_buf[PHONE_TABLE_EEPROM+slot*PHONE_ENTRY+j] = num9[j];
+    eeprom_buf[PHONE_TABLE_EEPROM+slot*PHONE_ENTRY+9] = role;
+    if(slot==cnt) eeprom_buf[PHONE_COUNT_EEPROM] = cnt+1;
+    IAP_ghisector1();
+    return 1;
+}
+
+/* Xoa mot so (idx 1-based) hoac tat ca (idx==0). */
+void phone_del(u8 idx){
+    u16 j;
+    IAP_docxoasector1();
+    if(!idx){
+        for(j=0;j<PHONE_MAX*PHONE_ENTRY;j++) eeprom_buf[PHONE_TABLE_EEPROM+j] = 0;
+        eeprom_buf[PHONE_COUNT_EEPROM] = 0;
+    }else if(idx<=eeprom_buf[PHONE_COUNT_EEPROM]){
+        for(j=0;j<PHONE_ENTRY;j++) eeprom_buf[PHONE_TABLE_EEPROM+(idx-1)*PHONE_ENTRY+j] = 0;
+    }
+    IAP_ghisector1();
+}
+
+/* 1 neu co bat ky so nao la master ('m') hoac super ('M'). */
+__bit have_master_table(){
+    u8 i,r;
+    for(i=0;i<eep_phone_count;i++){
+        r = eep_phone[i*PHONE_ENTRY+9];
+        if(r=='m' || r=='M') return 1;
+    }
+    return 0;
+}
+
 __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
     connect_time_out = delay;
     total_try_time_out = retry*delay + 10;

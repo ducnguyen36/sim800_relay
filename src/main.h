@@ -7,6 +7,7 @@
 #define PHONE_LENGTH 10
 
 u8  __xdata  phone[11] ;
+u8  __xdata  found_role;   // role byte of the last phone_find() hit
 __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
