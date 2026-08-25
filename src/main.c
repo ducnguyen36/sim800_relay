@@ -93,7 +93,7 @@ void main() {
 	
 	phone[0] = '0';
 	phone[10] = 0;
-	have_master = kiemtraphonemaster();
+	have_master = get_master_phone();
 	__bit run_button = 0;
 	if(have_master){
 		baocaosms("\rBDK Khoi Dong");
@@ -230,7 +230,7 @@ void main() {
 								IAP_docxoasector1();
 								eeprom_buf[KHOA_EEPROM] |= 2;
 								IAP_ghisector1();
-								if(kiemtraphonemaster())baocaosms("\rSai pin 5 lan"); 
+								if(get_master_phone())baocaosms("\rSai pin 5 lan"); 
 							
 							}
 							LCD_guilenh(0x88);
@@ -494,7 +494,7 @@ void main() {
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								if(kiemtraphonemaster() && eep_baocao) baocaosms("\rremote dc hoc");
+								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -502,7 +502,7 @@ void main() {
 							eeprom_buf[4] = data[1];
 							eeprom_buf[5] = data[2];
 							IAP_ghisector2();
-							if(kiemtraphonemaster() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
+							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
 						}
 					}
 				}
@@ -520,7 +520,7 @@ void main() {
 							IAP_ghisector1();			
 						}
 						relay2giu = 0;
-						if(kiemtraphonemaster()) baocaosms("\rremote khan cap duoc su dung");
+						if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
 					}
 					if(rflock){
 						if(!cmd[2]){
@@ -585,11 +585,11 @@ void main() {
 				if(mode == 2 || mode == 3){
 					gsm_sendandcheck("AT\r",15,1,ver);
 					phone[10] = 0;
-					if(phone_so_sanh_that_bai) gsm_themdanhba(phone,have_master?(sub_mode?'u':'m'):'M');
+					if(phone_so_sanh_that_bai) phone_add(phone+1,have_master?(sub_mode?'u':'m'):'M');
 					// gsm_sendandcheck("AT+CPBR=1,99\r", 15, 1,"  SENDING CPBR  ");
 					if(have_master)baocaosms("\rLuu thanh cong");
 					else baocaosms("\rLuu Master");
-					if(have_master && kiemtraphonemaster() && eep_baocao)baocaosms("\rDT moi duoc luu");
+					if(have_master && get_master_phone() && eep_baocao)baocaosms("\rDT moi duoc luu");
 					have_master = 1;
 					
 				}else{

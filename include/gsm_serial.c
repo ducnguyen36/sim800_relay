@@ -45,12 +45,18 @@ void phone_del(u8 idx){
     IAP_ghisector1();
 }
 
-/* 1 neu co bat ky so nao la master ('m') hoac super ('M'). */
-__bit have_master_table(){
-    u8 i,r;
+/* Nap so master ('m'/'M') dau tien vao phone[] (de gui bao cao).
+   Tra ve 1 neu co master, 0 neu chua. Thay cho kiemtraphonemaster(). */
+__bit get_master_phone(){
+    u8 i,j,r;
     for(i=0;i<eep_phone_count;i++){
         r = eep_phone[i*PHONE_ENTRY+9];
-        if(r=='m' || r=='M') return 1;
+        if(r=='m' || r=='M'){
+            phone[0] = '0';
+            for(j=0;j<9;j++) phone[j+1] = eep_phone[i*PHONE_ENTRY+j];
+            phone[10] = 0;
+            return 1;
+        }
     }
     return 0;
 }
@@ -451,49 +457,43 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 }
                 break;
             case PHONE:
-                /*SMS buoc 4: khi da tim thay +84 thi se so sanh so dien thoai xem co trung khop khong
-                                neu khong trung khop thi quay lai tim CMGL hoac OK*/
+                /* A7680C: khong dung danh ba SIM. Doc so dien thoai tu
+                   +CLIP/+CMGL vao phone[1..9] roi tra cuu trong bang EEPROM. */
                 if(phone_header){
                     if(!sms_index){
                         if(gsm_SBUF=='\r'){
                             if(co_cuoc_goi_toi){
-                                phone_so_sanh_that_bai = gsm_receive_buf[(gsm_receive_pointer+9)%13] =='"';
-                                phone_super = gsm_receive_buf[(gsm_receive_pointer+9)%13] == 'M';
-                                phone_master = gsm_receive_buf[(gsm_receive_pointer+9)%13] =='m' || phone_super;
                                 phone_update = 1;
+                                delay_cuoc_goi_ke_tiep = 2;
+                                so_lan_goi_dien++;
                             }
-                            if(phone_so_sanh_that_bai) gsm_serial_cmd = NORMAL;
-                            else{
-                                gsm_serial_cmd = CMD;
-                                if(co_cuoc_goi_toi){
-                                    delay_cuoc_goi_ke_tiep = 2;
-                                    so_lan_goi_dien++;
-                                    gsm_serial_cmd = NORMAL;
-                                } 
-                            }
+                            if(phone_so_sanh_that_bai || co_cuoc_goi_toi) gsm_serial_cmd = NORMAL;
+                            else gsm_serial_cmd = CMD;
                         }
-                        
                     }
-                    else if(sms_index==PHONE_LENGTH+3 && gsm_receive_buf[gsm_receive_pointer]!='"' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"'
-                            && gsm_receive_buf[(gsm_receive_pointer+11)%13] ==',' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"') {/*SMS buoc 5: neu tat ca chu so dt deu trung chuyen qua tim lenh */
-                        if(SBUF=='M') phone_super = 1;
-                        if(SBUF=='m' || phone_super) phone_master = 1;
+                    else if(sms_index==PHONE_LENGTH && gsm_SBUF=='"'){
+                        /* Du 9 chu so -> tra cuu bang, xac dinh vai tro */
+                        u8 idx;
+                        phone[0] = '0';
+                        phone[10] = 0;
+                        idx = phone_find(phone+1);
+                        phone_so_sanh_that_bai = !idx;
+                        phone_super  = idx && found_role=='M';
+                        phone_master = idx && (found_role=='m' || found_role=='M');
                         sms_index = 0;
-                        
-                    }//neu co mot chu so khong trung thi reset sms_index phone_header va chuyen ve tim CMGL hoac OK
+                    }
                     else{
-                        if(sms_index<PHONE_LENGTH)phone[sms_index] = gsm_SBUF;
-                        if(sms_index>PHONE_LENGTH+2) {sms_index = 0; phone_so_sanh_that_bai = 1;}
+                        if(sms_index<PHONE_LENGTH) phone[sms_index] = gsm_SBUF;
+                        if(sms_index>PHONE_LENGTH) {sms_index = 0; phone_so_sanh_that_bai = 1;}
                         else sms_index++;
                     }
-                    
-                }/*SMS buoc 3: sau khi thay CMGL thi se vao day luc nay se tim kiem +84 la dau so chuan
-                                neu khong tim duoc truoc khi co ky tu xuong dong thi quay ve tim CMGL hoac OK*/
-                else {
-                    if((co_cuoc_goi_toi && gsm_receive_buf[gsm_receive_pointer]=='0' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"') || (gsm_receive_buf[gsm_receive_pointer]=='4' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='8' &&
-                        gsm_receive_buf[(gsm_receive_pointer+11)%13] =='+' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"')){
-                            phone_header = 1;
-                            sms_index = 1;
+                }
+                else{
+                    if((co_cuoc_goi_toi && gsm_receive_buf[gsm_receive_pointer]=='0' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='"')
+                       || (gsm_receive_buf[gsm_receive_pointer]=='4' && gsm_receive_buf[(gsm_receive_pointer+12)%13] =='8'
+                           && gsm_receive_buf[(gsm_receive_pointer+11)%13] =='+' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='"')){
+                        phone_header = 1;
+                        sms_index = 1;
                     }
                     if(SBUF=='\r') {gsm_serial_cmd = NORMAL; CCAPM1 = 0x49;}
                 }
