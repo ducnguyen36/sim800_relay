@@ -588,7 +588,6 @@ void main() {
 					gsm_sendandcheck("AT\r",15,1,ver);
 					phone[10] = 0;
 					if(phone_so_sanh_that_bai) phone_add(phone+1,have_master?(sub_mode?'u':'m'):'M');
-					// gsm_sendandcheck("AT+CPBR=1,99\r", 15, 1,"  SENDING CPBR  ");
 					if(have_master)baocaosms("\rLuu thanh cong");
 					else baocaosms("\rLuu Master");
 					if(have_master && get_master_phone() && eep_baocao)baocaosms("\rDT moi duoc luu");
