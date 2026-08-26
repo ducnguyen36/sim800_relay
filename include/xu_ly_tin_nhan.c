@@ -60,7 +60,7 @@ void xu_ly_tin_nhan(){
 					eeprom_buf[KHOA_EEPROM] = 0;
                     eeprom_buf[HUONG_MOTOR] = 0;
                     eeprom_buf[UPS_EEPROM] = 0;
-                    eeprom_buf[BAOCAO_EEPROM] = 0; 
+                    eeprom_buf[BAOCAO_EEPROM] = 1; // mac dinh BAT bao cao
                     IAP_ghisector1();
 					have_master = 0;
                 }else{

@@ -10,9 +10,11 @@
 		        lien tuc (khe rong khop nhieu, bao 1 lan khi mo khoa)
 		A7-1.4: dang ky so bang tin nhan "luu"/"save" o man hinh CHINH/PHU;
 		        hien so + bam M xac nhan / B huy; hien so vua luu tren LCD
+		A7-1.5: mac dinh BAT bao cao (bao tin nhan mo/dong/dung cua) cho
+		        may moi va sau khi khoi tao lai
 */
 
-u8 __code ver[] = " CUACUON A7-1.4";
+u8 __code ver[] = " CUACUON A7-1.5";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -59,7 +61,7 @@ void main() {
 	__bit nhan_remote_lan_dau = 1;
 	/*validate eeprom*/
 	IAP_docxoasector1();
-	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 0;
+	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 1; // mac dinh BAT bao cao
 	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
 	if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
 	if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
