@@ -454,6 +454,10 @@ void main() {
 			send_gsm_byte('-');
 			
 			for(i=0;!match && i<eep_rfindex+2;i++){
+				// Khe khan cap/bao dong (i<2) chua hoc (trong = 0x00 hoac 0xFF) -> bo qua
+				// de nhieu (noise) khong khop nham voi khe rong.
+				if(i<2 && ((eep_rfdata[i*3]==0 && eep_rfdata[i*3+1]==0 && eep_rfdata[i*3+2]==0)
+				        || (eep_rfdata[i*3]==0xff && eep_rfdata[i*3+1]==0xff && eep_rfdata[i*3+2]==0xff))) continue;
 				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
 					if(i<2)match = i+2;
