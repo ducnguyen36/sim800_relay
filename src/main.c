@@ -513,8 +513,12 @@ void main() {
 							eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
 							IAP_ghisector1();			
 						}
-						relay2giu = 0;
-						if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
+						// Chi bao 1 lan khi remote khan cap thuc su mo khoa (relay2giu 1->0),
+						// tranh nhan tin lien tuc khi remote phat lien tiep.
+						if(relay2giu){
+							relay2giu = 0;
+							if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
+						}
 					}
 					if(rflock){
 						if(!cmd[2]){
