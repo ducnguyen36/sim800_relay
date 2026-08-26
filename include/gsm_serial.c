@@ -242,7 +242,8 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 if(SBUF==',')sms_index = gsm_serial_cmd = NORMAL;
                 break;
             case COPS:
-                if(SBUF=='T' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='S' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='D')
+                // A7680C tra ve COPS khac SIM800L: ky tu kiem tra la G E V (SIM800L la D S T)
+                if(SBUF=='V' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='E' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='G')
                     gui_lenh_thanh_cong = 1;
                 else if(SBUF=='R' &&  gsm_receive_buf[(gsm_receive_pointer+12)%13] =='O' &&  gsm_receive_buf[(gsm_receive_pointer+11)%13] =='R')
                     connect = 0;
