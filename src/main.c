@@ -10,7 +10,7 @@
 		        lien tuc (khe rong khop nhieu, bao 1 lan khi mo khoa)
 */
 
-u8 __code ver[] = " CUACUON A7-1.2";
+u8 __code ver[] = " CUACUON A7-1.3";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
