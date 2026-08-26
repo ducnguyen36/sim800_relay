@@ -8,6 +8,10 @@
 
 u8  __xdata  phone[11] ;
 u8  __xdata  found_role;   // role byte of the last phone_find() hit
+u8  __xdata  sdt_luu[11];  // so dt dang cho xac nhan / vua luu (de hien LCD)
+u8  __xdata  vaitro_luu;   // vai tro se luu khi xac nhan (M/m/u)
+u8  __xdata  man_hinh_luu; // 0=binh thuong, 1=cho xac nhan luu (SMS), 2=da luu
+__bit them_sdt;            // so cho luu chua co trong bang (can them)
 __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
