@@ -36,6 +36,7 @@ __bit phone_master,phone_super;
 __bit phone_header;
 __bit pin_chinh_xac;
 __bit sms_dang_xu_ly;
+__bit dang_ky_sms;      // SMS den khi dang o man hinh dang ky CHINH/PHU (mode 2, sub_mode<2)
 __bit co_tin_nhan_moi;
 __bit lenh_khong_hop_le;
 __bit have_quote;

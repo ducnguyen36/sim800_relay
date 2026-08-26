@@ -125,6 +125,24 @@ void main() {
 			gsm_sendandcheck("AT\r", 15, 1,ver);
 			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
 		}
+		// Dang ky so bang tin nhan: khi o man hinh CHINH/PHU, nhan "luu"/"save"
+		// tu so nao thi luu so do (giong nhu goi den de dang ky). Luon tieu thu
+		// tin nhan nay (khong cho lot xuong xu_ly de tranh so la chay lenh).
+		if(sms_dang_xu_ly && dang_ky_sms){
+			sms_dang_xu_ly = 0;
+			dang_ky_sms = 0;
+			if(mode==2 && sub_mode<2 &&
+			   (((lenh_sms[0]=='l'||lenh_sms[0]=='L') && (lenh_sms[1]=='u'||lenh_sms[1]=='U'))    // luu
+			 || ((lenh_sms[0]=='s'||lenh_sms[0]=='S') && (lenh_sms[1]=='a'||lenh_sms[1]=='A')))){  // save
+				gsm_sendandcheck("AT\r",15,1,ver);
+				phone[10] = 0;
+				if(phone_so_sanh_that_bai) phone_add(phone+1,have_master?(sub_mode?'u':'m'):'M');
+				if(have_master)baocaosms("\rLuu thanh cong");
+				else baocaosms("\rLuu Master");
+				have_master = 1;
+			}
+			gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
+		}
 		if(sms_dang_xu_ly && !mode){
 			// CCAPM1 = 0x49;
 			xu_ly_tin_nhan();

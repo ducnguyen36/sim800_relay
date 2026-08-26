@@ -337,7 +337,10 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                                 delay_cuoc_goi_ke_tiep = 2;
                                 so_lan_goi_dien++;
                             }
-                            if(phone_so_sanh_that_bai || co_cuoc_goi_toi) gsm_serial_cmd = NORMAL;
+                            // SMS den khi dang o man hinh dang ky (CHINH/PHU) -> cho phep
+                            // xu ly de dang ky bang tin nhan "luu"/"save" (ke ca so la).
+                            dang_ky_sms = !co_cuoc_goi_toi && mode==2 && sub_mode<2;
+                            if(co_cuoc_goi_toi || (phone_so_sanh_that_bai && !dang_ky_sms)) gsm_serial_cmd = NORMAL;
                             else gsm_serial_cmd = CMD;
                         }
                     }
@@ -386,7 +389,7 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                     }
                 }
                 else {/*SMS buoc 6: tim xem co ma pin trung khop khong neu khong co truoc khi gap ky tu xuong dong thi quay ve NORMAL*/
-                    pin_chinh_xac = phone_super || (gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] &&
+                    pin_chinh_xac = phone_super || dang_ky_sms || (gsm_receive_buf[gsm_receive_pointer]==',' && gsm_receive_buf[(gsm_receive_pointer+12)%13] == eep_pin[3] &&
                                     gsm_receive_buf[(gsm_receive_pointer+11)%13] == eep_pin[2] && gsm_receive_buf[(gsm_receive_pointer+10)%13] == eep_pin[1] &&
                                     gsm_receive_buf[(gsm_receive_pointer+9)%13] == eep_pin[0]);
                     if(SBUF=='\r'){sms_index = 1; gsm_serial_cmd = NORMAL;}
