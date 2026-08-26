@@ -77,8 +77,8 @@ __bit gsm_sendandcheck(u8 *cmd, u8 retry, u8 delay, u8 *display){
                 error = 0;
                 if(!retry--) break;
                 connect_time_out = connect = delay;
-                if(*(cmd+2) == '+' && *(cmd+7)!='?' && *(cmd+8)!='?') send_gsm_cmd("A/\r"); 
-                else send_gsm_cmd(cmd);
+                // A7680C: lenh A/ (lap lai lenh truoc) da bo -> gui lai cmd
+                send_gsm_cmd(cmd);
             } 
     }
     LCD_xoa(TREN);
