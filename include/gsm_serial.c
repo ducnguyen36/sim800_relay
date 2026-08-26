@@ -269,7 +269,8 @@ void gsm_serial_interrupt() __interrupt gsm_SERIAL_INT __using SERIAL_MEM{
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='I' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='R')){
                                         
                     CCAPM1 = 0;
-                    send_gsm_cmd("ATH\r");
+                    // send_gsm_cmd("ATH\r");
+                    send_gsm_cmd("AT+CHUP\r");
 
                 }else if((gsm_receive_buf[gsm_receive_pointer]==':' && (gsm_receive_buf[(gsm_receive_pointer+12)%13] =='R' || gsm_receive_buf[(gsm_receive_pointer+12)%13] =='F') &&
                 gsm_receive_buf[(gsm_receive_pointer+11)%13] =='B' && gsm_receive_buf[(gsm_receive_pointer+10)%13] =='P' &&
