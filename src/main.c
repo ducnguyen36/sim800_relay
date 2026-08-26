@@ -6,9 +6,11 @@
 		0.8.5: them thu vao ngay thang nam
 		A7-1.0: chuyen sang module A7680C; nhan dien so goi/nhan tin bang
 		        bang so trong EEPROM (thay cho danh ba SIM); bo lich su
+		A7-1.2: ATH -> AT+CHUP (cup may); fix remote khan cap nhan tin
+		        lien tuc (khe rong khop nhieu, bao 1 lan khi mo khoa)
 */
 
-u8 __code ver[] = " CUACUON A7-1.1";
+u8 __code ver[] = " CUACUON A7-1.2";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
