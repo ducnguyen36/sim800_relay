@@ -8,7 +8,7 @@
 #define		gsm_TI			TI
 #define		gsm_SBUF		SBUF
 
-#define		gsm_BAUD		57600
+#define		gsm_BAUD		38400
 
 void gsm_init();
 void send_gsm_byte(u8 dulieu);
