@@ -284,20 +284,8 @@ void main() {
 				if(phim_cong_nhan){
 					phim_cong_nhan = 0;
 					if(sub_mode<2){
-						u16 doims = 200;
-						kiemtrataikhoan();
-						LCD_guilenh(0x80);
-						LCD_guichuoi(lenh_sms);
-						while(!phim_cong_nhan && doims--)delay_ms(300);
-						phim_cong_nhan = 0;
-						kiemtrasodienthoai();
-						LCD_guilenh(0x84);
-						phone[10] = 0;
-						LCD_guichuoi(phone);
-						doims=200;
-						while(!phim_cong_nhan && doims--)delay_ms(300);
+						// CHINH/PHU: luu so bang cach goi den. Bo tra cuu TK/SDT (khong dung CUSD tren A7680C)
 						mode_wait = 60;
-						phim_cong_nhan=0;
 					}else sub_mode = 4;
 					
 				}

@@ -37,7 +37,6 @@ __bit phone_header;
 __bit pin_chinh_xac;
 __bit sms_dang_xu_ly;
 __bit co_tin_nhan_moi;
-__bit have_cusd;
 __bit lenh_khong_hop_le;
 __bit have_quote;
 __bit have_master;
