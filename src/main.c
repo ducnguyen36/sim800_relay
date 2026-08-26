@@ -8,9 +8,11 @@
 		        bang so trong EEPROM (thay cho danh ba SIM); bo lich su
 		A7-1.2: ATH -> AT+CHUP (cup may); fix remote khan cap nhan tin
 		        lien tuc (khe rong khop nhieu, bao 1 lan khi mo khoa)
+		A7-1.4: dang ky so bang tin nhan "luu"/"save" o man hinh CHINH/PHU;
+		        hien so + bam M xac nhan / B huy; hien so vua luu tren LCD
 */
 
-u8 __code ver[] = " CUACUON A7-1.3";
+u8 __code ver[] = " CUACUON A7-1.4";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -116,6 +118,7 @@ void main() {
 		}
 		if(!mode_wait && mode){
 			mode = sub_mode = 0;
+			man_hinh_luu = 0;
 			pin[0] = pin[1] = pin[2] = pin[3] = 0;
 			new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
 
@@ -124,6 +127,25 @@ void main() {
 			co_tin_nhan_moi = 0;
 			gsm_sendandcheck("AT\r", 15, 1,ver);
 			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
+		}
+		// Dang ky so bang tin nhan: khi o man hinh CHINH/PHU, nhan "luu"/"save"
+		// tu so nao thi luu so do (giong nhu goi den de dang ky). Luon tieu thu
+		// tin nhan nay (khong cho lot xuong xu_ly de tranh so la chay lenh).
+		if(sms_dang_xu_ly && dang_ky_sms){
+			sms_dang_xu_ly = 0;
+			dang_ky_sms = 0;
+			if(mode==2 && sub_mode<2 &&
+			   (((lenh_sms[0]=='l'||lenh_sms[0]=='L') && (lenh_sms[1]=='u'||lenh_sms[1]=='U'))    // luu
+			 || ((lenh_sms[0]=='s'||lenh_sms[0]=='S') && (lenh_sms[1]=='a'||lenh_sms[1]=='A')))){  // save
+				// Chua luu voi: hien so ra LCD, cho bam M xac nhan / B huy (xu ly o case 2)
+				u8 j; phone[10] = 0;
+				for(j=0;j<11;j++) sdt_luu[j] = phone[j];
+				vaitro_luu = have_master?(sub_mode?'u':'m'):'M';
+				them_sdt   = phone_so_sanh_that_bai;
+				man_hinh_luu = 1;
+				mode_wait = 60;
+			}
+			gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
 		}
 		if(sms_dang_xu_ly && !mode){
 			// CCAPM1 = 0x49;
@@ -268,6 +290,38 @@ void main() {
 				
 				break;
 			case 2:
+				if(man_hinh_luu){
+					// Man hinh luu so: 1 = cho xac nhan (SMS), 2 = da luu (hien so)
+					LCD_guilenh(0x80);
+					LCD_guichuoi(man_hinh_luu==1?"LUU SO? M:OK B:X":"DA LUU SO:      ");
+					LCD_guilenh(0xc0);
+					LCD_guichuoi(sdt_luu);
+					LCD_guichuoi("      ");
+					if(man_hinh_luu==1){
+						if(phim_mode_nhan){          // M = xac nhan luu
+							phim_mode_nhan = phim_back_nhan = 0;
+							mode_wait = 60;
+							if(them_sdt) phone_add(sdt_luu+1,vaitro_luu);
+							{u8 j; for(j=0;j<11;j++) phone[j] = sdt_luu[j];}
+							if(have_master)baocaosms("\rLuu thanh cong");
+							else baocaosms("\rLuu Master");
+							have_master = 1;
+							man_hinh_luu = 2;
+							LCD_xoa(DUOI);
+						}else if(phim_back_nhan){    // B = huy
+							phim_back_nhan = 0;
+							mode_wait = 60;
+							man_hinh_luu = 0;
+							LCD_xoa(TREN); LCD_xoa(DUOI);
+						}
+					}else if(phim_mode_nhan || phim_back_nhan || phim_cong_nhan){
+						phim_mode_nhan = phim_back_nhan = phim_cong_nhan = 0;
+						mode_wait = 60;
+						man_hinh_luu = 0;
+						LCD_xoa(TREN); LCD_xoa(DUOI);
+					}
+					break;
+				}
 				LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 				LCD_guingay(0xc0,year,month,day);
 				LCD_guilenh(0x80);
@@ -586,6 +640,8 @@ void main() {
 					gsm_sendandcheck("AT\r",15,1,ver);
 					phone[10] = 0;
 					if(phone_so_sanh_that_bai) phone_add(phone+1,have_master?(sub_mode?'u':'m'):'M');
+					{u8 j; for(j=0;j<11;j++) sdt_luu[j] = phone[j];}  // luu so de hien LCD
+					man_hinh_luu = 2;
 					if(have_master)baocaosms("\rLuu thanh cong");
 					else baocaosms("\rLuu Master");
 					if(have_master && get_master_phone() && eep_baocao)baocaosms("\rDT moi duoc luu");
