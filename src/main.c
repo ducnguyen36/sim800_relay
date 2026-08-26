@@ -8,7 +8,7 @@
 		        bang so trong EEPROM (thay cho danh ba SIM); bo lich su
 */
 
-u8 __code ver[] = " CUACUON A7-1.0";
+u8 __code ver[] = " CUACUON A7-1.1";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
