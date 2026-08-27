@@ -205,6 +205,37 @@ void xu_ly_tin_nhan(){
                 phone[10] = 0;
                 gsm_quay_so(phone);
                 break;
+            case 'C':
+            case 'c':
+                // Chinh gio thu cong (du phong khi SIM khong lay duoc gio tu mang):
+                // <pin>,Cg,hhmmddMMyy  vi du 0000,Cg,1430260826 = 14:30 ngay 26/08/26
+                if(lenh_sms[1] == 'g' || lenh_sms[1] == 'G'){
+                    if(!phone_master) break;
+                    if(lenh_sms[3] >='0' && lenh_sms[3] <='9' && lenh_sms[4] >='0' && lenh_sms[4] <='9'
+                    && lenh_sms[5] >='0' && lenh_sms[5] <='9' && lenh_sms[6] >='0' && lenh_sms[6] <='9'
+                    && lenh_sms[7] >='0' && lenh_sms[7] <='9' && lenh_sms[8] >='0' && lenh_sms[8] <='9'
+                    && lenh_sms[9] >='0' && lenh_sms[9] <='9' && lenh_sms[10]>='0' && lenh_sms[10]<='9'
+                    && lenh_sms[11]>='0' && lenh_sms[11]<='9' && lenh_sms[12]>='0' && lenh_sms[12]<='9'){
+                        u8 gio_moi    = (lenh_sms[3] -'0')*10 + lenh_sms[4] -'0';
+                        u8 phut_moi   = (lenh_sms[5] -'0')*10 + lenh_sms[6] -'0';
+                        u8 ngay_moi   = (lenh_sms[7] -'0')*10 + lenh_sms[8] -'0';
+                        u8 thang_moi  = (lenh_sms[9] -'0')*10 + lenh_sms[10]-'0';
+                        u8 nam_moi    = (lenh_sms[11]-'0')*10 + lenh_sms[12]-'0';
+                        if(gio_moi>23 || phut_moi>59 || ngay_moi<1 || ngay_moi>31 || thang_moi<1 || thang_moi>12){
+                            baocaosms("\rGio khong hop le");
+                        }else{
+                            u16 check;
+                            hour = gio_moi; minute = phut_moi; second = 0;
+                            day = ngay_moi; month = thang_moi; year = nam_moi;
+                            check = (23*month/9 + day + (month>2?!(year%4):2) + year + (year+3)/4 + 1);
+                            date = check%7+1;
+                            baocaosms("\rDa chinh gio");
+                        }
+                    }else baocaosms("\rGio khong hop le");
+                }else{
+                    baocaosms("\rLenh Khong Hop Le");
+                }
+                break;
             default:
                     baocaosms("\rLenh khong hop le");
                

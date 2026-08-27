@@ -12,9 +12,12 @@
 		        hien so + bam M xac nhan / B huy; hien so vua luu tren LCD
 		A7-1.5: mac dinh BAT bao cao (bao tin nhan mo/dong/dung cua) cho
 		        may moi va sau khi khoi tao lai
+		A7-1.6: them delay 1s sau COPS=0 truoc khi doc CCLK (cho module nhan
+		        gio mang NITZ - giong ban gps_a7680c chay tot; sua loi mot so
+		        SIM khong lay duoc gio); them lenh SMS Cg de chinh gio thu cong
 */
 
-u8 __code ver[] = " CUACUON A7-1.5";
+u8 __code ver[] = " CUACUON A7-1.6";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

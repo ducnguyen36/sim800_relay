@@ -171,10 +171,11 @@ __bit gsm_thietlapsim800(){
 }
 
 void gsm_thietlapngaygiothuc(){
-    if(gsm_sendandcheck("AT+CTZU=1\r",15,1," BAT LAY GIO ")){   // A7680C auto timezone
+    if(gsm_sendandcheck("AT+CTZU=1\r",25,2," BAT LAY GIO ")){   // A7680C auto timezone
         if(gsm_sendandcheck("AT+COPS=2\r",15,1,"   NGAT MANG    ")){
             gsm_serial_cmd = COPS;
             if(gsm_sendandcheck("AT+COPS=0\r",10,60,"    TIM MANG    ")){
+                delay_ms(1000);   // cho module nhan gio mang (NITZ) sau khi dang ky roi moi doc CCLK
                 clear_sms_buffer(0);
                 sms_index = 0;
                 gsm_serial_cmd = CLK;
