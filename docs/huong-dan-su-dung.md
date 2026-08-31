@@ -76,6 +76,7 @@ Người gửi phải là số đã lưu (Master hoặc User tùy lệnh). Khôn
 | `0000,BC,Tat` (hoặc `,OFF`) | Tắt báo cáo | Master |
 | `0000,B` | Kiểm tra máy còn hoạt động (máy nhắn lại "Bao cao thanh cong") | Master |
 | `0000,R` | Khởi động lại **module SIM** (10 giây) | Master |
+| `0000,Cg,hhmmddMMyy` | **Chỉnh giờ thủ công** — dùng khi máy không tự lấy được giờ từ nhà mạng. Ví dụ: `0000,Cg,1430260826` = 14:30 ngày 26/08/26 | Master |
 | `0000,Rr,r` | **Khôi phục cài đặt gốc** — xóa hết số, remote, đặt lại PIN 0000, mở tất cả khóa | Chỉ **Super (M)** |
 | `<pin>,?` | Nhận hướng dẫn lệnh (bản cũ, có thể chưa cập nhật đầy đủ) | Bất kỳ số đã lưu |
 
@@ -95,4 +96,4 @@ Bật UPS (`0000,UPS,Bat`) để relay 4 kích hoạt nguồn dự phòng khi c�
 
 ---
 
-*Tài liệu này được kiểm chứng lại từng lệnh so với mã nguồn firmware (phiên bản A7-1.2), nhưng chưa được thử nghiệm trực tiếp trên phần cứng thật — nên kiểm tra lại từng mục trước khi phát hành cho khách hàng.*
+*Tài liệu này được kiểm chứng lại từng lệnh so với mã nguồn firmware (phiên bản A7-1.6) — nên kiểm tra lại từng mục trước khi phát hành cho khách hàng.*
