@@ -15,6 +15,7 @@ __bit them_sdt;            // so cho luu chua co trong bang (can them)
 __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
+__bit count_down_flag;    // relay on-off (mau bom): bat dem nguoc tat Relay1
 
 
 u8  __xdata lenh_sms[161]; 

@@ -17,11 +17,18 @@ void xunggiay(){
 	over_cur_led = flip_pulse;
 	if(!--delay_chay_khoi_tao){
 			delay_chay_khoi_tao = 0;
-			rflock = eep_rflock;	
+			rflock = eep_rflock;
 			Relay2 = relay2giu = eep_khoa;
-			
+
 	}
-	if(rf_khancap_delay && !--rf_khancap_delay) rf_khancap = rf_khancap_delay = 0; 
+	// Relay on-off (mau bom): but B se dat count_down_flag=1, sau do dem nguoc
+	// relay1_delay_tat (giay) roi tu tat Relay1.
+	if(Relay1 && count_down_flag && !--relay1_delay_tat){
+		Relay1 = 0;
+		relay1_delay_tat = 10;
+		count_down_flag = 0;
+	}
+	if(rf_khancap_delay && !--rf_khancap_delay) rf_khancap = rf_khancap_delay = 0;
 	if(phim_mode_doi && phim_mode_giu)phim_mode_doi--;
 	if(phim_back_doi && phim_back_giu)phim_back_doi--;
 	if(phim_cong_doi && phim_cong_giu)phim_cong_doi--;
