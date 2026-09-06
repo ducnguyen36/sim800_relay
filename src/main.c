@@ -15,9 +15,14 @@
 		A7-1.6: them delay 1s sau COPS=0 truoc khi doc CCLK (cho module nhan
 		        gio mang NITZ - giong ban gps_a7680c chay tot; sua loi mot so
 		        SIM khong lay duoc gio); them lenh SMS Cg de chinh gio thu cong
+		A7-1.7: sua remote RF - (1) chot frame ngay khi du 24 bit (bam nhanh
+		        van an, khong phai giu); (2) khi nha nut huy frame chua kip xu
+		        ly de motor khong giat them 1 nhip; (3) hien "DA HOC REMOTE!"
+		        tren LCD khi hoc remote o CHINH. (Thuat toan nhan RF se lam
+		        moi hoan toan o ban 2.0 - tu hieu chinh theo tung remote.)
 */
 
-u8 __code ver[] = "A7-1.7t RF FIX";
+u8 __code ver[] = " CUACUON A7-1.7";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
