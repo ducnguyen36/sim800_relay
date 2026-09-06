@@ -188,6 +188,8 @@ void gsm_thietlapngaygiothuc(){
                     second = (lenh_sms[18]-48)*10 + lenh_sms[19] - 48;
                     u16 check = (23*month/9 + day + (month>2?!(year%4):2) + year + (year+3)/4 + 1) ;
                     date = check%7+1;
+                    // Danh dau gio hop le (module da nhan gio mang) de ngung thu lai nhanh.
+                    gio_hop_le = (year>=24 && year<=99 && month>=1 && month<=12 && day>=1 && day<=31);
                 }
             }
         }

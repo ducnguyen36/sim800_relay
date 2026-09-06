@@ -15,6 +15,10 @@ __bit them_sdt;            // so cho luu chua co trong bang (can them)
 __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
+// gio_hop_le duoc gsm_serial.c (dung chung voi san pham RELAY) danh dau khi lay
+// duoc gio mang; ban CUA CUON nay chua chu dong dung (khong co retry), nhung
+// khai bao o day de gsm_serial.c dung chung bien dich duoc cho ca 2 san pham.
+__bit gio_hop_le;
 
 
 u8  __xdata lenh_sms[161]; 
