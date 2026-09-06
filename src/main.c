@@ -17,7 +17,7 @@
 		        SIM khong lay duoc gio); them lenh SMS Cg de chinh gio thu cong
 */
 
-u8 __code ver[] = " CUACUON A7-1.6";
+u8 __code ver[] = "A7-1.7t RF FIX";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -549,6 +549,12 @@ void main() {
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
+								// LOI 3: bao "da hoc" tren LCD (ngoai SMS) de thay ngay
+								LCD_xoa(TREN);
+								LCD_guilenh(0x80);
+								LCD_guichuoi(" DA HOC REMOTE! ");
+								delay_ms(1500);
+								LCD_xoa(TREN);
 								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
 							}
 						}else if(sub_mode == 1){

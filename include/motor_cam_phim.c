@@ -101,7 +101,11 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		PCA_Timer1 +=250;
 		if(rfprocess)return;
 		if(!rfwait++){
+			// Het tin hieu RF (da nha nut): tat relay. LOI 2 FIX: huy luon frame
+			// da giai ma nhung chua kip xu ly (vong lap chinh dang ban LCD/GSM)
+			// de motor khong giat them 1 nhip sau khi da nha nut.
 			rfstop = 1;Relay1 = Relay3 = 0; Relay2 = relay2giu;
+			rfprocess = 0;
 		}
 		if(cam_che){
 			if(!count_low){
@@ -118,19 +122,22 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 				}
 				else if(count_low>28){
 					rfwait = 1;
-					if(rfstatus && rfindex==24) {
-						rfprocess = 1;
-					}
-					else if(rfstop) {
+					// Bat dau frame moi khi thay sync sau luc idle (rfstop).
+					// (Viec CHOT frame da chuyen xuong duoi: chot ngay khi du 24 bit.)
+					if(rfstop) {
 						rfstatus = 1;
 						pt2240 = rfindex = 0;
 					}
-					
+
 				}
 			}
 			count_hi++;count_low=0;
 		}
-		if(rfindex>24){
+		// LOI 1 FIX: chot frame NGAY khi du 24 bit, khong doi sync ke tiep ->
+		// bam nhanh (tap) van an, khong phai giu.
+		if(rfstatus && rfindex==24){
+			rfprocess = 1;
+		}else if(rfindex>24){
 			rfindex = 0;
 			rfstatus = 0;
 		}
