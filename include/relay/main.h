@@ -16,6 +16,14 @@ __bit phone_update;
 __bit kiem_tra_danh_ba;
 u8 __data danh_ba_cuoi;
 
+// --- Hop 4 relay ---
+u8   __xdata relay_sel;     // relay dang chon o man hinh panel (0..3)
+__bit rf_dang_giu;          // remote dang duoc giu (chong toggle lien tuc)
+// --- Tu lay lai gio ---
+__bit gio_hop_le;           // da lay duoc gio mang hop le
+__bit lay_lai_gio;          // co: vong lap chinh goi lai gsm_thietlapngaygiothuc()
+u8   __xdata gio_retry;     // dem nguoc (giay) truoc lan thu lay gio ke tiep
+
 
 u8  __xdata lenh_sms[161]; 
 __bit da_gui_bao_cao;

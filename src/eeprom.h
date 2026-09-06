@@ -6,8 +6,11 @@
 #define        PIN_EEPROM                   SECTOR1 
 #define        BAOCAO_EEPROM                PIN_EEPROM+4
 #define        HUONG_MOTOR                  BAOCAO_EEPROM+1
-#define        KHOA_EEPROM                  HUONG_MOTOR+1 
+#define        KHOA_EEPROM                  HUONG_MOTOR+1
 #define        UPS_EEPROM                   KHOA_EEPROM+1
+// Ban hop 4 relay: tai dung o UPS (khong con dung) lam bitmask trang thai 4 relay
+// (bit0=R1 .. bit3=R4) de khoi phuc sau mat dien. Layout bang so giu nguyen.
+#define        RELAY_STATE_EEPROM           UPS_EEPROM
 #define        PHONE_COUNT_EEPROM           UPS_EEPROM+1
 #define        PHONE_TABLE_EEPROM           PHONE_COUNT_EEPROM+1
 

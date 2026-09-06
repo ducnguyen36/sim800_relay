@@ -1,7 +1,9 @@
 .pio/**
 !.pio/build/
-!.pio/build/stc15f2k60s2/
-!.pio/build/stc15f2k60s2/firmware.hex
+!.pio/build/door/
+!.pio/build/door/firmware.hex
+!.pio/build/relay/
+!.pio/build/relay/firmware.hex
 .vscode/
 sdcard
 buildrun*
