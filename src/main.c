@@ -17,7 +17,11 @@
 		        SIM khong lay duoc gio); them lenh SMS Cg de chinh gio thu cong
 */
 
-u8 __code ver[] = " CUACUON A7-1.6";
+u8 __code ver[] = "RF BENCH TEST";
+
+// TEST: trang thai remote vua bam (de hien LCD o man hinh chinh)
+u8 __xdata test_nut  = 0;   // nut vua bam: 1..4 (0 = chua bam)
+u8 __xdata test_khop = 0;   // match cua remote vua bam (0 = chua hoc)
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -82,33 +86,27 @@ void main() {
 	if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
 	IAP_ghisector2();
 
-	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
-	delay_ms(5000);
-	
+	// === BAN TEST BENCH: bo qua A7680C/GSM/master ===
+	// Khoi tao UART (cho debug 'P' ra COM, gsm_init khong gui lenh AT nao) roi
+	// vao thang man hinh chinh. nosim=1 -> bo qua toan bo thiet lap GSM ben duoi.
 	gsm_init();
-	
+
 	/*PCA TIMER 0 INIT 50us*/
-	PCA_Timer_init();	
-	
+	PCA_Timer_init();
+
   	// /*Khoi tao man hinh LCD*/
 	LCD_Init();
 
-	if(!nosim && gsm_thietlapsim800()){
-		gsm_thietlapngaygiothuc();
-		gsm_thietlapgoidien();
-		gsm_thietlapnhantin();
-	}
+	nosim = 1;   // bo qua thiet lap SIM/GSM (gsm_sendandcheck se tu thoat neu bi goi)
+	// (Da bo hoan toan gsm_thietlapsim800/ngaygiothuc/goidien/nhantin cho ban test)
 
 	mode_wait = 60;
 
-	
 	phone[0] = '0';
 	phone[10] = 0;
-	have_master = get_master_phone();
+	// Ep co master (khong can dang ky) de vao menu CHINH hoc remote binh thuong.
+	have_master = 1;
 	__bit run_button = 0;
-	if(have_master){
-		baocaosms("\rBDK Khoi Dong");
-	}
 	while(1){
 		if(gio_out){
 			gio_out = 0;
@@ -165,33 +163,31 @@ void main() {
 		switch(mode){
 			default:
 			case 0:
-				//display
+				//display: dong tren = so remote da hoc; dong duoi = remote vua bam
 				if(lcd_update_chop){
 					lcd_update_chop = 0;
 					LCD_guilenh(0x80);
-					LCD_guichuoi(ver);
-					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-					LCD_guingay(0xc0,year,month,day);
+					LCD_guichuoi("REMOTE DA HOC:");
+					LCD_guidulieu((eep_rfindex>99?0:eep_rfindex)/10+'0');
+					LCD_guidulieu((eep_rfindex>99?0:eep_rfindex)%10+'0');
+					LCD_guilenh(0xc0);
+					if(test_nut){
+						LCD_guichuoi(test_khop?"KHOP! NUT:":"LA.   NUT:");
+						LCD_guidulieu(test_nut+'0');
+						LCD_guichuoi("     ");
+					}else{
+						LCD_guichuoi("Bam nut remote  ");
+					}
 				}
 				//button
-				//M
+				//M : TEST -> vao thang menu (bo qua PIN) de hoc remote o CHINH
 				if(!(eep_khoa&2) && !phim_mode_doi){
 					phim_mode_nhan = 0;
 					mode_wait = 60;
 					sub_mode = 0;
-					if(have_master){
-						mode = 1;
-						LCD_xoa(TREN);
-						LCD_guilenh(0x80);
-						LCD_guichuoi("PIN:");
-						LCD_guidulieu(pin[0]+'0');
-						LCD_guidulieu(pin[1]+'0');
-						LCD_guidulieu(pin[2]+'0');
-						LCD_guidulieu(pin[3]+'0');
-						
-						
-					}
-					else mode = 2;
+					mode = 2;
+					LCD_xoa(TREN);
+					LCD_xoa(DUOI);
 				}
 				//+
 				if(phim_cong_nhan){
@@ -549,7 +545,11 @@ void main() {
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
+								// TEST: bao da hoc tren LCD (khong dung SMS vi da bo GSM)
+								LCD_xoa(TREN);
+								LCD_guilenh(0x80);
+								LCD_guichuoi(" DA HOC REMOTE! ");
+								delay_ms(1500);
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -563,6 +563,9 @@ void main() {
 				}
 				rfstop = 0;
 			}else{
+				// TEST: ghi nhan nut vua bam (1..4) + co khop de hien LCD man hinh chinh
+				test_khop = match ? 1 : 0;
+				test_nut  = (!cmd[0]) ? 1 : (!cmd[1]) ? 2 : (!cmd[2]) ? 3 : (!cmd[3]) ? 4 : 0;
 				if(match){
 					if(match==2){
 						if(phim_back_nhan){
