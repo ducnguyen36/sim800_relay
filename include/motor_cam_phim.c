@@ -10,23 +10,31 @@ void PCA_Timer_init(){
 	CR=1;
 }
 
+/* Ap bitmask 4 relay (bit0=R1 .. bit3=R4). */
+void dat_relay(u8 m){
+	Relay1 = m & 1;
+	Relay2 = (m>>1) & 1;
+	Relay3 = (m>>2) & 1;
+	Relay4 = (m>>3) & 1;
+}
+
+/* Luu trang thai 4 relay hien tai vao EEPROM (khoi phuc sau mat dien). */
+void luu_relay(){
+	IAP_docxoasector1();
+	eeprom_buf[RELAY_STATE_EEPROM] =
+		(Relay1?1:0) | (Relay2?2:0) | (Relay3?4:0) | (Relay4?8:0);
+	IAP_ghisector1();
+}
+
 
 void xunggiay(){
 	WATCHDOG;
 	flip_pulse^=1;
 	over_cur_led = flip_pulse;
-	if(!--delay_chay_khoi_tao){
-			delay_chay_khoi_tao = 0;
-			rflock = eep_rflock;
-			Relay2 = relay2giu = eep_khoa;
-
-	}
-	// Relay on-off (mau bom): but B se dat count_down_flag=1, sau do dem nguoc
-	// relay1_delay_tat (giay) roi tu tat Relay1.
-	if(Relay1 && count_down_flag && !--relay1_delay_tat){
-		Relay1 = 0;
-		relay1_delay_tat = 10;
-		count_down_flag = 0;
+	// Tu lay lai gio: neu chua co gio hop le, dem nguoc roi bao vong lap chinh thu lai.
+	if(!gio_hop_le && gio_retry && !--gio_retry){
+		lay_lai_gio = 1;
+		gio_retry = 180;   // ~3 phut/lan cho toi khi lay duoc gio
 	}
 	if(rf_khancap_delay && !--rf_khancap_delay) rf_khancap = rf_khancap_delay = 0;
 	if(phim_mode_doi && phim_mode_giu)phim_mode_doi--;
@@ -108,7 +116,10 @@ void	PCA_Handler (void) __interrupt PCA_VECTOR __using MEM_DONG_HO{
 		PCA_Timer1 +=250;
 		if(rfprocess)return;
 		if(!rfwait++){
-			rfstop = 1;Relay1 = Relay3 = 0; Relay2 = relay2giu;
+			// Het tin hieu RF (nha nut): KHONG tat relay (relay giu trang thai);
+			// chi danh dau da nha de lan bam ke tiep toggle duoc.
+			rfstop = 1;
+			rf_dang_giu = 0;
 		}
 		if(cam_che){
 			if(!count_low){

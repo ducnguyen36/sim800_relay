@@ -145,6 +145,22 @@ void baocaosms(u8  *noidung){
     else gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
 }
 
+/* Nhan lai trang thai 4 relay cho nguoi vua gui lenh (phone[] da tro toi so do). */
+void baocao_trang_thai(){
+    gsm_sendandcheck("AT\r", 15, 1,ver);
+    lenh_sms[0] = 0;
+    if(!send_sms()) return;
+    send_gsm_cmd("\rRELAY R1:");
+    send_gsm_byte(Relay1?'1':'0');
+    send_gsm_cmd(" R2:");
+    send_gsm_byte(Relay2?'1':'0');
+    send_gsm_cmd(" R3:");
+    send_gsm_byte(Relay3?'1':'0');
+    send_gsm_cmd(" R4:");
+    send_gsm_byte(Relay4?'1':'0');
+    gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
+}
+
 void clear_sms_buffer(u8 index_dau){
     sms_index = 0;
     while(index_dau<161)lenh_sms[index_dau++] = 0;
@@ -188,6 +204,8 @@ void gsm_thietlapngaygiothuc(){
                     second = (lenh_sms[18]-48)*10 + lenh_sms[19] - 48;
                     u16 check = (23*month/9 + day + (month>2?!(year%4):2) + year + (year+3)/4 + 1) ;
                     date = check%7+1;
+                    // Danh dau gio hop le (module da nhan gio mang) de ngung thu lai nhanh.
+                    gio_hop_le = (year>=24 && year<=99 && month>=1 && month<=12 && day>=1 && day<=31);
                 }
             }
         }

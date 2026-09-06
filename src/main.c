@@ -15,9 +15,14 @@
 		A7-1.6: them delay 1s sau COPS=0 truoc khi doc CCLK (cho module nhan
 		        gio mang NITZ - giong ban gps_a7680c chay tot; sua loi mot so
 		        SIM khong lay duoc gio); them lenh SMS Cg de chinh gio thu cong
+		RL-1.0: dong san pham RIENG - hop 4 relay doc lap (giu trang thai) tren
+		        cung nen A7680C. Bo logic cua cuon (motor momentary, tu-ngat RF,
+		        khoa cua, UPS, huong motor). Nut +: bat/tat tat ca; nut B: panel
+		        chon tung relay. Remote 4 nut toggle 4 relay. SMS Rn,ON/OFF va
+		        ALL,ON/OFF. Trang thai relay luu EEPROM. Tu lay lai gio toi khi co.
 */
 
-u8 __code ver[] = " CUACUON A7-1.6";
+u8 __code ver[] = "RELAY4 v1.0";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -50,7 +55,7 @@ void main() {
 	delay_chay_khoi_tao = 30;
 	so_lan_goi_dien = 0;
 	gsm_delay_reset=10;
-	relay1_delay_tat = 10;
+	relay1_delay_tat = 2;
 	relay2_delay_tat = 2;
 	relay3_delay_tat = 2;
 	relay4_delay_tat = 2;
@@ -61,136 +66,156 @@ void main() {
 	rf_khancap = rf_khancap_delay = 0;
 	ngay_reset_con_lai = 1;
 
-	__bit nhan_remote_lan_dau = 1;
 	/*validate eeprom*/
-	// Ban on-off (relay bat/tat qua nut bam, khong dung GSM/SMS/menu) - tat toan
-	// bo phan doc/ghi EEPROM, GSM va thiet lap master; giu nguyen comment de de
-	// khoi phuc ve ban cua cuon day du neu can.
-	// IAP_docxoasector1();
-	// if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 1; // mac dinh BAT bao cao
-	// if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;
-	// if(eeprom_buf[HUONG_MOTOR]>1) eeprom_buf[HUONG_MOTOR] = 0;
-	// if(eeprom_buf[UPS_EEPROM]>10) eeprom_buf[UPS_EEPROM] = 0;
-	// if(eeprom_buf[PHONE_COUNT_EEPROM]>PHONE_MAX) eeprom_buf[PHONE_COUNT_EEPROM] = 0;
-	// if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
-	// || (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
-	// || (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
-	// || (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
-	// eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
-	//
-	// IAP_ghisector1();
-	// Relay4 = eep_ups?1:0;
-	// IAP_docxoasector2();
-	// if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
-	// if(eeprom_buf[RFLOCK_EEPROM-SECTOR2]>1) eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
-	// IAP_ghisector2();
+	IAP_docxoasector1();
+	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 1; // mac dinh BAT bao cao
+	if(eeprom_buf[KHOA_EEPROM]>3) eeprom_buf[KHOA_EEPROM] = 0;     // bit1 khoa ban phim (giu)
+	if(eeprom_buf[RELAY_STATE_EEPROM]>15) eeprom_buf[RELAY_STATE_EEPROM] = 0; // bitmask 4 relay
+	if(eeprom_buf[PHONE_COUNT_EEPROM]>PHONE_MAX) eeprom_buf[PHONE_COUNT_EEPROM] = 0;
+	if((eeprom_buf[PIN_EEPROM]  <'0' || eeprom_buf[PIN_EEPROM]  >'9')
+	|| (eeprom_buf[PIN_EEPROM+1]<'0' || eeprom_buf[PIN_EEPROM+1]>'9')
+	|| (eeprom_buf[PIN_EEPROM+2]<'0' || eeprom_buf[PIN_EEPROM+2]>'9')
+	|| (eeprom_buf[PIN_EEPROM+3]<'0' || eeprom_buf[PIN_EEPROM+3]>'9'))
+	eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+
+	IAP_ghisector1();
+	// Khoi phuc trang thai 4 relay truoc khi mat dien.
+	dat_relay(eeprom_buf[RELAY_STATE_EEPROM]);
+	IAP_docxoasector2();
+	if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]>99)eeprom_buf[RFINDEX_EEPROM-SECTOR2]=0;
+	IAP_ghisector2();
+	gio_retry = 30;   // sau ~30s dau neu chua co gio thi bat dau thu lai
 
 	/*Khoi tao serial baudrate 57600 cho gsm sim900*/
 	delay_ms(5000);
-
-	// gsm_init();
-
+	
+	gsm_init();
+	
 	/*PCA TIMER 0 INIT 50us*/
-	PCA_Timer_init();
-
+	PCA_Timer_init();	
+	
   	// /*Khoi tao man hinh LCD*/
 	LCD_Init();
 
-	// if(!nosim && gsm_thietlapsim800()){
-	// 	gsm_thietlapngaygiothuc();
-	// 	gsm_thietlapgoidien();
-	// 	gsm_thietlapnhantin();
-	// }
+	if(!nosim && gsm_thietlapsim800()){
+		gsm_thietlapngaygiothuc();
+		gsm_thietlapgoidien();
+		gsm_thietlapnhantin();
+	}
 
 	mode_wait = 60;
 
-	// phone[0] = '0';
-	// phone[10] = 0;
-	// have_master = get_master_phone();
-	// if(have_master){
-	// 	baocaosms("\rBDK Khoi Dong");
-	// }
+	
+	phone[0] = '0';
+	phone[10] = 0;
+	have_master = get_master_phone();
+	if(have_master){
+		baocaosms("\rHop relay khoi dong");
+	}
 	while(1){
-		// if(gio_out){
-		// 	gio_out = 0;
-		// 	gsm_thietlapngaygiothuc();
-		// }
-		// if(phut_out && eep_ups){
-		// 	phut_out=0;
-		// 	if(eep_ups==1) Relay4 = 0;
-		// 	IAP_docxoasector1();
-		// 	eeprom_buf[UPS_EEPROM]--;
-		// 	IAP_ghisector1();
-		// }
-		// if(!mode_wait && mode){
-		// 	mode = sub_mode = 0;
-		// 	man_hinh_luu = 0;
-		// 	pin[0] = pin[1] = pin[2] = pin[3] = 0;
-		// 	new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
-		// }
-		// if(co_tin_nhan_moi){
-		// 	co_tin_nhan_moi = 0;
-		// 	gsm_sendandcheck("AT\r", 15, 1,ver);
-		// 	send_gsm_cmd("AT+CMGL=\"ALL\"\r");
-		// }
-		// if(sms_dang_xu_ly && dang_ky_sms){
-		// 	sms_dang_xu_ly = 0;
-		// 	dang_ky_sms = 0;
-		// 	if(mode==2 && sub_mode<2 &&
-		// 	   (((lenh_sms[0]=='l'||lenh_sms[0]=='L') && (lenh_sms[1]=='u'||lenh_sms[1]=='U'))
-		// 	 || ((lenh_sms[0]=='s'||lenh_sms[0]=='S') && (lenh_sms[1]=='a'||lenh_sms[1]=='A')))){
-		// 		u8 j; phone[10] = 0;
-		// 		for(j=0;j<11;j++) sdt_luu[j] = phone[j];
-		// 		vaitro_luu = have_master?(sub_mode?'u':'m'):'M';
-		// 		them_sdt   = phone_so_sanh_that_bai;
-		// 		man_hinh_luu = 1;
-		// 		mode_wait = 60;
-		// 	}
-		// 	gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
-		// }
-		// if(sms_dang_xu_ly && !mode){
-		// 	xu_ly_tin_nhan();
-		// 	gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
-		// 	sms_dang_xu_ly = 0;
-		// 	send_gsm_byte('S');
-		// }
-		// if(!ngay_reset_con_lai && !hour && minute>5){
-		// 	IAP_CONTR = 0x60;
-		// }
+		if(gio_out){
+			gio_out = 0;
+			gsm_thietlapngaygiothuc();   // lam moi gio moi tieng nhu cu
+		}
+		// Tu lay lai gio: khi chua co gio hop le, xunggiay() dat lay_lai_gio moi ~3 phut.
+		if(lay_lai_gio){
+			lay_lai_gio = 0;
+			gsm_thietlapngaygiothuc();
+		}
+		if(!mode_wait && mode){
+			mode = sub_mode = 0;
+			man_hinh_luu = 0;
+			relay_sel = 0;
+			LCD_noblink();
+			pin[0] = pin[1] = pin[2] = pin[3] = 0;
+			new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
+
+		}
+		if(co_tin_nhan_moi){
+			co_tin_nhan_moi = 0;
+			gsm_sendandcheck("AT\r", 15, 1,ver);
+			send_gsm_cmd("AT+CMGL=\"ALL\"\r");
+		}
+		// Dang ky so bang tin nhan: khi o man hinh CHINH/PHU, nhan "luu"/"save"
+		// tu so nao thi luu so do (giong nhu goi den de dang ky). Luon tieu thu
+		// tin nhan nay (khong cho lot xuong xu_ly de tranh so la chay lenh).
+		if(sms_dang_xu_ly && dang_ky_sms){
+			sms_dang_xu_ly = 0;
+			dang_ky_sms = 0;
+			if(mode==2 && sub_mode<2 &&
+			   (((lenh_sms[0]=='l'||lenh_sms[0]=='L') && (lenh_sms[1]=='u'||lenh_sms[1]=='U'))    // luu
+			 || ((lenh_sms[0]=='s'||lenh_sms[0]=='S') && (lenh_sms[1]=='a'||lenh_sms[1]=='A')))){  // save
+				// Chua luu voi: hien so ra LCD, cho bam M xac nhan / B huy (xu ly o case 2)
+				u8 j; phone[10] = 0;
+				for(j=0;j<11;j++) sdt_luu[j] = phone[j];
+				vaitro_luu = have_master?(sub_mode?'u':'m'):'M';
+				them_sdt   = phone_so_sanh_that_bai;
+				man_hinh_luu = 1;
+				mode_wait = 60;
+			}
+			gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
+		}
+		if(sms_dang_xu_ly && !mode){
+			// CCAPM1 = 0x49;
+			xu_ly_tin_nhan();
+			gsm_sendandcheck("AT+CMGD=1,4\r",15,1,"  DELETING SMS  ");
+			sms_dang_xu_ly = 0;
+			send_gsm_byte('S');
+		}
+		if(!ngay_reset_con_lai && !hour && minute>5){
+			IAP_CONTR = 0x60;
+		}
 		switch(mode){
 			default:
 			case 0:
-				//display
+				//display: dong tren = trang thai 4 relay (so neu ON, '-' neu OFF) + ver
 				if(lcd_update_chop){
 					lcd_update_chop = 0;
 					LCD_guilenh(0x80);
+					LCD_guidulieu(Relay1?'1':'-');
+					LCD_guidulieu(Relay2?'2':'-');
+					LCD_guidulieu(Relay3?'3':'-');
+					LCD_guidulieu(Relay4?'4':'-');
+					LCD_guidulieu(' ');
 					LCD_guichuoi(ver);
 					LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
 					LCD_guingay(0xc0,year,month,day);
 				}
 				//button
-				//M -- khong dung menu/PIN o ban relay on-off nay
-				// if(!(eep_khoa&2) && !phim_mode_doi){
-				// 	phim_mode_nhan = 0;
-				// 	mode_wait = 60;
-				// 	sub_mode = 0;
-				// 	if(have_master){
-				// 		mode = 1;
-				// 		...
-				// 	}
-				// 	else mode = 2;
-				// }
-				//+  bat Relay1, hen tu tat sau relay1_delay_tat giay (mac dinh 10s)
+				//M
+				if(!(eep_khoa&2) && !phim_mode_doi){
+					phim_mode_nhan = 0;
+					mode_wait = 60;
+					sub_mode = 0;
+					if(have_master){
+						mode = 1;
+						LCD_xoa(TREN);
+						LCD_guilenh(0x80);
+						LCD_guichuoi("PIN:");
+						LCD_guidulieu(pin[0]+'0');
+						LCD_guidulieu(pin[1]+'0');
+						LCD_guidulieu(pin[2]+'0');
+						LCD_guidulieu(pin[3]+'0');
+						
+						
+					}
+					else mode = 2;
+				}
+				//+ : neu ca 4 relay dang ON -> tat het; nguoc lai -> bat het
 				if(phim_cong_nhan){
 					phim_cong_nhan = 0;
-					Relay1 = 1;
-					count_down_flag = 0;
-					relay1_delay_tat = 10;
+					if(Relay1 && Relay2 && Relay3 && Relay4) dat_relay(0);
+					else dat_relay(0x0f);
+					luu_relay();
 				}
-				//B  bat dem nguoc de xunggiay() tu tat Relay1
+				//B : vao man hinh panel de chon/bat-tat tung relay
 				if(phim_back_nhan){
 					phim_back_nhan = 0;
-					count_down_flag = 1;
+					relay_sel = 0;
+					mode = 5;
+					mode_wait = 15;
+					LCD_xoa(TREN);
+					LCD_xoa(DUOI);
 				}
 				break;
 			case 1:
@@ -289,51 +314,42 @@ void main() {
 					case 0: LCD_guichuoi(have_master?"CHINH:          ":"MASTER:          "); break;
 					case 1: LCD_guichuoi("PHU:            "); break;
 					case 2: LCD_guichuoi("    DOI  PIN    "); break;
-					case 3: LCD_guichuoi("  HUONG  MOTOR  "); break;
-					case 4: LCD_guichuoi("      EXIT      "); break;
+					case 3: LCD_guichuoi("      EXIT      "); break;
 				}
 				if(phim_mode_nhan){
 					phim_mode_nhan = 0;
 					phim_back_nhan = 0;
-					sub_mode = (sub_mode+1)%5;
+					sub_mode = (sub_mode+1)%4;
 				}
 				if(phim_cong_nhan){
 					phim_cong_nhan = 0;
 					if(sub_mode<2){
 						// CHINH/PHU: luu so bang cach goi den. Bo tra cuu TK/SDT (khong dung CUSD tren A7680C)
 						mode_wait = 60;
-					}else sub_mode = 4;
-					
+					}else if(sub_mode==3){   // EXIT
+						mode = sub_mode = 0;
+						LCD_xoa(TREN);
+					}
 				}
-				if(phim_back_nhan && sub_mode>1){
+				if(phim_back_nhan && sub_mode==2){   // DOI PIN
 					phim_back_nhan = 0;
-					mode = (sub_mode+1)%5;
+					mode = 3;
 					LCD_xoa(TREN);
 					LCD_guilenh(0x80);
-					switch(sub_mode){
-						case 2:
-							LCD_guichuoi("PIN:");
-							LCD_guidulieu(pin[0]+'0');
-							LCD_guidulieu(pin[1]+'0');
-							LCD_guidulieu(pin[2]+'0');
-							LCD_guidulieu(pin[3]+'0');
-							LCD_guidulieu(' ');
-							LCD_guidulieu(' ');
-							LCD_guidulieu(' ');
-							LCD_guidulieu(new_pin[0]+'0');
-							LCD_guidulieu(new_pin[1]+'0');
-							LCD_guidulieu(new_pin[2]+'0');
-							LCD_guidulieu(new_pin[3]+'0');
-							LCD_guidulieu(' ');
-							sub_mode = 0;
-							break;
-						case 3:
-							sub_mode = eep_huong;
-							LCD_guichuoi("HUONG: ");
-							LCD_guichuoi(sub_mode?"PH":"TR");
-							LCD_guichuoi("AI");
-							break;
-					}
+					LCD_guichuoi("PIN:");
+					LCD_guidulieu(pin[0]+'0');
+					LCD_guidulieu(pin[1]+'0');
+					LCD_guidulieu(pin[2]+'0');
+					LCD_guidulieu(pin[3]+'0');
+					LCD_guidulieu(' ');
+					LCD_guidulieu(' ');
+					LCD_guidulieu(' ');
+					LCD_guidulieu(new_pin[0]+'0');
+					LCD_guidulieu(new_pin[1]+'0');
+					LCD_guidulieu(new_pin[2]+'0');
+					LCD_guidulieu(new_pin[3]+'0');
+					LCD_guidulieu(' ');
+					sub_mode = 0;
 				}
 				
 				if(!phim_back_doi && sub_mode <2){
@@ -410,28 +426,45 @@ void main() {
 					LCD_guingay(0xc0,year,month,day);
 				}
 				break;
-			case 4:
-				if(phim_cong_nhan){
-					phim_cong_nhan = 0;
-					sub_mode = 1 - sub_mode;
-					LCD_guilenh(0x87);
-					LCD_guichuoi(sub_mode?"PH":"TR");
+			case 5:
+				// Panel 4 relay: B chuyen chon, + bat/tat relay dang chon,
+				// M thoat, timeout 15s cung thoat (xu ly o dau vong lap).
+				if(lcd_update_chop){
+					lcd_update_chop = 0;
+					LCD_guilenh(0x80);
+					LCD_guichuoi("B:chon +:bat/tat");
+					LCD_guilenh(0xc0);
+					LCD_guidulieu('1'); LCD_guidulieu(':'); LCD_guidulieu(Relay1?'1':'0'); LCD_guidulieu(' ');
+					LCD_guidulieu('2'); LCD_guidulieu(':'); LCD_guidulieu(Relay2?'1':'0'); LCD_guidulieu(' ');
+					LCD_guidulieu('3'); LCD_guidulieu(':'); LCD_guidulieu(Relay3?'1':'0'); LCD_guidulieu(' ');
+					LCD_guidulieu('4'); LCD_guidulieu(':'); LCD_guidulieu(Relay4?'1':'0'); LCD_guidulieu(' ');
 				}
-				if(phim_mode_nhan){
-					phim_mode_nhan = 0;
-					IAP_docxoasector1();
-					eeprom_buf[HUONG_MOTOR] = sub_mode;//1+0
-					IAP_ghisector1();
-					mode = 2;
-					sub_mode = 3;
-				}
+				LCD_blinkXY(DUOI, 2 + relay_sel*4);   // nhap nhay o so cua relay dang chon
+				//B : chon relay ke tiep
 				if(phim_back_nhan){
 					phim_back_nhan = 0;
-					sub_mode = 3;
-					mode = 2;
+					relay_sel = (relay_sel+1) & 3;
+					mode_wait = 15;
 				}
-				LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
-				LCD_guingay(0xc0,year,month,day);
+				//+ : bat/tat relay dang chon
+				if(phim_cong_nhan){
+					phim_cong_nhan = 0;
+					mode_wait = 15;
+					{
+						u8 m = (Relay1?1:0)|(Relay2?2:0)|(Relay3?4:0)|(Relay4?8:0);
+						m ^= (1<<relay_sel);
+						dat_relay(m);
+						luu_relay();
+					}
+				}
+				//M : thoat ve man hinh chinh
+				if(phim_mode_nhan){
+					phim_mode_nhan = 0;
+					mode = 0;
+					LCD_noblink();
+					LCD_xoa(TREN);
+					LCD_xoa(DUOI);
+				}
 				break;
 		}
 		
@@ -518,74 +551,20 @@ void main() {
 				}
 				rfstop = 0;
 			}else{
-				if(match){
-					if(match==2){
-						if(phim_back_nhan){
-							phim_back_nhan = 0;
-							phone_del(0);
-							IAP_xoasector(SECTOR2);
-							IAP_ghibyte(RFINDEX_EEPROM,0);
-							IAP_docxoasector1();
-							eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
-							IAP_ghisector1();			
-						}
-						// Chi bao 1 lan khi remote khan cap thuc su mo khoa (relay2giu 1->0),
-						// tranh nhan tin lien tuc khi remote phat lien tiep.
-						if(relay2giu){
-							relay2giu = 0;
-							if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
-						}
-					}
-					if(rflock){
-						if(!cmd[2]){
-							rflock = 0;
-							IAP_docxoasector2();
-							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
-							IAP_ghisector2();
-						}
-					}else{
-						if(!cmd[0]){
-							rflock = 1;
-							IAP_docxoasector2();
-							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
-							IAP_ghisector2();
-						}else if(!relay2giu){
-							Relay2 = !cmd[2];
-							if(nhan_remote_lan_dau){
-								nhan_remote_lan_dau = 0;
-								delay_chay_khoi_tao += 60;
-							}
-							if(eep_huong){
-								Relay3 = !cmd[1] && !Relay2;
-								Relay1 = !cmd[3] && !Relay3 && !Relay2;
-							}else{
-								Relay1 = !cmd[1] && !Relay2;
-								Relay3 = !cmd[3] && !Relay1 && !Relay2;
-							}
-						}
-					}
-					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
-					if(relay2giu && (rf_khancap>29 || (match==2 &&  !cmd[1] ))){
-						IAP_docxoasector1();
-                		eeprom_buf[KHOA_EEPROM] = 0;
-               			IAP_ghisector1();
-						relay2giu = 0;
-						Relay2 = 0;
-						if(eep_huong){
-							Relay3 = 1;
-							delay_ms(100);
-							Relay3 = 0;
-						}else{
-							Relay1 = 1;
-							delay_ms(100);
-							Relay1 = 0;
-						}
-						rf_khancap = rf_khancap_delay = 0;
-						
-					}				
-					
+				// Remote da hoc: moi nut toggle 1 relay (giu trang thai).
+				// len->R1(cmd[1]), xuong->R2(cmd[3]), khoa->R3(cmd[0]), stop->R4(cmd[2]).
+				// Chi toggle khi la nhan moi (rf_dang_giu==0); nha nut (RF timeout)
+				// se dat lai rf_dang_giu=0 trong PCA_Handler.
+				if(match && !rf_dang_giu){
+					u8 m = (Relay1?1:0)|(Relay2?2:0)|(Relay3?4:0)|(Relay4?8:0);
+					rf_dang_giu = 1;
+					if(!cmd[1]) m ^= 1;   // len   -> R1
+					if(!cmd[3]) m ^= 2;   // xuong -> R2
+					if(!cmd[0]) m ^= 4;   // khoa  -> R3
+					if(!cmd[2]) m ^= 8;   // stop  -> R4
+					dat_relay(m);
+					luu_relay();
 				}
-				
 			}
 			rfstatus = 0; 
 			rfprocess = 0;
@@ -606,27 +585,10 @@ void main() {
 					else baocaosms("\rLuu Master");
 					if(have_master && get_master_phone() && eep_baocao)baocaosms("\rDT moi duoc luu");
 					have_master = 1;
-					
-				}else{
-					if(!phone_so_sanh_that_bai && !mode){
-						if(relay2giu)baocaosms("\rCua dang khoa");
-                    	else{
-							rfprocess = 1;
-							if(eep_huong){
-								Relay3 = 1;
-								delay_ms(100);
-								rfprocess = Relay3 = 0;
-							}else{			
-								Relay1 = 1;
-								delay_ms(100);
-								rfprocess = Relay1 = 0;
-							}
-							phone[10] = 0;
-							baocaosms("\rMo cua len");
-						}
-						
-					} 
+
 				}
+				// Ngoai man hinh dang ky: cuoc goi den KHONG dieu khien relay
+				// (chi dung de dang ky so master/user). Bo hanh vi mo cua khi goi.
 			}
 			CCAPM1 = 0x49;
 		}
