@@ -20,9 +20,17 @@
 		        ly de motor khong giat them 1 nhip; (3) hien "DA HOC REMOTE!"
 		        tren LCD khi hoc remote o CHINH. (Thuat toan nhan RF se lam
 		        moi hoan toan o ban 2.0 - tu hieu chinh theo tung remote.)
+		A7-1.8: HOTFIX khan cap - fix 1.7 "chot ngay 24 bit" da vo tinh bo mat
+		        buoc loc nhieu (doi sync ke tiep), khien nhieu RF trong moi
+		        truong nhieu bi hieu nham thanh remote la va TU HOC vao bang dù
+		        khong bam gi. Fix: chi cho phep HOC khi 2 frame lien tiep giai
+		        ma ra DUNG CUNG 1 ma (remote that phat lien tuc nen van nhanh;
+		        nhieu gan nhu khong bao gio lap dung 2 lan). Duong dieu khien
+		        binh thuong (mo/dong/relay) KHONG doi - da duoc bao ve boi yeu
+		        cau khop bang da hoc san, khong can them xac nhan.
 */
 
-u8 __code ver[] = " CUACUON A7-1.7";
+u8 __code ver[] = " CUACUON A7-1.8";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -490,19 +498,7 @@ void main() {
 		if(rfprocess){
 			u8 i,data[3],cmd[4];
 			u8 match=0;
-			data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
-			data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
-			data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
-			data[1] += rfdata[12]*8 + rfdata[13]*4 + rfdata[14]*2 +rfdata[15];
-			if(pt2240){
-				data[2] = rfdata[16]*8 + rfdata[17]*4 + rfdata[18]*2 +rfdata[19];
-				cmd[1] = rfdata[21]; cmd[2] = rfdata[22]; cmd[3] = rfdata[23];
-			}
-			else{
-				data[2] = 0;
-				cmd[1] = rfdata[22]; cmd[2] = rfdata[18]; cmd[3] = rfdata[16];
-			}
-			cmd[0] = rfdata[20];
+			#include "rf_frame.inc"
 			send_gsm_byte('P');
 			send_gsm_byte(pt2240+'0');
 			send_gsm_byte('-');
@@ -536,7 +532,9 @@ void main() {
 			send_gsm_byte('-');
 
 			if(mode==2){
-				if(!match){
+				// HOTFIX: chi HOC khi 2 frame lien tiep giong nhau (rf_on_dinh) -
+				// tranh nhieu bi hieu nham thanh remote la va tu hoc vao bang.
+				if(!match && rf_on_dinh){
 					if(!have_master){
 						//remote khan cap
 						IAP_docxoasector2();

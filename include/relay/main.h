@@ -23,6 +23,11 @@ __bit rf_dang_giu;          // remote dang duoc giu (chong toggle lien tuc)
 __bit gio_hop_le;           // da lay duoc gio mang hop le
 __bit lay_lai_gio;          // co: vong lap chinh goi lai gsm_thietlapngaygiothuc()
 u8   __xdata gio_retry;     // dem nguoc (giay) truoc lan thu lay gio ke tiep
+// HOTFIX RF: xac nhan 2 frame lien tiep giong nhau moi coi la remote that
+// (loc nhieu) - dung boi include/rf_frame.inc.
+u8   __xdata rf_last_data[3];
+u8   __xdata rf_repeat;
+__bit         rf_on_dinh;
 
 
 u8  __xdata lenh_sms[161]; 

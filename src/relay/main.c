@@ -25,9 +25,15 @@
 		        de khong toggle du 1 nhip; (3) hien "DA HOC REMOTE!" tren LCD khi
 		        hoc remote. (Ho tro 1 remote/khe khan cap khi standalone la binh
 		        thuong - hoc nhieu remote can dang ky master truoc.)
+		RL-1.2: HOTFIX khan cap - giong A7-1.8 ben cua cuon: fix 1.1 "chot ngay
+		        24 bit" da vo tinh bo mat buoc loc nhieu, khien nhieu RF bi hieu
+		        nham thanh remote la va TU HOC vao bang du khong bam gi. Fix:
+		        chi cho phep HOC khi 2 frame lien tiep giai ma ra DUNG CUNG 1 ma.
+		        Toggle relay binh thuong KHONG doi (da duoc bao ve boi yeu cau
+		        khop bang da hoc san).
 */
 
-u8 __code ver[] = "RELAY4 v1.1";
+u8 __code ver[] = "RELAY4 v1.2";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -478,19 +484,7 @@ void main() {
 		if(rfprocess){
 			u8 i,data[3],cmd[4];
 			u8 match=0;
-			data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
-			data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
-			data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
-			data[1] += rfdata[12]*8 + rfdata[13]*4 + rfdata[14]*2 +rfdata[15];
-			if(pt2240){
-				data[2] = rfdata[16]*8 + rfdata[17]*4 + rfdata[18]*2 +rfdata[19];
-				cmd[1] = rfdata[21]; cmd[2] = rfdata[22]; cmd[3] = rfdata[23];
-			}
-			else{
-				data[2] = 0;
-				cmd[1] = rfdata[22]; cmd[2] = rfdata[18]; cmd[3] = rfdata[16];
-			}
-			cmd[0] = rfdata[20];
+			#include "rf_frame.inc"
 			send_gsm_byte('P');
 			send_gsm_byte(pt2240+'0');
 			send_gsm_byte('-');
@@ -524,7 +518,9 @@ void main() {
 			send_gsm_byte('-');
 
 			if(mode==2){
-				if(!match){
+				// HOTFIX: chi HOC khi 2 frame lien tiep giong nhau (rf_on_dinh) -
+				// tranh nhieu bi hieu nham thanh remote la va tu hoc vao bang.
+				if(!match && rf_on_dinh){
 					if(!have_master){
 						//remote khan cap (standalone khong co master)
 						IAP_docxoasector2();
