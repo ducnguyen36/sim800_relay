@@ -23,6 +23,9 @@ __bit gio_hop_le;
 u8   __xdata rf_last_data[3];
 u8   __xdata rf_repeat;
 __bit         rf_on_dinh;
+// XOA SO / XOA REMOTE (menu): idx dang duyet.
+u8   __xdata del_phone_idx;  // 1-based idx trong bang so dang duyet (0 = chua co)
+u8   __xdata del_rf_idx;     // 0-based idx trong danh sach remote thuong dang duyet
 
 
 u8  __xdata lenh_sms[161]; 

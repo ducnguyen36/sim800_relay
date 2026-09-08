@@ -45,6 +45,25 @@ void phone_del(u8 idx){
     IAP_ghisector1();
 }
 
+/* Xoa 1 remote THUONG (p = 0-based, 0..eep_rfindex-1; khe 0=khan cap, khe 1=
+   module bao dong KHONG xoa duoc bang ham nay). Don bang cach doi cac khe sau
+   xuong 1 vi tri (khong de lai khe trong) roi giam dem. Dung chung ca 2 san
+   pham (dung boi man hinh XOA REMOTE). */
+void rf_del(u8 p){
+    u8 k,j;
+    IAP_docxoasector2();
+    for(k=p; k+1<eeprom_buf[RFINDEX_EEPROM-SECTOR2]; k++){
+        for(j=0;j<3;j++)
+            eeprom_buf[RFDATA_EEPROM+(k+2)*3+j-SECTOR2] = eeprom_buf[RFDATA_EEPROM+(k+3)*3+j-SECTOR2];
+    }
+    if(eeprom_buf[RFINDEX_EEPROM-SECTOR2]){
+        for(j=0;j<3;j++)
+            eeprom_buf[RFDATA_EEPROM+(eeprom_buf[RFINDEX_EEPROM-SECTOR2]+1)*3+j-SECTOR2] = 0;
+        eeprom_buf[RFINDEX_EEPROM-SECTOR2]--;
+    }
+    IAP_ghisector2();
+}
+
 /* Nap so master ('m'/'M') dau tien vao phone[] (de gui bao cao).
    Tra ve 1 neu co master, 0 neu chua. Thay cho kiemtraphonemaster(). */
 __bit get_master_phone(){

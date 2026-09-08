@@ -28,9 +28,24 @@
 		        nhieu gan nhu khong bao gio lap dung 2 lan). Duong dieu khien
 		        binh thuong (mo/dong/relay) KHONG doi - da duoc bao ve boi yeu
 		        cau khop bang da hoc san, khong can them xac nhan.
+		CC-1.9: (doi ten dong san pham cua cuon tu "A7-" sang "CC-" tu ban nay)
+		        Menu them 2 muc XOA SO va XOA REMOTE (can PIN, giong het cac
+		        muc menu khac):
+		          - XOA SO: duyet tung so (bo qua vai tro M/m master, khong the
+		            xoa master qua duong nay), hien index + so dien thoai day
+		            du, + de chon, xac nhan M:OK B:Huy roi moi xoa that.
+		          - XOA REMOTE: duyet tung remote da hoc (khong gom khe khan
+		            cap/module bao dong); bam thu remote that de xem "OK -
+		            DUNG REMOTE" hay "X - KHAC REMOTE" (chi de xem, KHONG hoc/
+		            KHONG mo cua), + de chon xoa, xac nhan M:OK B:Huy.
+		        Chuc nang "giu B o CHINH/PHU de xoa tat ca" (duong khoi phuc
+		        khi mat may/quen PIN) GIU NGUYEN nhu cu (van khong can PIN rieng
+		        vi da nam trong menu can PIN); them: bao SMS canh bao ve so
+		        master CU ngay truoc khi xoa, de chu thiet bi biet neu bi lam
+		        dung (khong ngan duoc thao tac, chi giup phat hien).
 */
 
-u8 __code ver[] = " CUACUON A7-1.8";
+u8 __code ver[] = " CC-1.9         ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -41,6 +56,20 @@ u8 __code ver[] = " CUACUON A7-1.8";
 __bit pin_dung(){
 	return pin[0] == eep_pin[0]-'0' && pin[1] == eep_pin[1]-'0' &&
 	       pin[2] == eep_pin[2]-'0' && pin[3] == eep_pin[3]-'0';
+}
+
+/* Man hinh XOA SO: tim so KE TIEP (1-based idx) sau "cur" khong phai vai tro
+   M/m (master) va khong trong (role!=0). Tra ve 0 neu khong co so nao du dieu
+   kien. Chi goi khi vao man hinh / khi bam B - KHONG goi moi vong lap. */
+u8 xoa_so_ke_tiep(u8 cur){
+	u8 i,idx,role;
+	if(!eep_phone_count) return 0;
+	for(i=0;i<eep_phone_count;i++){
+		idx = (cur+i)%eep_phone_count;   // cur la 1-based; +i roi mod la du (cur<=count)
+		role = eep_phone[idx*PHONE_ENTRY+9];
+		if(role && role!='M' && role!='m') return idx+1;
+	}
+	return 0;
 }
 
 void main() {
@@ -346,30 +375,42 @@ void main() {
 				switch(sub_mode){
 					case 0: LCD_guichuoi(have_master?"CHINH:          ":"MASTER:          "); break;
 					case 1: LCD_guichuoi("PHU:            "); break;
-					case 2: LCD_guichuoi("    DOI  PIN    "); break;
-					case 3: LCD_guichuoi("  HUONG  MOTOR  "); break;
-					case 4: LCD_guichuoi("      EXIT      "); break;
+					case 2: LCD_guichuoi("    XOA SO      "); break;
+					case 3: LCD_guichuoi("   XOA REMOTE   "); break;
+					case 4: LCD_guichuoi("    DOI  PIN    "); break;
+					case 5: LCD_guichuoi("  HUONG  MOTOR  "); break;
+					case 6: LCD_guichuoi("      EXIT      "); break;
 				}
 				if(phim_mode_nhan){
 					phim_mode_nhan = 0;
 					phim_back_nhan = 0;
-					sub_mode = (sub_mode+1)%5;
+					sub_mode = (sub_mode+1)%7;
 				}
 				if(phim_cong_nhan){
 					phim_cong_nhan = 0;
 					if(sub_mode<2){
 						// CHINH/PHU: luu so bang cach goi den. Bo tra cuu TK/SDT (khong dung CUSD tren A7680C)
 						mode_wait = 60;
-					}else sub_mode = 4;
-					
+					}else sub_mode = 6;
+
 				}
 				if(phim_back_nhan && sub_mode>1){
 					phim_back_nhan = 0;
-					mode = (sub_mode+1)%5;
 					LCD_xoa(TREN);
 					LCD_guilenh(0x80);
 					switch(sub_mode){
-						case 2:
+						case 2:   // XOA SO
+							mode = 5;
+							del_phone_idx = xoa_so_ke_tiep(0);
+							lcd_update_chop = 1;
+							break;
+						case 3:   // XOA REMOTE
+							mode = 6;
+							del_rf_idx = 0;
+							lcd_update_chop = 1;
+							break;
+						case 4:   // DOI PIN
+							mode = 3;
 							LCD_guichuoi("PIN:");
 							LCD_guidulieu(pin[0]+'0');
 							LCD_guidulieu(pin[1]+'0');
@@ -385,7 +426,8 @@ void main() {
 							LCD_guidulieu(' ');
 							sub_mode = 0;
 							break;
-						case 3:
+						case 5:   // HUONG MOTOR
+							mode = 4;
 							sub_mode = eep_huong;
 							LCD_guichuoi("HUONG: ");
 							LCD_guichuoi(sub_mode?"PH":"TR");
@@ -393,9 +435,14 @@ void main() {
 							break;
 					}
 				}
-				
+
 				if(!phim_back_doi && sub_mode <2){
 					phim_back_nhan = 0;
+					// Bao cho so chinh CU (truoc khi xoa) biet may vua bi RESET,
+					// de phat hien neu bi ke xau loi dung - khong ngan duoc thao
+					// tac (day la duong khoi phuc khi mat may/quen PIN) nhung it
+					// nhat chu nha se duoc bao ngay.
+					if(get_master_phone()) baocaosms("\rCANH BAO: thiet bi vua RESET (xoa so+remote) bang nut bam");
 					phone_del(0);
 					IAP_xoasector(SECTOR2);
 					IAP_ghibyte(RFINDEX_EEPROM,0);
@@ -406,8 +453,138 @@ void main() {
 					mode = sub_mode = 0;
 
 				}
-				
-				
+
+
+				break;
+			case 5:
+				// XOA SO: duyet cac so (tru vai tro M/m - master), + chon xoa,
+				// man hinh xac nhan M:OK B:Huy (giong pattern man_hinh_luu).
+				if(man_hinh_luu){
+					LCD_guilenh(0x80);
+					LCD_guichuoi(man_hinh_luu==1?"XOA SO NAY? M:OK":"DA XOA SO       ");
+					LCD_guilenh(0xc0);
+					LCD_guichuoi(sdt_luu);
+					LCD_guichuoi("        ");
+					if(man_hinh_luu==1){
+						if(phim_mode_nhan){        // M = xac nhan xoa
+							phim_mode_nhan = phim_back_nhan = 0;
+							mode_wait = 60;
+							phone_del(del_phone_idx);
+							man_hinh_luu = 0;
+							del_phone_idx = xoa_so_ke_tiep(0);   // duyet lai tu dau
+							LCD_xoa(TREN); LCD_xoa(DUOI);
+						}else if(phim_back_nhan){  // B = huy
+							phim_back_nhan = 0;
+							mode_wait = 60;
+							man_hinh_luu = 0;
+							LCD_xoa(TREN); LCD_xoa(DUOI);
+						}
+					}
+					break;
+				}
+				if(lcd_update_chop){
+					lcd_update_chop = 0;
+					LCD_guilenh(0x80);
+					if(!del_phone_idx){
+						LCD_guichuoi("(KHONG CO SO)   ");
+						LCD_guilenh(0xc0);
+						LCD_guichuoi("M:thoat         ");
+					}else{
+						LCD_guichuoi("SO #");
+						LCD_guidulieu(del_phone_idx/10+'0');
+						LCD_guidulieu(del_phone_idx%10+'0');
+						LCD_guidulieu(' ');
+						LCD_guidulieu(eep_phone[(del_phone_idx-1)*PHONE_ENTRY+9]);
+						LCD_guichuoi("  B:tiep +:xoa");
+						LCD_guilenh(0xc0);
+						LCD_guidulieu('0');
+						{u8 j; for(j=0;j<9;j++) LCD_guidulieu(eep_phone[(del_phone_idx-1)*PHONE_ENTRY+j]);}
+						LCD_guichuoi("      ");
+					}
+				}
+				if(phim_back_nhan){
+					phim_back_nhan = 0;
+					mode_wait = 60;
+					del_phone_idx = xoa_so_ke_tiep(del_phone_idx);
+					lcd_update_chop = 1;
+				}
+				if(phim_cong_nhan && del_phone_idx){
+					phim_cong_nhan = 0;
+					mode_wait = 60;
+					{u8 j; sdt_luu[0]='0'; for(j=0;j<9;j++) sdt_luu[j+1]=eep_phone[(del_phone_idx-1)*PHONE_ENTRY+j]; sdt_luu[10]=0;}
+					man_hinh_luu = 1;
+					LCD_xoa(TREN); LCD_xoa(DUOI);
+				}
+				if(phim_mode_nhan){
+					phim_mode_nhan = 0;
+					mode = 2;
+					sub_mode = 2;
+					LCD_xoa(TREN);
+				}
+				break;
+			case 6:
+				// XOA REMOTE: duyet cac remote thuong (khong gom khe khan cap/
+				// module bao dong). Bam remote that de xem OK/X (khop hay khong
+				// khop khe dang duyet). + chon xoa, man hinh xac nhan M:OK B:Huy.
+				if(man_hinh_luu){
+					LCD_guilenh(0x80);
+					LCD_guichuoi(man_hinh_luu==1?"XOA REMOTE NAY? ":"DA XOA REMOTE   ");
+					LCD_guilenh(0xc0);
+					LCD_guichuoi("M:OK B:Huy      ");
+					if(man_hinh_luu==1){
+						if(phim_mode_nhan){
+							phim_mode_nhan = phim_back_nhan = 0;
+							mode_wait = 60;
+							rf_del(del_rf_idx);
+							man_hinh_luu = 0;
+							del_rf_idx = 0;
+							LCD_xoa(TREN); LCD_xoa(DUOI);
+						}else if(phim_back_nhan){
+							phim_back_nhan = 0;
+							mode_wait = 60;
+							man_hinh_luu = 0;
+							LCD_xoa(TREN); LCD_xoa(DUOI);
+						}
+					}
+					break;
+				}
+				if(lcd_update_chop){
+					lcd_update_chop = 0;
+					LCD_guilenh(0x80);
+					if(!eep_rfindex){
+						LCD_guichuoi("(KHONG CO REMOTE)");
+						LCD_guilenh(0xc0);
+						LCD_guichuoi("M:thoat         ");
+					}else{
+						LCD_guichuoi("REMOTE ");
+						LCD_guidulieu((del_rf_idx+1)/10+'0');
+						LCD_guidulieu((del_rf_idx+1)%10+'0');
+						LCD_guidulieu('/');
+						LCD_guidulieu(eep_rfindex/10+'0');
+						LCD_guidulieu(eep_rfindex%10+'0');
+						LCD_guichuoi("        ");
+						LCD_guilenh(0xc0);
+						LCD_guichuoi("B:tiep +:xoa    ");
+					}
+				}
+				if(phim_back_nhan && eep_rfindex){
+					phim_back_nhan = 0;
+					mode_wait = 60;
+					del_rf_idx = (del_rf_idx+1)%eep_rfindex;
+					lcd_update_chop = 1;
+				}
+				if(phim_cong_nhan && eep_rfindex){
+					phim_cong_nhan = 0;
+					mode_wait = 60;
+					man_hinh_luu = 1;
+					LCD_xoa(TREN); LCD_xoa(DUOI);
+				}
+				if(phim_mode_nhan){
+					phim_mode_nhan = 0;
+					mode = 2;
+					sub_mode = 3;
+					LCD_xoa(TREN);
+				}
 				break;
 			case 3:
 				if(phim_mode_nhan){
@@ -426,7 +603,7 @@ void main() {
 							
 						}
 					}else if(sub_mode == 8){
-						mode = sub_mode = 2;
+						mode = 2; sub_mode = 4;
 						IAP_docxoasector1();
 						eeprom_buf[PIN_EEPROM  ] = new_pin[0]+'0';//1+0
 						eeprom_buf[PIN_EEPROM+1] = new_pin[1]+'0';//2+1
@@ -453,7 +630,7 @@ void main() {
 				//B
 				if(phim_back_nhan){
 					phim_back_nhan = 0;
-					mode = sub_mode = 2;
+					mode = 2; sub_mode = 4;
 					pin[0] = pin[1] = pin[2] = pin[3] = 0;
 					new_pin[0] = new_pin[1] = new_pin[2] = new_pin[3] = 0;
 					LCD_noblink();
@@ -481,11 +658,11 @@ void main() {
 					eeprom_buf[HUONG_MOTOR] = sub_mode;//1+0
 					IAP_ghisector1();
 					mode = 2;
-					sub_mode = 3;
+					sub_mode = 5;
 				}
 				if(phim_back_nhan){
 					phim_back_nhan = 0;
-					sub_mode = 3;
+					sub_mode = 5;
 					mode = 2;
 				}
 				LCD_guigio(0xc7,"",hour,minute,second,flip_pulse);
@@ -571,6 +748,18 @@ void main() {
 					}
 				}
 				rfstop = 0;
+			}else if(mode==6){
+				// XOA REMOTE: CHI xem remote vua bam co phai khe dang duyet
+				// khong (hien OK/X) - KHONG hoc, KHONG mo/dong cua.
+				if(!man_hinh_luu && eep_rfindex && del_rf_idx<eep_rfindex){
+					__bit giong = data[0]==eep_rfdata[(del_rf_idx+2)*3]
+					           && data[1]==eep_rfdata[(del_rf_idx+2)*3+1]
+					           && data[2]==eep_rfdata[(del_rf_idx+2)*3+2];
+					LCD_guilenh(0xc0);
+					LCD_guichuoi(giong?"OK - DUNG REMOTE":"X - KHAC REMOTE ");
+					delay_ms(1000);
+					lcd_update_chop = 1;
+				}
 			}else{
 				if(match){
 					if(match==2){
