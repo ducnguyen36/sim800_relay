@@ -42,10 +42,24 @@
 		        khi mat may/quen PIN) GIU NGUYEN nhu cu (van khong can PIN rieng
 		        vi da nam trong menu can PIN); them: bao SMS canh bao ve so
 		        master CU ngay truoc khi xoa, de chu thiet bi biet neu bi lam
-		        dung (khong ngan duoc thao tac, chi giup phat hien).
+		        dung (khong ngan duoc thao tac, chi giup phat hien). Lenh SMS
+			Xoa,N cung duoc bao ve khong cho xoa so Master.
+		CC-1.10: sua phan hoi "hoc remote kho" nguoi dung bao sau 1.8/1.9 (user
+		        bao 1.7 nhay nhat, 1.6 on, 1.8/1.9 hoc kho). Nguyen nhan: fix
+		        loc nhieu o 1.8 doi hoi 2 frame LIEN TIEP TUYET DOI giong nhau
+		        moi cho hoc - qua khat khe, chi 1 frame bi nhieu xen giua 2
+		        frame that (dang giu nut, phat lien tuc) la mat tien do phai
+		        lam lai tu dau. Doi thanh "cua so khoan dung" (RF_WIN_MAX=4
+		        frame la duoc phep xen giua truoc khi bo ung vien) trong
+		        include/rf_frame.inc (dung chung 2 san pham) - remote that xac
+		        nhan nhanh gan bang 1.7 (chi can 2 frame KHOP, khong bat buoc
+		        lien tiep tuyet doi), trong khi nhieu thuan tuy van gan nhu
+		        khong bao gio tu khop 2 lan (xac suat ~1e-6/cua so, van an
+		        toan). KHONG revert ve 1.7 nguyen ban vi se mat het bao ve
+		        chong hoc nham nhieu da xac nhan tren phan cung.
 */
 
-u8 __code ver[] = " CC-1.9         ";
+u8 __code ver[] = " CC-1.10        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

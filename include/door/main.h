@@ -22,6 +22,7 @@ __bit gio_hop_le;
 // (loc nhieu) - dung boi include/rf_frame.inc.
 u8   __xdata rf_last_data[3];
 u8   __xdata rf_repeat;
+u8   __xdata rf_win;         // cua so khoan dung (so frame la con cho phep)
 __bit         rf_on_dinh;
 // XOA SO / XOA REMOTE (menu): idx dang duyet.
 u8   __xdata del_phone_idx;  // 1-based idx trong bang so dang duyet (0 = chua co)
