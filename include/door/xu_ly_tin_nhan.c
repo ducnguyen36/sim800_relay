@@ -93,11 +93,20 @@ void xu_ly_tin_nhan(){
                     if(!phone_master) break;
                     if(lenh_sms[4]>='0' && lenh_sms[4]<='9' && ((lenh_sms[5]>='0' && lenh_sms[5]<='9') || lenh_sms[5] == 0)
                     && ((lenh_sms[6]>='0' && lenh_sms[6]<='9') || lenh_sms[6] == 0)){
-                        if(lenh_sms[4]=='0') phone_del(0);
-                        else if(!lenh_sms[5]) phone_del(lenh_sms[4]-'0');
-                        else if(!lenh_sms[6]) phone_del((lenh_sms[4]-'0')*10+lenh_sms[5]-'0');
+                        u8 idx;
+                        if(lenh_sms[4]=='0') idx = 0;
+                        else if(!lenh_sms[5]) idx = lenh_sms[4]-'0';
+                        else if(!lenh_sms[6]) idx = (lenh_sms[4]-'0')*10+lenh_sms[5]-'0';
                         else if(((lenh_sms[5]-'0')*10+lenh_sms[6]-'0'>50) && lenh_sms[4]>1) {baocaosms("\rLenh khong hop le");break;}
-                        else phone_del((lenh_sms[4]-'0')*100 + (lenh_sms[5]-'0')*10 + lenh_sms[6]-'0'); 
+                        else idx = (lenh_sms[4]-'0')*100 + (lenh_sms[5]-'0')*10 + lenh_sms[6]-'0';
+                        // Xoa,0 = xoa tat ca (giu nguyen). Xoa,N (N>0): khong cho
+                        // xoa so co vai tro M/m (master) qua SMS - giong menu.
+                        if(idx && idx<=eep_phone_count &&
+                        (eep_phone[(idx-1)*PHONE_ENTRY+9]=='M' || eep_phone[(idx-1)*PHONE_ENTRY+9]=='m')){
+                            baocaosms("\rKhong the xoa so Master qua SMS");
+                            break;
+                        }
+                        phone_del(idx);
                         baocaosms("\rXoa danh ba thanh cong");
                     }else baocaosms("\rLenh khong hop le");
                 }else if(lenh_sms[1] == 'u' || lenh_sms[1] == 'U'){
