@@ -57,9 +57,16 @@
 		        khong bao gio tu khop 2 lan (xac suat ~1e-6/cua so, van an
 		        toan). KHONG revert ve 1.7 nguyen ban vi se mat het bao ve
 		        chong hoc nham nhieu da xac nhan tren phan cung.
+		CC-1.11: nguoi dung test 4 ban tren phan cung, xac nhan 1.7 hoc/bam
+		        remote nhay+de nhat, 1.8/1.9 kho hoc. THEO Y NGUOI DUNG: bo
+		        hoan toan buoc "xac nhan 2 frame" - hoc remote NGAY khi giai ma
+		        1 frame, dung nhu 1.7. Danh doi: co the thi thoang tu hoc nham
+		        1 muc nhieu vao bang -> don bang XOA REMOTE (co tu 1.9). Duong
+		        dieu khien (mo/dong cua) van an toan vi doi hoi khop bang da hoc.
+		        Giu nguyen XOA SO/XOA REMOTE va bao ve master khi xoa qua SMS.
 */
 
-u8 __code ver[] = " CC-1.10        ";
+u8 __code ver[] = " CC-1.11        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -723,9 +730,10 @@ void main() {
 			send_gsm_byte('-');
 
 			if(mode==2){
-				// HOTFIX: chi HOC khi 2 frame lien tiep giong nhau (rf_on_dinh) -
-				// tranh nhieu bi hieu nham thanh remote la va tu hoc vao bang.
-				if(!match && rf_on_dinh){
+				// CC-1.11: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 - de/nhay
+				// nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame". Rac
+				// nhieu neu co thi dung XOA REMOTE de don.
+				if(!match){
 					if(!have_master){
 						//remote khan cap
 						IAP_docxoasector2();

@@ -18,12 +18,6 @@ u8 __data danh_ba_cuoi;
 // gsm_serial.c dung chung (voi ban relay) co danh dau gio_hop_le khi lay duoc
 // gio mang; ban cua cuon chua chu dong dung nhung phai khai bao de bien dich.
 __bit gio_hop_le;
-// HOTFIX RF: xac nhan 2 frame lien tiep giong nhau moi coi la remote that
-// (loc nhieu) - dung boi include/rf_frame.inc.
-u8   __xdata rf_last_data[3];
-u8   __xdata rf_repeat;
-u8   __xdata rf_win;         // cua so khoan dung (so frame la con cho phep)
-__bit         rf_on_dinh;
 // XOA SO / XOA REMOTE (menu): idx dang duyet.
 u8   __xdata del_phone_idx;  // 1-based idx trong bang so dang duyet (0 = chua co)
 u8   __xdata del_rf_idx;     // 0-based idx trong danh sach remote thuong dang duyet

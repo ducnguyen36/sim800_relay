@@ -57,9 +57,13 @@
 		        khong bao gio tu khop 2 lan (xac suat ~1e-6/cua so, van an
 		        toan). KHONG revert ve 1.1 nguyen ban vi se mat het bao ve
 		        chong hoc nham nhieu da xac nhan tren phan cung.
+		RL-1.5: giong CC-1.11 ben cua cuon - THEO Y NGUOI DUNG chon hanh vi
+		        hoc/doc remote cua 1.1/1.7 (de+nhay nhat). Bo buoc "xac nhan
+		        2 frame" - hoc ngay khi giai ma 1 frame. Rac nhieu (neu co) don
+		        bang XOA REMOTE. Giu nguyen tinh nang xoa + bao ve master qua SMS.
 */
 
-u8 __code ver[] = "RELAY4 v1.4";
+u8 __code ver[] = "RELAY4 v1.5";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -709,9 +713,10 @@ void main() {
 			send_gsm_byte('-');
 
 			if(mode==2){
-				// HOTFIX: chi HOC khi 2 frame lien tiep giong nhau (rf_on_dinh) -
-				// tranh nhieu bi hieu nham thanh remote la va tu hoc vao bang.
-				if(!match && rf_on_dinh){
+				// CC-1.11/RL-1.5: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 -
+				// de/nhay nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame".
+				// Rac nhieu neu co thi dung XOA REMOTE de don.
+				if(!match){
 					if(!have_master){
 						//remote khan cap (standalone khong co master)
 						IAP_docxoasector2();
