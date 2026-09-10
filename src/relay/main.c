@@ -64,9 +64,11 @@
 		RL-1.6: giong CC-1.12 - sua loi khong hoc duoc remote o ban gop nhieu
 		        tinh nang (main() phinh to -> SDCC sinh ma sai duong hoc). Fix:
 		        tach khoi xu ly RF ra ham rieng xu_ly_rf(). KHONG doi logic.
+		RL-1.8: giong CC-1.14 - sua loi EXIT khong bam thoat duoc (them B
+		        thoat o EXIT; nut + da thoat san). Nut + va B o EXIT deu thoat.
 */
 
-u8 __code ver[] = "RELAY4 v1.6";
+u8 __code ver[] = "RELAY4 v1.8";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -508,11 +510,14 @@ void main() {
 						LCD_xoa(TREN);
 					}
 				}
-				if(phim_back_nhan && sub_mode>1 && sub_mode<5){
+				if(phim_back_nhan && sub_mode>1){
 					phim_back_nhan = 0;
 					LCD_xoa(TREN);
 					LCD_guilenh(0x80);
 					switch(sub_mode){
+						case 5:   // EXIT: B cung thoat ve man hinh chinh
+							mode = sub_mode = 0;
+							break;
 						case 2:   // XOA SO
 							mode = 4;
 							del_phone_idx = xoa_so_ke_tiep(0);

@@ -71,9 +71,13 @@
 		        (loi codegen tren 8051 voi ham qua lon). Fix: tach toan bo khoi
 		        xu ly RF (hoc/dieu khien/xoa-remote) ra ham rieng xu_ly_rf() de
 		        codegen on dinh, doc lap kich thuoc main(). KHONG doi logic.
+		CC-1.14: sua loi muc EXIT trong menu khong bam thoat duoc (chi cho
+		        timeout 60s). Menu gop them XOA SO/XOA REMOTE da lam EXIT roi
+		        vao sub_mode 6 ma khong co phim nao xu ly thoat. Fix: ca nut +
+		        lan nut B khi dang o EXIT deu thoat ve man hinh chinh.
 */
 
-u8 __code ver[] = " CC-1.12        ";
+u8 __code ver[] = " CC-1.14        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -589,6 +593,9 @@ void main() {
 					if(sub_mode<2){
 						// CHINH/PHU: luu so bang cach goi den. Bo tra cuu TK/SDT (khong dung CUSD tren A7680C)
 						mode_wait = 60;
+					}else if(sub_mode==6){   // EXIT: + de thoat ve man hinh chinh
+						mode = sub_mode = 0;
+						LCD_xoa(TREN);
 					}else sub_mode = 6;
 
 				}
@@ -597,6 +604,9 @@ void main() {
 					LCD_xoa(TREN);
 					LCD_guilenh(0x80);
 					switch(sub_mode){
+						case 6:   // EXIT: B cung thoat ve man hinh chinh
+							mode = sub_mode = 0;
+							break;
 						case 2:   // XOA SO
 							mode = 5;
 							del_phone_idx = xoa_so_ke_tiep(0);
