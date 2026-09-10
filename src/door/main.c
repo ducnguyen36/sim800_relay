@@ -22,7 +22,7 @@
 		        moi hoan toan o ban 2.0 - tu hieu chinh theo tung remote.)
 */
 
-u8 __code ver[] = " CUACUON A7-1.7";
+u8 __code ver[] = " CC-1.13        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

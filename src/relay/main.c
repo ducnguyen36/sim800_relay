@@ -27,7 +27,7 @@
 		        thuong - hoc nhieu remote can dang ky master truoc.)
 */
 
-u8 __code ver[] = "RELAY4 v1.1";
+u8 __code ver[] = "RELAY4 v1.7";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
