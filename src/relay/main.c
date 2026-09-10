@@ -61,9 +61,12 @@
 		        hoc/doc remote cua 1.1/1.7 (de+nhay nhat). Bo buoc "xac nhan
 		        2 frame" - hoc ngay khi giai ma 1 frame. Rac nhieu (neu co) don
 		        bang XOA REMOTE. Giu nguyen tinh nang xoa + bao ve master qua SMS.
+		RL-1.6: giong CC-1.12 - sua loi khong hoc duoc remote o ban gop nhieu
+		        tinh nang (main() phinh to -> SDCC sinh ma sai duong hoc). Fix:
+		        tach khoi xu ly RF ra ham rieng xu_ly_rf(). KHONG doi logic.
 */
 
-u8 __code ver[] = "RELAY4 v1.5";
+u8 __code ver[] = "RELAY4 v1.6";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -88,6 +91,123 @@ u8 xoa_so_ke_tiep(u8 cur){
 		if(role && role!='M' && role!='m') return idx+1;
 	}
 	return 0;
+}
+
+
+/* Xu ly 1 frame RF - tach ra ham rieng de codegen on dinh (khong bi anh
+   huong boi kich thuoc main()). */
+void xu_ly_rf(){
+	if(!rfprocess) return;
+	{
+			u8 i,data[3],cmd[4];
+			u8 match=0;
+			#include "rf_frame.inc"
+			send_gsm_byte('P');
+			send_gsm_byte(pt2240+'0');
+			send_gsm_byte('-');
+			send_gsm_hex(data[0]);
+			send_gsm_hex(data[1]);
+			send_gsm_hex(data[2]);
+			send_gsm_byte('-');
+			send_gsm_byte(cmd[0]+'0');
+			send_gsm_byte(cmd[1]+'0');
+			send_gsm_byte(cmd[2]+'0');
+			send_gsm_byte(cmd[3]+'0');
+			send_gsm_byte('-');
+			send_gsm_byte(rfindex/10+'0');
+			send_gsm_byte(rfindex%10+'0');
+			send_gsm_byte('-');
+			
+			for(i=0;!match && i<eep_rfindex+2;i++){
+				// Khe khan cap/bao dong (i<2) chua hoc (trong = 0x00 hoac 0xFF) -> bo qua
+				// de nhieu (noise) khong khop nham voi khe rong.
+				if(i<2 && ((eep_rfdata[i*3]==0 && eep_rfdata[i*3+1]==0 && eep_rfdata[i*3+2]==0)
+				        || (eep_rfdata[i*3]==0xff && eep_rfdata[i*3+1]==0xff && eep_rfdata[i*3+2]==0xff))) continue;
+				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
+				if(match){
+					if(i<2)match = i+2;
+					send_gsm_byte(i/10+'0');
+					send_gsm_byte(i%10+'0');
+				}
+			}
+			send_gsm_byte('-');
+			send_gsm_byte(match+'0');
+			send_gsm_byte('-');
+
+			if(mode==2){
+				// CC-1.11/RL-1.5: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 -
+				// de/nhay nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame".
+				// Rac nhieu neu co thi dung XOA REMOTE de don.
+				if(!match){
+					if(!have_master){
+						//remote khan cap (standalone khong co master)
+						IAP_docxoasector2();
+						eeprom_buf[0] = data[0];
+						eeprom_buf[1] = data[1];
+						eeprom_buf[2] = data[2];
+						IAP_ghisector2();
+						// 1.1: phan hoi tren LCD khi hoc remote
+						LCD_xoa(TREN); LCD_guilenh(0x80);
+						LCD_guichuoi(" DA HOC REMOTE! ");
+						delay_ms(1500);
+					}else{
+						if(!sub_mode){	
+							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
+							else{
+								IAP_docxoasector2();
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+6-SECTOR2] = data[0];
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+7-SECTOR2] = data[1];
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
+								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
+								IAP_ghisector2();
+								// 1.1: phan hoi tren LCD khi hoc remote
+								LCD_xoa(TREN); LCD_guilenh(0x80);
+								LCD_guichuoi(" DA HOC REMOTE! ");
+								delay_ms(1500);
+								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
+							}
+						}else if(sub_mode == 1){
+							IAP_docxoasector2();
+							eeprom_buf[3] = data[0];
+							eeprom_buf[4] = data[1];
+							eeprom_buf[5] = data[2];
+							IAP_ghisector2();
+							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
+						}
+					}
+				}
+				rfstop = 0;
+			}else if(mode==6){
+				// XOA REMOTE: CHI xem remote vua bam co phai khe dang duyet
+				// khong (hien OK/X) - KHONG hoc, KHONG toggle relay.
+				if(!man_hinh_luu && eep_rfindex && del_rf_idx<eep_rfindex){
+					__bit giong = data[0]==eep_rfdata[(del_rf_idx+2)*3]
+					           && data[1]==eep_rfdata[(del_rf_idx+2)*3+1]
+					           && data[2]==eep_rfdata[(del_rf_idx+2)*3+2];
+					LCD_guilenh(0xc0);
+					LCD_guichuoi(giong?"OK - DUNG REMOTE":"X - KHAC REMOTE ");
+					delay_ms(1000);
+					lcd_update_chop = 1;
+				}
+			}else{
+				// Remote da hoc: moi nut toggle 1 relay (giu trang thai).
+				// len->R1(cmd[1]), xuong->R2(cmd[3]), khoa->R3(cmd[0]), stop->R4(cmd[2]).
+				// Chi toggle khi la nhan moi (rf_dang_giu==0); nha nut (RF timeout)
+				// se dat lai rf_dang_giu=0 trong PCA_Handler.
+				if(match && !rf_dang_giu){
+					u8 m = (Relay1?1:0)|(Relay2?2:0)|(Relay3?4:0)|(Relay4?8:0);
+					rf_dang_giu = 1;
+					if(!cmd[1]) m ^= 1;   // len   -> R1
+					if(!cmd[3]) m ^= 2;   // xuong -> R2
+					if(!cmd[0]) m ^= 4;   // khoa  -> R3
+					if(!cmd[2]) m ^= 8;   // stop  -> R4
+					dat_relay(m);
+					luu_relay();
+				}
+			}
+			rfstatus = 0; 
+			rfprocess = 0;
+			}
 }
 
 void main() {
@@ -676,116 +796,7 @@ void main() {
 		
 
 
-		if(rfprocess){
-			u8 i,data[3],cmd[4];
-			u8 match=0;
-			#include "rf_frame.inc"
-			send_gsm_byte('P');
-			send_gsm_byte(pt2240+'0');
-			send_gsm_byte('-');
-			send_gsm_hex(data[0]);
-			send_gsm_hex(data[1]);
-			send_gsm_hex(data[2]);
-			send_gsm_byte('-');
-			send_gsm_byte(cmd[0]+'0');
-			send_gsm_byte(cmd[1]+'0');
-			send_gsm_byte(cmd[2]+'0');
-			send_gsm_byte(cmd[3]+'0');
-			send_gsm_byte('-');
-			send_gsm_byte(rfindex/10+'0');
-			send_gsm_byte(rfindex%10+'0');
-			send_gsm_byte('-');
-			
-			for(i=0;!match && i<eep_rfindex+2;i++){
-				// Khe khan cap/bao dong (i<2) chua hoc (trong = 0x00 hoac 0xFF) -> bo qua
-				// de nhieu (noise) khong khop nham voi khe rong.
-				if(i<2 && ((eep_rfdata[i*3]==0 && eep_rfdata[i*3+1]==0 && eep_rfdata[i*3+2]==0)
-				        || (eep_rfdata[i*3]==0xff && eep_rfdata[i*3+1]==0xff && eep_rfdata[i*3+2]==0xff))) continue;
-				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
-				if(match){
-					if(i<2)match = i+2;
-					send_gsm_byte(i/10+'0');
-					send_gsm_byte(i%10+'0');
-				}
-			}
-			send_gsm_byte('-');
-			send_gsm_byte(match+'0');
-			send_gsm_byte('-');
-
-			if(mode==2){
-				// CC-1.11/RL-1.5: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 -
-				// de/nhay nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame".
-				// Rac nhieu neu co thi dung XOA REMOTE de don.
-				if(!match){
-					if(!have_master){
-						//remote khan cap (standalone khong co master)
-						IAP_docxoasector2();
-						eeprom_buf[0] = data[0];
-						eeprom_buf[1] = data[1];
-						eeprom_buf[2] = data[2];
-						IAP_ghisector2();
-						// 1.1: phan hoi tren LCD khi hoc remote
-						LCD_xoa(TREN); LCD_guilenh(0x80);
-						LCD_guichuoi(" DA HOC REMOTE! ");
-						delay_ms(1500);
-					}else{
-						if(!sub_mode){	
-							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
-							else{
-								IAP_docxoasector2();
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+6-SECTOR2] = data[0];
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+7-SECTOR2] = data[1];
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
-								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
-								IAP_ghisector2();
-								// 1.1: phan hoi tren LCD khi hoc remote
-								LCD_xoa(TREN); LCD_guilenh(0x80);
-								LCD_guichuoi(" DA HOC REMOTE! ");
-								delay_ms(1500);
-								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
-							}
-						}else if(sub_mode == 1){
-							IAP_docxoasector2();
-							eeprom_buf[3] = data[0];
-							eeprom_buf[4] = data[1];
-							eeprom_buf[5] = data[2];
-							IAP_ghisector2();
-							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
-						}
-					}
-				}
-				rfstop = 0;
-			}else if(mode==6){
-				// XOA REMOTE: CHI xem remote vua bam co phai khe dang duyet
-				// khong (hien OK/X) - KHONG hoc, KHONG toggle relay.
-				if(!man_hinh_luu && eep_rfindex && del_rf_idx<eep_rfindex){
-					__bit giong = data[0]==eep_rfdata[(del_rf_idx+2)*3]
-					           && data[1]==eep_rfdata[(del_rf_idx+2)*3+1]
-					           && data[2]==eep_rfdata[(del_rf_idx+2)*3+2];
-					LCD_guilenh(0xc0);
-					LCD_guichuoi(giong?"OK - DUNG REMOTE":"X - KHAC REMOTE ");
-					delay_ms(1000);
-					lcd_update_chop = 1;
-				}
-			}else{
-				// Remote da hoc: moi nut toggle 1 relay (giu trang thai).
-				// len->R1(cmd[1]), xuong->R2(cmd[3]), khoa->R3(cmd[0]), stop->R4(cmd[2]).
-				// Chi toggle khi la nhan moi (rf_dang_giu==0); nha nut (RF timeout)
-				// se dat lai rf_dang_giu=0 trong PCA_Handler.
-				if(match && !rf_dang_giu){
-					u8 m = (Relay1?1:0)|(Relay2?2:0)|(Relay3?4:0)|(Relay4?8:0);
-					rf_dang_giu = 1;
-					if(!cmd[1]) m ^= 1;   // len   -> R1
-					if(!cmd[3]) m ^= 2;   // xuong -> R2
-					if(!cmd[0]) m ^= 4;   // khoa  -> R3
-					if(!cmd[2]) m ^= 8;   // stop  -> R4
-					dat_relay(m);
-					luu_relay();
-				}
-			}
-			rfstatus = 0; 
-			rfprocess = 0;
-		}
+		xu_ly_rf();
 
 
 		if(phone_update){

@@ -64,16 +64,9 @@
 		        1 muc nhieu vao bang -> don bang XOA REMOTE (co tu 1.9). Duong
 		        dieu khien (mo/dong cua) van an toan vi doi hoi khop bang da hoc.
 		        Giu nguyen XOA SO/XOA REMOTE va bao ve master khi xoa qua SMS.
-		CC-1.12: SUA LOI "CC-1.11 khong hoc duoc remote" (user A/B tren cung
-		        board: 1.7 hoc duoc, 1.11 khong - da xoa sach + remote moi).
-		        Logic hoc giong het 1.7; nguyen nhan la code cac tinh nang xoa
-		        lam main() phinh to khien SDCC sinh ma SAI o duong hoc remote
-		        (loi codegen tren 8051 voi ham qua lon). Fix: tach toan bo khoi
-		        xu ly RF (hoc/dieu khien/xoa-remote) ra ham rieng xu_ly_rf() de
-		        codegen on dinh, doc lap kich thuoc main(). KHONG doi logic.
 */
 
-u8 __code ver[] = " CC-1.12        ";
+u8 __code ver[] = " CC-1.11        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -98,176 +91,6 @@ u8 xoa_so_ke_tiep(u8 cur){
 		if(role && role!='M' && role!='m') return idx+1;
 	}
 	return 0;
-}
-
-
-/* Xu ly 1 frame RF (hoc / dieu khien / xoa-remote OK-X). Tach ra ham rieng
-   de codegen on dinh, khong bi anh huong boi kich thuoc main() (tranh loi hoc
-   remote o ban gop nhieu tinh nang). */
-void xu_ly_rf(){
-	if(!rfprocess) return;
-	{
-			u8 i,data[3],cmd[4];
-			u8 match=0;
-			#include "rf_frame.inc"
-			send_gsm_byte('P');
-			send_gsm_byte(pt2240+'0');
-			send_gsm_byte('-');
-			send_gsm_hex(data[0]);
-			send_gsm_hex(data[1]);
-			send_gsm_hex(data[2]);
-			send_gsm_byte('-');
-			send_gsm_byte(cmd[0]+'0');
-			send_gsm_byte(cmd[1]+'0');
-			send_gsm_byte(cmd[2]+'0');
-			send_gsm_byte(cmd[3]+'0');
-			send_gsm_byte('-');
-			send_gsm_byte(rfindex/10+'0');
-			send_gsm_byte(rfindex%10+'0');
-			send_gsm_byte('-');
-			
-			for(i=0;!match && i<eep_rfindex+2;i++){
-				// Khe khan cap/bao dong (i<2) chua hoc (trong = 0x00 hoac 0xFF) -> bo qua
-				// de nhieu (noise) khong khop nham voi khe rong.
-				if(i<2 && ((eep_rfdata[i*3]==0 && eep_rfdata[i*3+1]==0 && eep_rfdata[i*3+2]==0)
-				        || (eep_rfdata[i*3]==0xff && eep_rfdata[i*3+1]==0xff && eep_rfdata[i*3+2]==0xff))) continue;
-				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
-				if(match){
-					if(i<2)match = i+2;
-					send_gsm_byte(i/10+'0');
-					send_gsm_byte(i%10+'0');
-				}
-			}
-			send_gsm_byte('-');
-			send_gsm_byte(match+'0');
-			send_gsm_byte('-');
-
-			if(mode==2){
-				// CC-1.11: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 - de/nhay
-				// nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame". Rac
-				// nhieu neu co thi dung XOA REMOTE de don.
-				if(!match){
-					if(!have_master){
-						//remote khan cap
-						IAP_docxoasector2();
-						eeprom_buf[0] = data[0];
-						eeprom_buf[1] = data[1];
-						eeprom_buf[2] = data[2];
-						IAP_ghisector2();
-					}else{
-						if(!sub_mode){	
-							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
-							else{
-								IAP_docxoasector2();
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+6-SECTOR2] = data[0];
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+7-SECTOR2] = data[1];
-								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
-								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
-								IAP_ghisector2();
-								// LOI 3: bao "da hoc" tren LCD (ngoai SMS) de thay ngay
-								LCD_xoa(TREN);
-								LCD_guilenh(0x80);
-								LCD_guichuoi(" DA HOC REMOTE! ");
-								delay_ms(1500);
-								LCD_xoa(TREN);
-								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
-							}
-						}else if(sub_mode == 1){
-							IAP_docxoasector2();
-							eeprom_buf[3] = data[0];
-							eeprom_buf[4] = data[1];
-							eeprom_buf[5] = data[2];
-							IAP_ghisector2();
-							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
-						}
-					}
-				}
-				rfstop = 0;
-			}else if(mode==6){
-				// XOA REMOTE: CHI xem remote vua bam co phai khe dang duyet
-				// khong (hien OK/X) - KHONG hoc, KHONG mo/dong cua.
-				if(!man_hinh_luu && eep_rfindex && del_rf_idx<eep_rfindex){
-					__bit giong = data[0]==eep_rfdata[(del_rf_idx+2)*3]
-					           && data[1]==eep_rfdata[(del_rf_idx+2)*3+1]
-					           && data[2]==eep_rfdata[(del_rf_idx+2)*3+2];
-					LCD_guilenh(0xc0);
-					LCD_guichuoi(giong?"OK - DUNG REMOTE":"X - KHAC REMOTE ");
-					delay_ms(1000);
-					lcd_update_chop = 1;
-				}
-			}else{
-				if(match){
-					if(match==2){
-						if(phim_back_nhan){
-							phim_back_nhan = 0;
-							phone_del(0);
-							IAP_xoasector(SECTOR2);
-							IAP_ghibyte(RFINDEX_EEPROM,0);
-							IAP_docxoasector1();
-							eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
-							IAP_ghisector1();			
-						}
-						// Chi bao 1 lan khi remote khan cap thuc su mo khoa (relay2giu 1->0),
-						// tranh nhan tin lien tuc khi remote phat lien tiep.
-						if(relay2giu){
-							relay2giu = 0;
-							if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
-						}
-					}
-					if(rflock){
-						if(!cmd[2]){
-							rflock = 0;
-							IAP_docxoasector2();
-							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
-							IAP_ghisector2();
-						}
-					}else{
-						if(!cmd[0]){
-							rflock = 1;
-							IAP_docxoasector2();
-							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
-							IAP_ghisector2();
-						}else if(!relay2giu){
-							Relay2 = !cmd[2];
-							if(nhan_remote_lan_dau){
-								nhan_remote_lan_dau = 0;
-								delay_chay_khoi_tao += 60;
-							}
-							if(eep_huong){
-								Relay3 = !cmd[1] && !Relay2;
-								Relay1 = !cmd[3] && !Relay3 && !Relay2;
-							}else{
-								Relay1 = !cmd[1] && !Relay2;
-								Relay3 = !cmd[3] && !Relay1 && !Relay2;
-							}
-						}
-					}
-					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
-					if(relay2giu && (rf_khancap>29 || (match==2 &&  !cmd[1] ))){
-						IAP_docxoasector1();
-                		eeprom_buf[KHOA_EEPROM] = 0;
-               			IAP_ghisector1();
-						relay2giu = 0;
-						Relay2 = 0;
-						if(eep_huong){
-							Relay3 = 1;
-							delay_ms(100);
-							Relay3 = 0;
-						}else{
-							Relay1 = 1;
-							delay_ms(100);
-							Relay1 = 0;
-						}
-						rf_khancap = rf_khancap_delay = 0;
-						
-					}				
-					
-				}
-				
-			}
-			rfstatus = 0; 
-			rfprocess = 0;
-			}
 }
 
 void main() {
@@ -301,7 +124,7 @@ void main() {
 	rf_khancap = rf_khancap_delay = 0;
 	ngay_reset_con_lai = 1;
 
-	nhan_remote_lan_dau = 1;
+	__bit nhan_remote_lan_dau = 1;
 	/*validate eeprom*/
 	IAP_docxoasector1();
 	if(eeprom_buf[BAOCAO_EEPROM]>1) eeprom_buf[BAOCAO_EEPROM] = 1; // mac dinh BAT bao cao
@@ -870,7 +693,168 @@ void main() {
 		
 
 
-		xu_ly_rf();
+		if(rfprocess){
+			u8 i,data[3],cmd[4];
+			u8 match=0;
+			#include "rf_frame.inc"
+			send_gsm_byte('P');
+			send_gsm_byte(pt2240+'0');
+			send_gsm_byte('-');
+			send_gsm_hex(data[0]);
+			send_gsm_hex(data[1]);
+			send_gsm_hex(data[2]);
+			send_gsm_byte('-');
+			send_gsm_byte(cmd[0]+'0');
+			send_gsm_byte(cmd[1]+'0');
+			send_gsm_byte(cmd[2]+'0');
+			send_gsm_byte(cmd[3]+'0');
+			send_gsm_byte('-');
+			send_gsm_byte(rfindex/10+'0');
+			send_gsm_byte(rfindex%10+'0');
+			send_gsm_byte('-');
+			
+			for(i=0;!match && i<eep_rfindex+2;i++){
+				// Khe khan cap/bao dong (i<2) chua hoc (trong = 0x00 hoac 0xFF) -> bo qua
+				// de nhieu (noise) khong khop nham voi khe rong.
+				if(i<2 && ((eep_rfdata[i*3]==0 && eep_rfdata[i*3+1]==0 && eep_rfdata[i*3+2]==0)
+				        || (eep_rfdata[i*3]==0xff && eep_rfdata[i*3+1]==0xff && eep_rfdata[i*3+2]==0xff))) continue;
+				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
+				if(match){
+					if(i<2)match = i+2;
+					send_gsm_byte(i/10+'0');
+					send_gsm_byte(i%10+'0');
+				}
+			}
+			send_gsm_byte('-');
+			send_gsm_byte(match+'0');
+			send_gsm_byte('-');
+
+			if(mode==2){
+				// CC-1.11: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 - de/nhay
+				// nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame". Rac
+				// nhieu neu co thi dung XOA REMOTE de don.
+				if(!match){
+					if(!have_master){
+						//remote khan cap
+						IAP_docxoasector2();
+						eeprom_buf[0] = data[0];
+						eeprom_buf[1] = data[1];
+						eeprom_buf[2] = data[2];
+						IAP_ghisector2();
+					}else{
+						if(!sub_mode){	
+							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
+							else{
+								IAP_docxoasector2();
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+6-SECTOR2] = data[0];
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+7-SECTOR2] = data[1];
+								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
+								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
+								IAP_ghisector2();
+								// LOI 3: bao "da hoc" tren LCD (ngoai SMS) de thay ngay
+								LCD_xoa(TREN);
+								LCD_guilenh(0x80);
+								LCD_guichuoi(" DA HOC REMOTE! ");
+								delay_ms(1500);
+								LCD_xoa(TREN);
+								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
+							}
+						}else if(sub_mode == 1){
+							IAP_docxoasector2();
+							eeprom_buf[3] = data[0];
+							eeprom_buf[4] = data[1];
+							eeprom_buf[5] = data[2];
+							IAP_ghisector2();
+							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
+						}
+					}
+				}
+				rfstop = 0;
+			}else if(mode==6){
+				// XOA REMOTE: CHI xem remote vua bam co phai khe dang duyet
+				// khong (hien OK/X) - KHONG hoc, KHONG mo/dong cua.
+				if(!man_hinh_luu && eep_rfindex && del_rf_idx<eep_rfindex){
+					__bit giong = data[0]==eep_rfdata[(del_rf_idx+2)*3]
+					           && data[1]==eep_rfdata[(del_rf_idx+2)*3+1]
+					           && data[2]==eep_rfdata[(del_rf_idx+2)*3+2];
+					LCD_guilenh(0xc0);
+					LCD_guichuoi(giong?"OK - DUNG REMOTE":"X - KHAC REMOTE ");
+					delay_ms(1000);
+					lcd_update_chop = 1;
+				}
+			}else{
+				if(match){
+					if(match==2){
+						if(phim_back_nhan){
+							phim_back_nhan = 0;
+							phone_del(0);
+							IAP_xoasector(SECTOR2);
+							IAP_ghibyte(RFINDEX_EEPROM,0);
+							IAP_docxoasector1();
+							eeprom_buf[PIN_EEPROM] = eeprom_buf[PIN_EEPROM+1] = eeprom_buf[PIN_EEPROM+2] = eeprom_buf[PIN_EEPROM+3] = '0';
+							IAP_ghisector1();			
+						}
+						// Chi bao 1 lan khi remote khan cap thuc su mo khoa (relay2giu 1->0),
+						// tranh nhan tin lien tuc khi remote phat lien tiep.
+						if(relay2giu){
+							relay2giu = 0;
+							if(get_master_phone()) baocaosms("\rremote khan cap duoc su dung");
+						}
+					}
+					if(rflock){
+						if(!cmd[2]){
+							rflock = 0;
+							IAP_docxoasector2();
+							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 0;
+							IAP_ghisector2();
+						}
+					}else{
+						if(!cmd[0]){
+							rflock = 1;
+							IAP_docxoasector2();
+							eeprom_buf[RFLOCK_EEPROM-SECTOR2] = 1;
+							IAP_ghisector2();
+						}else if(!relay2giu){
+							Relay2 = !cmd[2];
+							if(nhan_remote_lan_dau){
+								nhan_remote_lan_dau = 0;
+								delay_chay_khoi_tao += 60;
+							}
+							if(eep_huong){
+								Relay3 = !cmd[1] && !Relay2;
+								Relay1 = !cmd[3] && !Relay3 && !Relay2;
+							}else{
+								Relay1 = !cmd[1] && !Relay2;
+								Relay3 = !cmd[3] && !Relay1 && !Relay2;
+							}
+						}
+					}
+					if(!cmd[0]) {rf_khancap++;rf_khancap_delay = 10;}
+					if(relay2giu && (rf_khancap>29 || (match==2 &&  !cmd[1] ))){
+						IAP_docxoasector1();
+                		eeprom_buf[KHOA_EEPROM] = 0;
+               			IAP_ghisector1();
+						relay2giu = 0;
+						Relay2 = 0;
+						if(eep_huong){
+							Relay3 = 1;
+							delay_ms(100);
+							Relay3 = 0;
+						}else{
+							Relay1 = 1;
+							delay_ms(100);
+							Relay1 = 0;
+						}
+						rf_khancap = rf_khancap_delay = 0;
+						
+					}				
+					
+				}
+				
+			}
+			rfstatus = 0; 
+			rfprocess = 0;
+		}
 
 
 		if(phone_update){
