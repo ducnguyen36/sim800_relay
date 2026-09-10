@@ -19,6 +19,11 @@ u8 __data danh_ba_cuoi;
 // gio mang; ban cua cuon chua chu dong dung nhung phai khai bao de bien dich.
 __bit gio_hop_le;
 __bit nhan_remote_lan_dau;    // dung trong xu_ly_rf() (da tach ra khoi main)
+// 1.14B: xac nhan 2 frame khi hoc remote (chong nhieu) - dung boi rf_frame.inc
+u8   __xdata rf_last_data[3];
+u8   __xdata rf_repeat;
+u8   __xdata rf_win;
+__bit         rf_on_dinh;
 // XOA SO / XOA REMOTE (menu): idx dang duyet.
 u8   __xdata del_phone_idx;  // 1-based idx trong bang so dang duyet (0 = chua co)
 u8   __xdata del_rf_idx;     // 0-based idx trong danh sach remote thuong dang duyet

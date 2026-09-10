@@ -68,7 +68,7 @@
 		        thoat o EXIT; nut + da thoat san). Nut + va B o EXIT deu thoat.
 */
 
-u8 __code ver[] = "RELAY4 1.14A";
+u8 __code ver[] = "RELAY4 1.14B";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -140,7 +140,7 @@ void xu_ly_rf(){
 				// CC-1.11/RL-1.5: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 -
 				// de/nhay nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame".
 				// Rac nhieu neu co thi dung XOA REMOTE de don.
-				if(!match){
+				if(!match && rf_on_dinh){
 					if(!have_master){
 						//remote khan cap (standalone khong co master)
 						IAP_docxoasector2();

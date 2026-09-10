@@ -18,6 +18,7 @@
 	    DIEU KHIEN (mo/dong cua, toggle relay) van an toan vi doi hoi khop bang
 	    da hoc san - nhieu gan nhu khong the tai tao dung 24 bit da hoc.
 */
+#define RF_WIN_MAX 4
 data[0]  = rfdata[0]*128 +rfdata[1]*64+rfdata[2]*32+rfdata[3]*16;
 data[0] += rfdata[4]*8 + rfdata[5]*4 + rfdata[6]*2 +rfdata[7];
 data[1]  = rfdata[8]*128 +rfdata[9]*64+rfdata[10]*32+rfdata[11]*16;
@@ -31,3 +32,17 @@ else{
 	cmd[1] = rfdata[22]; cmd[2] = rfdata[18]; cmd[3] = rfdata[16];
 }
 cmd[0] = rfdata[20];
+
+/* 1.14B: xac nhan 2 frame (cua so khoan dung) -> rf_on_dinh. Gate viec HOC
+   remote (khong gate dieu khien). Chong nhieu tu-hoc nham. */
+if(data[0]==rf_last_data[0] && data[1]==rf_last_data[1] && data[2]==rf_last_data[2]){
+	if(rf_repeat<255) rf_repeat++;
+	rf_win = RF_WIN_MAX;
+}else if(rf_win){
+	rf_win--;
+}else{
+	rf_repeat = 1;
+	rf_last_data[0]=data[0]; rf_last_data[1]=data[1]; rf_last_data[2]=data[2];
+	rf_win = RF_WIN_MAX;
+}
+rf_on_dinh = (rf_repeat>=2);

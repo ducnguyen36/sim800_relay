@@ -77,7 +77,7 @@
 		        lan nut B khi dang o EXIT deu thoat ve man hinh chinh.
 */
 
-u8 __code ver[] = " CC-1.14A       ";
+u8 __code ver[] = " CC-1.14B       ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -150,7 +150,7 @@ void xu_ly_rf(){
 				// CC-1.11: hoc ngay khi giai ma duoc 1 frame (hanh vi 1.7 - de/nhay
 				// nhat theo phan hoi nguoi dung). Bo buoc "xac nhan 2 frame". Rac
 				// nhieu neu co thi dung XOA REMOTE de don.
-				if(!match){
+				if(!match && rf_on_dinh){
 					if(!have_master){
 						//remote khan cap
 						IAP_docxoasector2();
