@@ -77,7 +77,7 @@
 		        lan nut B khi dang o EXIT deu thoat ve man hinh chinh.
 */
 
-u8 __code ver[] = " CC-1.14        ";
+u8 __code ver[] = " CC-1.14A       ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

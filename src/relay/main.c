@@ -68,7 +68,7 @@
 		        thoat o EXIT; nut + da thoat san). Nut + va B o EXIT deu thoat.
 */
 
-u8 __code ver[] = "RELAY4 v1.8";
+u8 __code ver[] = "RELAY4 1.14A";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
