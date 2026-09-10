@@ -71,13 +71,21 @@
 		        (loi codegen tren 8051 voi ham qua lon). Fix: tach toan bo khoi
 		        xu ly RF (hoc/dieu khien/xoa-remote) ra ham rieng xu_ly_rf() de
 		        codegen on dinh, doc lap kich thuoc main(). KHONG doi logic.
-		CC-1.14: sua loi muc EXIT trong menu khong bam thoat duoc (chi cho
-		        timeout 60s). Menu gop them XOA SO/XOA REMOTE da lam EXIT roi
-		        vao sub_mode 6 ma khong co phim nao xu ly thoat. Fix: ca nut +
-		        lan nut B khi dang o EXIT deu thoat ve man hinh chinh.
+		CC-1.14: BAN CHINH THUC gop tat ca ban va loi. Da test tren phan cung:
+		        hoc/bam remote OK (kieu 1.7 - chot 1 frame). Gom:
+		          - Tinh nang XOA SO / XOA REMOTE (menu, can PIN) + bao ve so
+		            Master khong xoa duoc qua menu lan qua SMS.
+		          - Fix "khong hoc duoc remote" o ban gop nhieu tinh nang: tach
+		            khoi xu ly RF ra ham rieng xu_ly_rf() (main() phinh to lam
+		            SDCC sinh ma sai).
+		          - Fix muc EXIT trong menu khong bam thoat duoc: + va B o EXIT
+		            deu thoat ve man hinh chinh.
+		          - Cach hoc remote: chot ngay 1 frame (1.7 - de/nhay nhat).
+		        (Ban 1.14B tren nhanh rieng dung xac nhan 2 frame chong nhieu -
+		        chi dung khi song RF qua nhieu.)
 */
 
-u8 __code ver[] = " CC-1.14A       ";
+u8 __code ver[] = " CC-1.14        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"

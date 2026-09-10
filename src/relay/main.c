@@ -65,10 +65,15 @@
 		        tinh nang (main() phinh to -> SDCC sinh ma sai duong hoc). Fix:
 		        tach khoi xu ly RF ra ham rieng xu_ly_rf(). KHONG doi logic.
 		RL-1.8: giong CC-1.14 - sua loi EXIT khong bam thoat duoc (them B
-		        thoat o EXIT; nut + da thoat san). Nut + va B o EXIT deu thoat.
+		        thoat o EXIT; nut + da thoat san).
+		RL-1.14: BAN CHINH THUC (dong bo so voi cua cuon CC-1.14) - gom tat ca
+		        ban va loi: XOA SO/XOA REMOTE + bao ve Master, fix "khong hoc
+		        duoc remote" (tach xu_ly_rf), fix EXIT (+/B deu thoat), hoc
+		        remote kieu 1.1/1.7 (chot 1 frame). Ban RL 1.14B (nhanh rieng)
+		        dung xac nhan 2 frame chong nhieu.
 */
 
-u8 __code ver[] = "RELAY4 1.14A";
+u8 __code ver[] = "RELAY4 1.14";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
