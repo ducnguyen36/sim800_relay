@@ -165,18 +165,29 @@ void baocaosms(u8  *noidung){
 }
 
 /* Hien ket qua hoc remote (LCD + SMS neu vua hoc moi), kem MA remote (hex 3
-   byte) de nguoi dung/ho tro doi chieu dung nguoi bam. da_co=0: vua hoc moi
-   thanh cong (co gui SMS). da_co=1: remote nay DA CO san trong bang (khong
-   hoc lai - chi bao LCD, khong gui SMS de tranh spam khi lo bam trung remote
-   cu luc dang hoc). Dung chung ca 2 san pham. */
-void bao_ket_qua_hoc(u8 *data, __bit da_co){
+   byte) va vi tri (index) de nguoi dung/ho tro doi chieu dung nguoi bam.
+   da_co=0: vua hoc moi thanh cong (co gui SMS). da_co=1: remote nay DA CO
+   san trong bang (khong hoc lai - chi bao LCD, khong gui SMS de tranh spam
+   khi lo bam trung remote cu luc dang hoc).
+   idx_hien: 0 = khe khan cap, 0xFF = khe module bao dong, khac = so thu tu
+   1-based trong danh sach remote THUONG (giong so hien o man hinh XOA
+   REMOTE). Dung chung ca 2 san pham. */
+void bao_ket_qua_hoc(u8 *data, u8 idx_hien, __bit da_co){
     LCD_xoa(TREN);
     LCD_guilenh(0x80);
     LCD_guichuoi(da_co ? " REMOTE DA CO!  " : " DA HOC REMOTE! ");
     LCD_guilenh(0xc0);
+    if(idx_hien==0) LCD_guichuoi("KC ");
+    else if(idx_hien==0xff) LCD_guichuoi("BD ");
+    else{
+        LCD_guidulieu('#');
+        LCD_guidulieu(idx_hien/10+'0');
+        LCD_guidulieu(idx_hien%10+'0');
+    }
+    LCD_guidulieu(' ');
     LCD_guichuoi("MA:");
     LCD_guihex(data[0]); LCD_guihex(data[1]); LCD_guihex(data[2]);
-    LCD_guichuoi("       ");
+    LCD_guichuoi("   ");
     delay_ms(1800);
     LCD_xoa(TREN); LCD_xoa(DUOI);
     if(!da_co && get_master_phone() && eep_baocao){
@@ -185,7 +196,15 @@ void bao_ket_qua_hoc(u8 *data, __bit da_co){
         if(send_sms()){
             send_gsm_cmd(" KHOA=");
             send_gsm_cmd(eep_khoa?"ON":"OFF");
-            send_gsm_cmd("\rremote dc hoc MA:");
+            send_gsm_cmd("\rremote dc hoc ");
+            if(idx_hien==0) send_gsm_cmd("KHAN CAP");
+            else if(idx_hien==0xff) send_gsm_cmd("BAO DONG");
+            else{
+                send_gsm_byte('#');
+                send_gsm_byte(idx_hien/10+'0');
+                send_gsm_byte(idx_hien%10+'0');
+            }
+            send_gsm_cmd(" MA:");
             send_gsm_hex(data[0]); send_gsm_hex(data[1]); send_gsm_hex(data[2]);
             gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
         }

@@ -75,9 +75,12 @@
 		        SMS Luu,<so> kiem tra trung truoc khi them; hoc remote hien MA
 		        tren LCD + SMS; bam remote DA CO san bao LCD (khong SMS, tranh
 		        spam). Dung chung LCD_guihex()/bao_ket_qua_hoc() voi cua cuon.
+		RL-1.16: giong CC-1.16 - them so thu tu (index) khi hoc/khi trung remote
+		        (giong index o man hinh XOA REMOTE); khe khan cap hien "KC", khe
+		        bao dong hien "BD".
 */
 
-u8 __code ver[] = "RELAY4 1.15";
+u8 __code ver[] = "RELAY4 1.16";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -112,6 +115,7 @@ void xu_ly_rf(){
 	{
 			u8 i,data[3],cmd[4];
 			u8 match=0;
+			u8 khe_thuong=0;   // ==i-1: so thu tu 1-based trong ds remote THUONG neu khop
 			#include "rf_frame.inc"
 			send_gsm_byte('P');
 			send_gsm_byte(pt2240+'0');
@@ -137,6 +141,7 @@ void xu_ly_rf(){
 				match = data[0] == eep_rfdata[i*3] && data[1] == eep_rfdata[i*3+1] && data[2] == eep_rfdata[i*3+2];
 				if(match){
 					if(i<2)match = i+2;
+					else khe_thuong = i-1;   // i = (2+p)+1 luc thoat vong lap; p+1 = i-1
 					send_gsm_byte(i/10+'0');
 					send_gsm_byte(i%10+'0');
 				}
@@ -157,7 +162,7 @@ void xu_ly_rf(){
 						eeprom_buf[1] = data[1];
 						eeprom_buf[2] = data[2];
 						IAP_ghisector2();
-						bao_ket_qua_hoc(data,0);
+						bao_ket_qua_hoc(data,0,0);
 					}else{
 						if(!sub_mode){
 							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
@@ -168,7 +173,7 @@ void xu_ly_rf(){
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								bao_ket_qua_hoc(data,0);
+								bao_ket_qua_hoc(data,eeprom_buf[RFINDEX_EEPROM-SECTOR2],0);
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -181,7 +186,7 @@ void xu_ly_rf(){
 					}
 				}else{
 					// Trung: remote nay DA CO trong bang (khan cap/thuong/bao dong)
-					bao_ket_qua_hoc(data,1);
+					bao_ket_qua_hoc(data, (match==2)?0 : (match==3)?0xff : khe_thuong, 1);
 				}
 				rfstop = 0;
 			}else if(mode==6){
