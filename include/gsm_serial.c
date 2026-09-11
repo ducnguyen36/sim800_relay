@@ -164,6 +164,34 @@ void baocaosms(u8  *noidung){
     else gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
 }
 
+/* Hien ket qua hoc remote (LCD + SMS neu vua hoc moi), kem MA remote (hex 3
+   byte) de nguoi dung/ho tro doi chieu dung nguoi bam. da_co=0: vua hoc moi
+   thanh cong (co gui SMS). da_co=1: remote nay DA CO san trong bang (khong
+   hoc lai - chi bao LCD, khong gui SMS de tranh spam khi lo bam trung remote
+   cu luc dang hoc). Dung chung ca 2 san pham. */
+void bao_ket_qua_hoc(u8 *data, __bit da_co){
+    LCD_xoa(TREN);
+    LCD_guilenh(0x80);
+    LCD_guichuoi(da_co ? " REMOTE DA CO!  " : " DA HOC REMOTE! ");
+    LCD_guilenh(0xc0);
+    LCD_guichuoi("MA:");
+    LCD_guihex(data[0]); LCD_guihex(data[1]); LCD_guihex(data[2]);
+    LCD_guichuoi("       ");
+    delay_ms(1800);
+    LCD_xoa(TREN); LCD_xoa(DUOI);
+    if(!da_co && get_master_phone() && eep_baocao){
+        gsm_sendandcheck("AT\r", 15, 1, ver);
+        lenh_sms[0] = 0;
+        if(send_sms()){
+            send_gsm_cmd(" KHOA=");
+            send_gsm_cmd(eep_khoa?"ON":"OFF");
+            send_gsm_cmd("\rremote dc hoc MA:");
+            send_gsm_hex(data[0]); send_gsm_hex(data[1]); send_gsm_hex(data[2]);
+            gsm_sendandcheck("\032",120,1,"DANG GUI BAO CAO");
+        }
+    }
+}
+
 void clear_sms_buffer(u8 index_dau){
     sms_index = 0;
     while(index_dau<161)lenh_sms[index_dau++] = 0;

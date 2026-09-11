@@ -71,9 +71,13 @@
 		        duoc remote" (tach xu_ly_rf), fix EXIT (+/B deu thoat), hoc
 		        remote kieu 1.1/1.7 (chot 1 frame). Ban RL 1.14B (nhanh rieng)
 		        dung xac nhan 2 frame chong nhieu.
+		RL-1.15: giong CC-1.15 - xac minh trung lap + hien MA remote (hex):
+		        SMS Luu,<so> kiem tra trung truoc khi them; hoc remote hien MA
+		        tren LCD + SMS; bam remote DA CO san bao LCD (khong SMS, tranh
+		        spam). Dung chung LCD_guihex()/bao_ket_qua_hoc() voi cua cuon.
 */
 
-u8 __code ver[] = "RELAY4 1.14";
+u8 __code ver[] = "RELAY4 1.15";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -153,12 +157,9 @@ void xu_ly_rf(){
 						eeprom_buf[1] = data[1];
 						eeprom_buf[2] = data[2];
 						IAP_ghisector2();
-						// 1.1: phan hoi tren LCD khi hoc remote
-						LCD_xoa(TREN); LCD_guilenh(0x80);
-						LCD_guichuoi(" DA HOC REMOTE! ");
-						delay_ms(1500);
+						bao_ket_qua_hoc(data,0);
 					}else{
-						if(!sub_mode){	
+						if(!sub_mode){
 							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
 							else{
 								IAP_docxoasector2();
@@ -167,11 +168,7 @@ void xu_ly_rf(){
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								// 1.1: phan hoi tren LCD khi hoc remote
-								LCD_xoa(TREN); LCD_guilenh(0x80);
-								LCD_guichuoi(" DA HOC REMOTE! ");
-								delay_ms(1500);
-								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
+								bao_ket_qua_hoc(data,0);
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -182,6 +179,9 @@ void xu_ly_rf(){
 							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
 						}
 					}
+				}else{
+					// Trung: remote nay DA CO trong bang (khan cap/thuong/bao dong)
+					bao_ket_qua_hoc(data,1);
 				}
 				rfstop = 0;
 			}else if(mode==6){

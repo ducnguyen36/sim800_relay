@@ -47,6 +47,15 @@ void LCD_guidulieu(u8 dulieu){
 	LCD_rs=0;
 }
 
+/* In 1 byte thanh 2 ky tu hex (chu thuong, giong send_gsm_hex) len LCD. */
+void LCD_guihex(u8 dulieu){
+	u8 hi,lo;
+	hi = dulieu>>4;
+	lo = dulieu & 15;
+	LCD_guidulieu(hi+(hi<10?'0':87));
+	LCD_guidulieu(lo+(lo<10?'0':87));
+}
+
 void LCD_guilenh(u8 lenh){
 	if(!lenh)return;
 	LCD_rs=0;

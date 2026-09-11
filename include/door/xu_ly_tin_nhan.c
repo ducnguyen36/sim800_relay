@@ -141,10 +141,12 @@ void xu_ly_tin_nhan(){
                     && lenh_sms[12]>='0' && lenh_sms[12]<='9' && lenh_sms[13]>='0' && lenh_sms[13]<='9'){
                         lenh_sms[14] = 0;
                         // luu 9 chu so (bo so 0 dau) + vai tro; 'm' = master, con lai = user
-                        if(phone_add(lenh_sms+5,(lenh_sms[15]=='m')?'m':'u'))
+                        if(phone_find(lenh_sms+5))
+                            baocaosms("\rSo nay da co trong danh ba");
+                        else if(phone_add(lenh_sms+5,(lenh_sms[15]=='m')?'m':'u'))
                             baocaosms("\rthem danh ba thanh cong");
                         else baocaosms("\rBang so da day");
-                        
+
                     }else baocaosms("\rSo dt khong hop Le");
                 }else if(lenh_sms[1] == 'e' || lenh_sms[1] == 'E'){
                     if(relay2giu){

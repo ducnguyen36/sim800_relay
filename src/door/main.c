@@ -83,9 +83,20 @@
 		          - Cach hoc remote: chot ngay 1 frame (1.7 - de/nhay nhat).
 		        (Ban 1.14B tren nhanh rieng dung xac nhan 2 frame chong nhieu -
 		        chi dung khi song RF qua nhieu.)
+		CC-1.15: xac minh trung lap + hien MA remote (hex):
+		          - SMS "Luu,<so>": them kiem tra trung (truoc day goi thang
+		            phone_add, gui Luu 2 lan se tao 2 dong trung). Gio bao "So
+		            nay da co trong danh ba" neu trung, khong them nua.
+		          - Hoc remote (khan cap/thuong): sau khi hoc, LCD dong 2 hien
+		            "MA:xxxxxx" (hex 3 byte) va SMS bao "remote dc hoc MA:xxxxxx".
+		          - Bam remote DA CO san trong bang khi dang o man hinh CHINH/
+		            PHU: truoc day im lang, gio LCD bao " REMOTE DA CO! " kem
+		            MA (khong gui SMS, tranh spam khi lo bam trung remote cu).
+		          - Them LCD_guihex() (shared lcd.c) + bao_ket_qua_hoc() (shared
+		            gsm_serial.c) dung chung 2 san pham.
 */
 
-u8 __code ver[] = " CC-1.14        ";
+u8 __code ver[] = " CC-1.15        ";
 
 #include "motor_cam_phim.c"
 #include "gsm_serial.c"
@@ -166,8 +177,9 @@ void xu_ly_rf(){
 						eeprom_buf[1] = data[1];
 						eeprom_buf[2] = data[2];
 						IAP_ghisector2();
+						bao_ket_qua_hoc(data,0);
 					}else{
-						if(!sub_mode){	
+						if(!sub_mode){
 							if(eep_rfindex>97) {LCD_guichuoi(" HET BO NHO HOC "); delay_ms(2000);}
 							else{
 								IAP_docxoasector2();
@@ -176,13 +188,7 @@ void xu_ly_rf(){
 								eeprom_buf[RFDATA_EEPROM+eeprom_buf[RFINDEX_EEPROM-SECTOR2]*3+8-SECTOR2] = data[2];
 								eeprom_buf[RFINDEX_EEPROM-SECTOR2]++;
 								IAP_ghisector2();
-								// LOI 3: bao "da hoc" tren LCD (ngoai SMS) de thay ngay
-								LCD_xoa(TREN);
-								LCD_guilenh(0x80);
-								LCD_guichuoi(" DA HOC REMOTE! ");
-								delay_ms(1500);
-								LCD_xoa(TREN);
-								if(get_master_phone() && eep_baocao) baocaosms("\rremote dc hoc");
+								bao_ket_qua_hoc(data,0);
 							}
 						}else if(sub_mode == 1){
 							IAP_docxoasector2();
@@ -193,6 +199,9 @@ void xu_ly_rf(){
 							if(get_master_phone() && eep_baocao) baocaosms("\rmodule bao dong duoc hoc");
 						}
 					}
+				}else{
+					// Trung: remote nay DA CO trong bang (khan cap/thuong/bao dong)
+					bao_ket_qua_hoc(data,1);
 				}
 				rfstop = 0;
 			}else if(mode==6){

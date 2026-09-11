@@ -3,6 +3,7 @@
 void LCD_guichuoi(u8 *vanban) __reentrant;
 void LCD_guilenh(u8 lenh);
 void LCD_guidulieu(u8 dulieu);
+void LCD_guihex(u8 dulieu);
 void LCD_Init();
 void LCD_guigio(u8 vitri, u8 *chuoi, u8 gio, u8 phut, u8 giay,__bit haicham);
 void LCD_guingay(u8 vitri, u8 nam, u8 thang, u8 ngay);
